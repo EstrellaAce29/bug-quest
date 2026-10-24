@@ -6,3 +6,5 @@ out/
 !.env.example
 .DS_Store
 .kane/
+.testmuai/evidence/
+.testmuai/tests/output-*/
