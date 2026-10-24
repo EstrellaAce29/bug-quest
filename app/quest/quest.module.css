@@ -27,3 +27,25 @@
 .runChecks > a { font-size: 10px; font-weight: 600; color: #4e8659; }
 .runChecks ul { margin: 7px 0 0; padding-left: 17px; font-size: 9px; line-height: 1.8; color: #929e88; }
 @media (max-width: 650px) { .checksCard { padding: 20px; } .sessionMetrics { grid-template-columns: repeat(3, 1fr); gap: 18px; } .sessionMetrics dd { font-size: 19px; } }
+
+.modeBar { display: flex; align-items: center; justify-content: space-between; gap: 15px; padding: 10px 6%; background: #edf3ec; border-bottom: 1px solid #dce6dc; font-size: 10px; color: #71856b; }
+.modeToggle { display: flex; align-items: center; gap: 9px; cursor: pointer; font-size: 11px; font-weight: 600; color: #436440; }
+.modeToggle input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.modeToggle > span { width: 30px; height: 17px; background: #c3d1bc; border-radius: 12px; position: relative; }
+.modeToggle > span::after { content: ''; position: absolute; left: 3px; top: 3px; height: 11px; width: 11px; background: white; border-radius: 50%; transition: transform .15s; }
+.modeToggle input:checked + span { background: #287d52; }
+.modeToggle input:checked + span::after { transform: translateX(13px); }
+.modeToggle input:focus-visible + span { outline: 3px solid #63ac85; outline-offset: 3px; }
+.modeToggle input:disabled + span { opacity: .5; }
+.liveTag { font-size: 10px; color: #267149; background: #edf7ec; border: 1px solid #d6e7d4; padding: 6px 10px; border-radius: 5px; }
+.cancelButton { margin-top: 10px; width: 100%; padding: 8px; border: 1px solid #e2c5ba; border-radius: 5px; background: #fff7f2; color: #a46d52; font-size: 11px; }
+.terminalCard { margin-top: 24px; background: #17281e; color: #c2d6bf; border: 1px solid #293b2c; border-radius: 10px; overflow: hidden; }
+.terminalHeading { padding: 13px 20px; display: flex; align-items: center; justify-content: space-between; background: #203326; border-bottom: 1px solid #304434; }
+.terminalHeading h2 { font-size: 11px; margin: 0; font-weight: 500; }
+.terminalHeading > span { font-size: 9px; color: #7e9b79; }
+.terminal { height: 260px; overflow-y: auto; padding: 18px 20px; font: 11px/1.9 'IBM Plex Mono', monospace; overflow-wrap: anywhere; }
+.terminal > div { white-space: pre-wrap; }
+.terminal > div > span { color: #5b9864; }
+.terminal p { color: #688163; margin: 0; }
+.liveError { margin-top: 15px; padding: 14px 18px; background: #fff0eb; border: 1px solid #efd0bf; border-radius: 7px; color: #a45943; font-size: 12px; line-height: 1.6; }
+@media (max-width: 650px) { .modeBar { padding: 10px 20px; } .modeBar > span { font-size: 8px; max-width: 180px; } .terminal { font-size: 10px; } }
