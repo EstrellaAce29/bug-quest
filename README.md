@@ -15,7 +15,7 @@ Open http://localhost:3000/pipelines. The root redirects there.
 
 ## Data and API
 
-- `data/pipeline-runs.json`: source run metadata, source row count, task definitions and durations.
+- `data/pipeline-runs.json`: source run metadata, source row count, task definitions and durations. The default run start time is calculated on each request as ten minutes before now; the fixture's `startedAt` is not used for that timestamp.
 - `GET /api/pipeline-runs`: latest scheduled fixture run.
 - `POST /api/pipeline-runs`: start a new simulated run.
 - `GET /api/pipeline-runs?startedAt=<ISO timestamp>`: progress a manual run.

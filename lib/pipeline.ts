@@ -45,7 +45,7 @@ export function simulateRun(seed: RunSeed, bugs: Bugs, startedAt?: string, now =
   return {
     dagId: seed.dagId,
     runId: startedAt ? `manual__${startedAt}` : seed.runId,
-    startedAt: startedAt ?? seed.startedAt,
+    startedAt: startedAt ?? new Date(now - 10 * 60 * 1000).toISOString(),
     status: overallStatus(tasks, bugs),
     durationSeconds: Math.max(tasks.reduce((sum, task) => sum + task.durationSeconds, 0), 0),
     tasks,

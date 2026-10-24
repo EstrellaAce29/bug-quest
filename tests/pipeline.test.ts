@@ -1,8 +1,27 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import seed from '../data/pipeline-runs.json';
-import defaults from '../config/bugs.json';
-import { overallStatus, simulateRun } from '../lib/pipeline';
+import { overallStatus, simulateRun, type Bugs } from '../lib/pipeline';
+
+const defaults: Bugs = {
+  falseSuccessBug: false,
+  rowMismatchBug: false,
+  stuckDeferredBug: false,
+  slowApiBug: false,
+  silentErrorBug: false,
+};
+
+test('default run time follows each request while manual runs and deferred ages stay relative', () => {
+  const now = Date.parse('2026-10-24T22:00:00.000Z');
+  for (const requestTime of [now, now + 3600000]) {
+    const run = simulateRun(seed, defaults, undefined, requestTime);
+    assert.equal(Date.parse(run.startedAt), requestTime - 10 * 60 * 1000);
+    const deferred = simulateRun(seed, { ...defaults, stuckDeferredBug: true }, undefined, requestTime);
+    assert.equal(deferred.tasks[0].durationSeconds, 7 * 60 * 60);
+  }
+  const manualStart = new Date(now - 3000).toISOString();
+  assert.equal(simulateRun(seed, defaults, manualStart, now).startedAt, manualStart);
+});
 
 test('healthy run conserves rows from extract through load', () => {
   const run = simulateRun(seed, defaults);
