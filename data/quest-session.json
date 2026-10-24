@@ -1,0 +1,245 @@
+{
+  "capturedAt": "2026-10-24T22:27:36.636Z",
+  "totals": {
+    "kaneRuns": 6,
+    "checksGenerated": 31,
+    "bugsFound": 1,
+    "fixesVerified": 0,
+    "creditsUsed": 135.7311375
+  },
+  "runs": [
+    {
+      "sessionId": "bcea8f48-0976-4e13-b98c-9bef6435ca03",
+      "status": "passed",
+      "resultCode": 100,
+      "summary": "The requested enrollment_pipeline run was triggered and allowed to finish.\nThe Pipeline Monitor showed the enrollment_pipeline with all six tasks: wait_for_source, extract, validate, transform, load, and notify.\nThe run completed successfully: all six tasks showed success, and both extract and load processed 1,000 rows.",
+      "creditsUsed": 18.965629999999997,
+      "completedAt": "2026-10-24T20:58:36.353Z",
+      "url": "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M5QV7PMFB0D1MXM79VJ56FWB/dashboard/share/US_4BNF041IAWBJU0LRW3Z24HD37V9DPT85LZM4M8BRP9VFILDKA0NT68KG76SKRTEM?type=summary&agentView=true&fqdn=summary-page",
+      "assertions": [
+        {
+          "id": "pipeline_monitor_visible",
+          "description": "Checking whether Pipeline Monitor is present",
+          "condition": "Pipeline Monitor is visible."
+        },
+        {
+          "id": "enrollment_pipeline_visible",
+          "description": "Checking whether enrollment_pipeline is present",
+          "condition": "enrollment_pipeline is visible."
+        },
+        {
+          "id": "wait_for_source_listed",
+          "description": "Checking whether wait_for_source is listed in Task details",
+          "condition": "Task details lists wait_for_source."
+        },
+        {
+          "id": "extract_listed",
+          "description": "Checking whether extract is listed in Task details",
+          "condition": "Task details lists extract."
+        },
+        {
+          "id": "validate_listed",
+          "description": "Checking whether validate is listed in Task details",
+          "condition": "Task details lists validate."
+        },
+        {
+          "id": "transform_listed",
+          "description": "Checking whether transform is listed in Task details",
+          "condition": "Task details lists transform."
+        },
+        {
+          "id": "load_listed",
+          "description": "Checking whether load is listed in Task details",
+          "condition": "Task details lists load."
+        },
+        {
+          "id": "notify_listed",
+          "description": "Checking whether notify is listed in Task details",
+          "condition": "Task details lists notify."
+        },
+        {
+          "id": "extract_rows_initial",
+          "description": "Reading the extract row count from Task details",
+          "condition": "extract shows 1,000 rows."
+        },
+        {
+          "id": "load_rows_initial",
+          "description": "Reading the load row count from Task details",
+          "condition": "load shows 1,000 rows."
+        },
+        {
+          "id": "overall_status_success",
+          "description": "Checking whether the overall status is Success",
+          "condition": "overall status is Success."
+        },
+        {
+          "id": "extract_rows_final",
+          "description": "Reading the final extract row count",
+          "condition": "extract still shows 1,000 rows."
+        },
+        {
+          "id": "load_rows_final",
+          "description": "Reading the final load row count",
+          "condition": "load still shows 1,000 rows."
+        },
+        {
+          "id": "wait_for_source_success",
+          "description": "Checking whether wait_for_source shows success",
+          "condition": "wait_for_source shows success."
+        },
+        {
+          "id": "extract_success",
+          "description": "Checking whether extract shows success",
+          "condition": "extract shows success."
+        },
+        {
+          "id": "validate_success",
+          "description": "Checking whether validate shows success",
+          "condition": "validate shows success."
+        },
+        {
+          "id": "transform_success",
+          "description": "Checking whether transform shows success",
+          "condition": "transform shows success."
+        },
+        {
+          "id": "load_success",
+          "description": "Checking whether load shows success",
+          "condition": "load shows success."
+        },
+        {
+          "id": "notify_success",
+          "description": "Checking whether notify shows success",
+          "condition": "notify shows success."
+        }
+      ],
+      "confirmedBug": false,
+      "verifiedFix": false
+    },
+    {
+      "sessionId": "95f4f143-90ed-4d69-a1fd-b700486884ce",
+      "status": "passed",
+      "resultCode": 100,
+      "summary": "Ran the enrollment pipeline as requested.\nConfirmed that the pipeline completed successfully and shows a last-run status.\nFinished on the Pipelines page.",
+      "creditsUsed": 13.46629,
+      "completedAt": "2026-10-24T21:46:01.128Z",
+      "url": "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M5QY0HYH23K4TS336V56FDM6/dashboard/share/US_F4D3UDAUNBFF7OXBQZFNEZKO6RR1BTP3XJYGCMSBG9ONERVUTJKSSBNG26K7B5UH?type=summary&agentView=true&fqdn=summary-page",
+      "assertions": [
+        {
+          "id": "enrollment_pipeline_ran_check",
+          "description": "Checking whether the enrollment pipeline ran",
+          "condition": "the enrollment_pipeline ran"
+        }
+      ],
+      "confirmedBug": false,
+      "verifiedFix": false
+    },
+    {
+      "sessionId": "810ac68c-e9ec-4041-8ae2-bf721e861122",
+      "status": "failed",
+      "resultCode": 740,
+      "summary": "The monitor shows a successful completed run, but its task details show that the load step processed only half as many rows as the extract step. This contradicts the expected rule for a successful DAG.\nInvestigate why the load task accepted only 500 of the 1,000 extracted rows and prevent the DAG from being marked Success when task row counts do not match.\nevidence: objective_contradiction: load_rows equals extract_rows (1000).",
+      "creditsUsed": 26.005470000000003,
+      "completedAt": "2026-10-24T22:11:29.924Z",
+      "url": "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M5QZEJTHXTWE3RV2C0Y8R2Q5/dashboard/share/US_63LFW2E7VNZRBTAROLEHUK9EJVNX3UEEWYC4W6X94TQ7MMR2PP1QW1HOPU93OVP5?type=summary&agentView=true&fqdn=summary-page",
+      "assertions": [
+        {
+          "id": "dag_success_check",
+          "description": "Checking whether the DAG shows Success",
+          "condition": "the DAG shows Success"
+        },
+        {
+          "id": "load_rows_equals_extract_rows_check",
+          "description": "Reading the load task rows for comparison with extract",
+          "condition": "load_rows equals extract_rows (1000)."
+        }
+      ],
+      "confirmedBug": true,
+      "verifiedFix": false
+    },
+    {
+      "sessionId": "36c49d3d-c0f1-462c-8f07-76763afdeec4",
+      "status": "passed",
+      "resultCode": 100,
+      "summary": "The requested enrollment pipeline was run.\nThe pipelines page showed the enrollment pipeline with a completed last run status.\nThe run finished successfully.",
+      "creditsUsed": 2.18107,
+      "completedAt": "2026-10-24T22:12:13.954Z",
+      "url": "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M5QZGGR673GHG0HHX95JHZM6/dashboard/share/US_6H6J3I8I5EUE676MW4VL6R7GMLVN2MEWAMII2J8YFNC05V0KT30K7VQV34Q3UAT2?type=summary&agentView=true&fqdn=summary-page",
+      "assertions": [
+        {
+          "id": "enrollment_pipeline_ran_check",
+          "description": "Checking whether the enrollment pipeline ran",
+          "condition": "the enrollment_pipeline ran"
+        }
+      ],
+      "confirmedBug": false,
+      "verifiedFix": false
+    },
+    {
+      "sessionId": "18679f06-4e3a-427f-829e-1989e4e1f1a2",
+      "status": "failed",
+      "resultCode": 440,
+      "summary": "The verification rule was too broad. The monitor shows a successful six-task run, but the wait_for_source task is a sensor and shows 0 rows, while extract, validate, transform, and load show 1,000. The rule should compare only row-processing tasks or explicitly exclude sensor and notification tasks.\nUpdate the final verification to require 1,000 rows for extract, validate, transform, and load, and exclude wait_for_source and notify (or define their expected row counts separately).",
+      "creditsUsed": 21.927110000000003,
+      "completedAt": "2026-10-24T22:22:40.339Z",
+      "url": "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M5R02DF03RKBC0SXSCWZZKSZ/dashboard/share/US_QNRC2ZYW9IT0SAEW7Q4ZVH38PY1CBBD57ANJ1R4M6JAQ4NOQ5ESKCIRH57Y3EPMR?type=summary&agentView=true&fqdn=summary-page",
+      "assertions": [
+        {
+          "id": "load_rows_equals_extract_rows_check",
+          "description": "Reading rows processed for the load task",
+          "condition": " equals  (1000)"
+        },
+        {
+          "id": "dag_success_check",
+          "description": "Checking whether the DAG shows Success",
+          "condition": "the DAG shows Success"
+        }
+      ],
+      "confirmedBug": false,
+      "verifiedFix": false
+    },
+    {
+      "sessionId": "25cb1fac-b873-4d4b-b671-7faf7a0bd7bd",
+      "status": "passed",
+      "resultCode": 100,
+      "summary": "The Bug Quest page was open with the recorded Kane runs section visible.\nEntered “BugSniffer” as the agent name and “Check the pipeline ran” as the instruction, then started the quest.\nWaited for the recorded replay to finish.\nThe final scoreboard showed BugSniffer with 20 points, and the After fix result showed FAIL with code 440.",
+      "creditsUsed": 53.1855675,
+      "completedAt": "2026-10-24T22:27:25.902Z",
+      "url": "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M5R06CPGBABSRSXA2B3DV54D/dashboard/share/US_HK4ES1INJM638R6J1W42OOXLO9N9LO3J0JLUSBJURHYYFRET1SJ4B1O2J6UKKWXT?type=summary&agentView=true&fqdn=summary-page",
+      "assertions": [
+        {
+          "id": "page_title_bug_quest",
+          "description": "Extracting the current page title",
+          "condition": "the page title is Bug Quest"
+        },
+        {
+          "id": "recorded_kane_runs_visible",
+          "description": "Checking whether Recorded Kane runs is present",
+          "condition": "Recorded Kane runs is visible"
+        },
+        {
+          "id": "scoreboard_bugsniffer_visible",
+          "description": "Checking whether BugSniffer is present in the scoreboard",
+          "condition": "the scoreboard shows BugSniffer"
+        },
+        {
+          "id": "scoreboard_points_20",
+          "description": "Reading the total points from the scoreboard",
+          "condition": "the scoreboard shows 20 points"
+        },
+        {
+          "id": "after_fix_status_fail",
+          "description": "Reading the status from the After fix row",
+          "condition": "the After fix row shows FAIL"
+        },
+        {
+          "id": "after_fix_code_440",
+          "description": "Reading the result code from the After fix row",
+          "condition": "the After fix row shows code 440"
+        }
+      ],
+      "confirmedBug": false,
+      "verifiedFix": false
+    }
+  ]
+}

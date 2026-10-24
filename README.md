@@ -24,12 +24,12 @@ Runs are deterministic simulations derived from the fixture and a timestamp. The
 
 ## Bug switches
 
-Edit `config/bugs.json`, set a switch to `true`, and reload `/pipelines`. All switches ship **off**. The API reads the file on every request; the page reads it on reload. Turn switches on individually for the clearest demo.
+Edit `config/bugs.json`, set a switch to `true`, and reload `/pipelines`. Currently `rowMismatchBug` is **on** and all other switches are off. The row-mismatch code has been fixed, so that switch no longer truncates the batch. The API reads the file on every request; the page reads it on reload. Turn switches on individually for the clearest demo.
 
 | Switch | Faulty behavior | Logic to repair |
 |---|---|---|
 | `falseSuccessBug` | A warehouse write fails, but successful notification masks the failure. | `lib/pipeline.ts`: overall status uses the final task instead of checking every task. |
-| `rowMismatchBug` | Extract processes 1,000 rows while load writes only 500. | `lib/pipeline.ts`: the load batch is incorrectly sliced to half its length. |
+| `rowMismatchBug` | Previously extracted 1,000 rows but loaded 500. Now fixed even while the switch is on. | `lib/pipeline.ts`: load receives the full source batch. |
 | `stuckDeferredBug` | Sensor is deferred for seven hours, but the DAG reports success. | `lib/pipeline.ts`: deferred tasks are omitted from the completion gate and the sensor deadline is ignored. |
 | `slowApiBug` | API waits eight seconds; the UI spins past five seconds without a timeout message. | API route: upstream retry delay; `pipeline-monitor.tsx`: the request deadline is incorrectly omitted. |
 | `silentErrorBug` | API exception returns HTTP 500, but the UI shows empty tasks without an error banner. | API route: simulated source exception; `pipeline-monitor.tsx`: catch branch discards the error. |
@@ -46,4 +46,14 @@ npm run typecheck
 npm run build
 ```
 
-The tests cover healthy row conservation, manual progression, and the three data-fault behaviors. They intentionally confirm that each enabled fault can reproduce its advertised failure.
+The tests cover dynamic default timestamps, healthy row conservation, manual progression, false success, deferred sensor behavior, and the row-mismatch repair with its switch enabled.
+
+## Quest replay
+
+Open http://localhost:3000/quest. Name an agent, enter an instruction, and press **Run Quest** to replay the recorded investigation with activity messages spaced 1.5 seconds apart. This page does not call OpenAI, execute Kane, or edit pipeline code at runtime. `data/quest-runs.json` contains the actual recorded results and Test Manager links.
+
+The scoreboard awards 20 points when the replay reaches the discovered silent bug, and adds 15 only if the recorded after-fix run passed. Exact Test A after the load repair passed extract/load equality but failed its broader every-task assertion because the sensor legitimately reports zero rows (result code 440). That report is displayed accurately, with no verification points awarded.
+
+The compact **Checks used** section lists the pipeline checks and the session totals from `data/quest-session.json`. That snapshot is imported from completed `run_end` events for this conversation's six runs, including the original healthy monitor check and the quest UI check. It records 6 runs, 31 assertion records, 1 distinct confirmed application bug, 0 fully verified fixes, and 135.7311375 credits. The assertion count includes repeated checks and excludes value extractions; it is not a count of unique designed scenarios. The final sensor assertion also appears in the explanatory text because its child-run failure is described in the summary rather than saved as a parent assertion record.
+
+`node scripts/import-quest-session.mjs` refreshes the snapshot on this machine from the explicitly listed session IDs. The importer copies only selected result fields; it does not copy credentials or raw execution context. Expanding the source list on the page shows each run's recorded assertion conditions and Test Manager report.

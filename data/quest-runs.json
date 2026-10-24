@@ -1,0 +1,38 @@
+[
+  {
+    "id": "basic",
+    "label": "Basic instruction",
+    "status": "PASS",
+    "resultCode": 100,
+    "outcome": "Missed bug",
+    "summary": "Confirmed the completed last-run status without comparing row counts.",
+    "url": "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M5QY0HYH23K4TS336V56FDM6/dashboard/share/US_F4D3UDAUNBFF7OXBQZFNEZKO6RR1BTP3XJYGCMSBG9ONERVUTJKSSBNG26K7B5UH?type=summary&agentView=true&fqdn=summary-page"
+  },
+  {
+    "id": "detection",
+    "label": "Basic + bug detection",
+    "status": "PASS",
+    "resultCode": 100,
+    "outcome": "Missed bug",
+    "summary": "Bug detection continued; the vague objective still passed without reporting the row mismatch.",
+    "url": "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M5QZGGR673GHG0HHX95JHZM6/dashboard/share/US_6H6J3I8I5EUE676MW4VL6R7GMLVN2MEWAMII2J8YFNC05V0KT30K7VQV34Q3UAT2?type=summary&agentView=true&fqdn=summary-page"
+  },
+  {
+    "id": "precise",
+    "label": "Bug Quest precise check",
+    "status": "FAIL",
+    "resultCode": 740,
+    "outcome": "Bug caught",
+    "summary": "DAG showed Success, but extract processed 1,000 rows and load processed only 500.",
+    "url": "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M5QZEJTHXTWE3RV2C0Y8R2Q5/dashboard/share/US_63LFW2E7VNZRBTAROLEHUK9EJVNX3UEEWYC4W6X94TQ7MMR2PP1QW1HOPU93OVP5?type=summary&agentView=true&fqdn=summary-page"
+  },
+  {
+    "id": "fixed",
+    "label": "After fix",
+    "status": "FAIL",
+    "resultCode": 440,
+    "outcome": "Row mismatch fixed; final check failed",
+    "summary": "Extract and load both show 1,000 rows. Exact Test A still fails because its every-task assertion includes the zero-row sensor.",
+    "url": "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M5R02DF03RKBC0SXSCWZZKSZ/dashboard/share/US_QNRC2ZYW9IT0SAEW7Q4ZVH38PY1CBBD57ANJ1R4M6JAQ4NOQ5ESKCIRH57Y3EPMR?type=summary&agentView=true&fqdn=summary-page"
+  }
+]
