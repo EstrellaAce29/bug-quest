@@ -1,0 +1,7 @@
+{
+  "falseSuccessBug": false,
+  "rowMismatchBug": false,
+  "stuckDeferredBug": false,
+  "slowApiBug": false,
+  "silentErrorBug": false
+}

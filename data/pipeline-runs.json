@@ -1,0 +1,14 @@
+{
+  "dagId": "enrollment_pipeline",
+  "runId": "scheduled__2026-10-24T19:00:00.000Z",
+  "startedAt": "2026-10-24T19:00:00.000Z",
+  "sourceRowCount": 1000,
+  "tasks": [
+    {"id":"wait_for_source","kind":"sensor","durationSeconds":3},
+    {"id":"extract","kind":"operator","durationSeconds":7},
+    {"id":"validate","kind":"operator","durationSeconds":4},
+    {"id":"transform","kind":"operator","durationSeconds":8},
+    {"id":"load","kind":"operator","durationSeconds":6},
+    {"id":"notify","kind":"operator","durationSeconds":1}
+  ]
+}
