@@ -16,8 +16,9 @@ export default function ChecksUsed() {
       <li>Check that enrollment_pipeline has a completed last run.</li>
       <li>Verify load rows equal extract rows (1,000).</li>
       <li>Verify all tasks processed the same rows when the DAG shows Success.</li>
+      <li>Verify every non-sensor task (extract, validate, transform, load, notify) shows 1,000 rows — corrected (excludes sensor).</li>
     </ul>
-    <p className={styles.checkWarning}>The last rule also includes the sensor’s zero rows. After the load fix, row equality passed but this broader rule failed.</p>
+    <p className={styles.checkWarning}>The original every-task rule failed on the sensor’s zero rows. The after-fix run uses the corrected check, which excludes the sensor.</p>
     <dl className={styles.sessionMetrics}>{metrics.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
     <p className={styles.metricNote}>From completed runs in this Codex session. *Checks generated counts assertion records in the saved results, including repeats; value extractions are excluded. Unfinished runs are excluded. Fixes verified requires a passing after-fix run.</p>
     <details className={styles.checkDetails}><summary>All recorded assertion checks and source reports</summary>

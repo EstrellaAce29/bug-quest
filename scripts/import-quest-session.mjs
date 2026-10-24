@@ -10,8 +10,9 @@ const sessions = [
   '36c49d3d-c0f1-462c-8f07-76763afdeec4',
   '18679f06-4e3a-427f-829e-1989e4e1f1a2',
   '25cb1fac-b873-4d4b-b671-7faf7a0bd7bd',
+  'fe229984-981f-4ed6-a670-f5f5a75b3620',
 ];
-const afterFixSession = '18679f06-4e3a-427f-829e-1989e4e1f1a2';
+const afterFixSession = 'fe229984-981f-4ed6-a670-f5f5a75b3620';
 const runs = [];
 for (const sessionId of sessions) {
   const file = path.join(homedir(), '.testmuai/kaneai/sessions', sessionId, 'events.ndjson');

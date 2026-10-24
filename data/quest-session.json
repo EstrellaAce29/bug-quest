@@ -1,11 +1,11 @@
 {
-  "capturedAt": "2026-10-24T22:27:36.636Z",
+  "capturedAt": "2026-10-24T22:31:56.187Z",
   "totals": {
-    "kaneRuns": 6,
-    "checksGenerated": 31,
+    "kaneRuns": 7,
+    "checksGenerated": 37,
     "bugsFound": 1,
-    "fixesVerified": 0,
-    "creditsUsed": 135.7311375
+    "fixesVerified": 1,
+    "creditsUsed": 154.81265
   },
   "runs": [
     {
@@ -240,6 +240,49 @@
       ],
       "confirmedBug": false,
       "verifiedFix": false
+    },
+    {
+      "sessionId": "fe229984-981f-4ed6-a670-f5f5a75b3620",
+      "status": "passed",
+      "resultCode": 100,
+      "summary": "Opened the Pipeline Monitor as requested.\nChecked the row counts for the extract, validate, transform, load, and notify tasks.\nAll five tasks showed 1,000 rows, and the load count matched the extract count.",
+      "creditsUsed": 19.081512500000002,
+      "completedAt": "2026-10-24T22:31:46.587Z",
+      "url": "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M5R0KKFZE7R4XA9CXMW76MTS/dashboard/share/US_WQ07VNKSRYRM69PHCMXYKRZD4VGZJIZF67D2GCU6SE52DVWR6BPD9EDZYTSH6IDW?type=summary&agentView=true&fqdn=summary-page",
+      "assertions": [
+        {
+          "id": "load_rows_equals_extract_rows_check",
+          "description": "Reading the load task row count",
+          "condition": " equals  (1000)."
+        },
+        {
+          "id": "extract_rows_count_check",
+          "description": "Reading the extract task row count",
+          "condition": "extract shows 1000 rows."
+        },
+        {
+          "id": "validate_rows_count_check",
+          "description": "Reading the validate task row count",
+          "condition": "validate shows 1000 rows."
+        },
+        {
+          "id": "transform_rows_count_check",
+          "description": "Reading the transform task row count",
+          "condition": "transform shows 1000 rows."
+        },
+        {
+          "id": "load_rows_count_check",
+          "description": "Reading the load task row count",
+          "condition": "load shows 1000 rows."
+        },
+        {
+          "id": "notify_rows_count_check",
+          "description": "Reading the notify task row count",
+          "condition": "notify shows 1000 rows."
+        }
+      ],
+      "confirmedBug": false,
+      "verifiedFix": true
     }
   ]
 }

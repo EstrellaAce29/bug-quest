@@ -12,7 +12,9 @@ Browser verification covered the healthy desktop flow. The intentionally broken 
 
 ## Row mismatch repair
 
-The load now receives the entire source batch, with `rowMismatchBug` kept true. Exact Test A was rerun unchanged: extract and load both showed 1,000 rows, but its final assertion failed because `wait_for_source` reports zero rows. Kane returned failed with result code 440 (`agent_error.child_failed`) and identified the final verification rule as too broad. The quest replay uses that actual report rather than claiming an after-fix pass.
+The load now receives the entire source batch, with `rowMismatchBug` kept true. Exact Test A was rerun unchanged: extract and load both showed 1,000 rows, but its final assertion failed because `wait_for_source` reports zero rows. Kane returned failed with result code 440 (`agent_error.child_failed`) and identified the final verification rule as too broad. This historical report remains in the source records.
+
+The user-supplied corrected check was then run exactly, excluding the sensor and checking extract, validate, transform, load, and notify. All five showed 1,000 rows and load matched extract. Kane returned passed with result code 100 (39.7 seconds, 19.0815125 credits). The After fix row uses this report and is labeled corrected (excludes sensor). The completed replay now awards 35 points. Totals include all seven completed runs: 37 assertion records, one confirmed bug, one verified fix, and 154.81265 credits.
 
 ## Quest page
 
