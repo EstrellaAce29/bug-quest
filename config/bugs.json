@@ -1,6 +1,6 @@
 {
   "falseSuccessBug": false,
-  "rowMismatchBug": false,
+  "rowMismatchBug": true,
   "stuckDeferredBug": false,
   "slowApiBug": false,
   "silentErrorBug": false

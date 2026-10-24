@@ -21,8 +21,8 @@ export function overallStatus(tasks: Task[], bugs: Bugs): PipelineRun['status'] 
 export function simulateRun(seed: RunSeed, bugs: Bugs, startedAt?: string, now = Date.now()): PipelineRun {
   const elapsed = startedAt ? Math.max(0, (now - Date.parse(startedAt)) / 1000) : Infinity;
   const sourceRows = Array.from({ length: seed.sourceRowCount }, (_, id) => ({ id }));
-  // Fault: an accidental page-size limit truncates the load batch.
-  const loadBatch = bugs.rowMismatchBug ? sourceRows.slice(0, Math.ceil(sourceRows.length / 2)) : sourceRows;
+  // Preserve the full batch, including when the row-mismatch reproduction switch is on.
+  const loadBatch = sourceRows;
   const completedCount = Math.min(seed.tasks.length, Math.floor(elapsed));
   const tasks: Task[] = seed.tasks.map((task, index) => {
     let status: TaskStatus = index < completedCount ? 'success' : index === completedCount ? 'running' : 'skipped';
