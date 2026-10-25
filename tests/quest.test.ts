@@ -59,7 +59,7 @@ test('original instruction runs verbatim before expanded objectives, without ove
     },
   }, new AbortController().signal, event => events.push(event));
   assert.deepEqual(seen, [instruction, ...objectives.map(item => item.objective)]);
-  assert.deepEqual(events.at(-1), { type: 'done', bugsFound: 1, points: 20 });
+  assert.deepEqual(events.at(-1), { type: 'done', bugsFound: 1, fixesVerified: 0, points: 20 });
   assert.ok(events.some(event => event.type === 'log' && event.message === 'Winter: running check 2 of 2...'));
   assert.deepEqual(kaneArguments(instruction), ['run', instruction, '--url', 'http://localhost:3000/pipelines', '--agent', '--max-steps', '15']);
 });
@@ -84,4 +84,26 @@ test('cancellation stops the queue before the next check', async () => {
     run: async check => { launched++; controller.abort(); return { ...basic, ...check }; },
   }, controller.signal, () => {}));
   assert.equal(launched, 1);
+});
+
+test('verified auto-fixes add 15 points and escalation stops subsequent objectives', async () => {
+  for (const fixed of [true, false]) {
+    const events: LiveEvent[] = [];
+    let launched = 0;
+    await executeQuest({ agent: 'Winter', instruction: 'Check pipeline' }, {
+      expand: async () => [{ title: 'Rows', objective: 'Check rows', kind: 'row_conservation' }, { title: 'Status', objective: 'Check status', kind: 'task_status' }],
+      run: async check => { launched++; return { ...(check.kind === 'row_conservation' ? caught : basic), ...check }; },
+      repair: async (failure, _, __, ___, update) => {
+        const report = { checkId: failure.id, status: fixed ? 'fixed' as const : 'escalated' as const, checkpoint: 'a'.repeat(40), commit: fixed ? 'b'.repeat(40) : null, attempts: [], diff: [], afterResult: null, basicResult: null, message: fixed ? 'Fixed and verified' : 'Escalated to human' };
+        update(report); return report;
+      },
+    }, new AbortController().signal, event => events.push(event));
+    const done = events.at(-1);
+    assert.equal(done?.type, 'done');
+    if (done?.type === 'done') {
+      assert.equal(done.points, fixed ? 35 : 20);
+      assert.equal(done.fixesVerified, fixed ? 1 : 0);
+      assert.equal(launched, fixed ? 3 : 2);
+    }
+  }
 });

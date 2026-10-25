@@ -49,3 +49,15 @@
 .terminal p { color: #688163; margin: 0; }
 .liveError { margin-top: 15px; padding: 14px 18px; background: #fff0eb; border: 1px solid #efd0bf; border-radius: 7px; color: #a45943; font-size: 12px; line-height: 1.6; }
 @media (max-width: 650px) { .modeBar { padding: 10px 20px; } .modeBar > span { font-size: 8px; max-width: 180px; } .terminal { font-size: 10px; } }
+
+.resultsCard td.repairCell { display: table-cell; padding: 20px 28px; white-space: normal; background: #f8fbf5; }
+.repairHeading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.repairHeading > span { font-size: 9px; color: #8b9d80; }
+.repairCell p { font-size: 10px; color: #7a8e70; line-height: 1.7; margin: 9px 0; }
+.repairCell code { font-family: 'IBM Plex Mono', monospace; }
+.fixDiff pre.repairDiff { padding: 10px 0; font-size: 9px; }
+.repairDiff span { display: block; white-space: pre; padding: 0 14px; }
+.contextLine { color: #8b9c81; }
+.repairCell details { margin-top: 12px; font-size: 10px; color: #7d9272; }
+.repairCell summary { cursor: pointer; }
+.attemptEvidence { margin-top: 9px; font-size: 9px; line-height: 1.8; overflow-wrap: anywhere; }

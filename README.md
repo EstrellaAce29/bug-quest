@@ -72,9 +72,19 @@ The server then runs the original instruction verbatim, followed by each expande
 kane-cli run "<objective>" --url http://localhost:3000/pipelines --agent --max-steps 15
 ```
 
-Progress streams into an agent-prefixed terminal log. Live results show the objective, status, result code, summary and Test Manager link. Missing terminal results are errors, not passes. A passing basic check plus a confirmed precise application failure earns 20 points per distinct invariant (row conservation or task status); repeated discoveries of the same invariant count once. Browser/auth/timeout failures earn no points. Live mode does not fix code automatically.
+Progress streams into an agent-prefixed terminal log. Live results show the objective, status, result code, summary and Test Manager link. Missing terminal results are errors, not passes. A passing basic check plus a confirmed precise application failure earns 20 points per distinct invariant (row conservation or task status); repeated discoveries of the same invariant count once. Browser/auth/timeout failures earn no discovery points. A code repair committed after both precise and basic rechecks pass earns another 15 points.
 
-The route is local-only, allows one quest at a time, stops each Kane process after five minutes, and cancels work when stopped or disconnected. Each request can execute up to four Kane runs. Results stay in the current browser view and Kane's own session history; they do not replace the recorded replay or its historical totals.
+The route is local-only, allows one quest at a time, stops each Kane process after five minutes, and cancels work when stopped or disconnected. The initial checks use up to four Kane runs; repairs can add up to two rechecks per attempt, with at most three attempts per failed precise check. Results stay in the current browser view and Kane's own session history; they do not replace the recorded replay or its historical totals.
+
+### Auto-fix transaction
+
+After a precise failure, the server creates a temporary Git checkpoint commit, retained under `refs/bug-quest/checkpoints/`, without moving HEAD or changing the real Git index. It refuses to auto-commit pre-existing edits to `lib/pipeline.ts`; unrelated working files remain untouched.
+
+OpenAI receives only the failing objective, Kane's completion summary, the contents of `lib/pipeline.ts`, and retry feedback. It proposes up to three exact replacements in that file. Edits are bounded, parsed as TypeScript, and checked to prevent new imports/system calls or assignments to bug switches. The candidate is typechecked before Kane runs.
+
+The server reruns the exact same precise objective and, if it passes, the original basic instruction. Only after both pass does it commit **only `lib/pipeline.ts`**, with an `auto-fix: <description>` message. It never edits `config/bugs.json`, and verifies that the config's bytes have not changed before keeping the fix.
+
+An unsuccessful attempt restores the original source before the next proposal. Three failed attempts restore the checkpoint source and show **Escalated to human** with each available evidence link. Cancellation also restores an uncommitted candidate. Concurrent manual file/HEAD changes stop the transaction rather than overwriting another person's work. Live results retain the original failed result and add the real code diff, checkpoint, fix commit, precise recheck and basic recheck links.
 
 The key is read only by server code, omitted from Kane's child-process environment, and redacted from outgoing messages. Raw OpenAI errors, raw Kane terminal objects, stderr and credentials are not streamed to the browser.
 

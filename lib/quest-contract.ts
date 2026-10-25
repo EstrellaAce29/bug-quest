@@ -12,11 +12,26 @@ export type LiveResult = {
   credits: number | null;
   confirmedBug: boolean;
 };
+export type CodeDiffLine = { kind: 'context' | 'removed' | 'added'; text: string };
+export type FixProposal = { description: string; edits: { oldText: string; newText: string }[] };
+export type FixAttempt = { number: number; description: string; precise: LiveResult | null; basic: LiveResult | null; error: string | null; diff: CodeDiffLine[] };
+export type FixReport = {
+  checkId: number;
+  status: 'fixing' | 'fixed' | 'escalated';
+  checkpoint: string | null;
+  commit: string | null;
+  attempts: FixAttempt[];
+  diff: CodeDiffLine[];
+  afterResult: LiveResult | null;
+  basicResult: LiveResult | null;
+  message: string;
+};
 export type LiveEvent =
   | { type: 'log'; message: string }
   | { type: 'plan'; objectives: ExpandedObjective[] }
-  | { type: 'result'; result: LiveResult; bugsFound: number; points: number }
-  | { type: 'done'; bugsFound: number; points: number }
+  | { type: 'result'; result: LiveResult; bugsFound: number; points: number; fixesVerified?: number }
+  | { type: 'fix'; report: FixReport; bugsFound: number; fixesVerified: number; points: number }
+  | { type: 'done'; bugsFound: number; points: number; fixesVerified?: number; escalated?: boolean }
   | { type: 'error'; message: string };
 
 export function validatePlan(value: unknown): ExpandedObjective[] {

@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import type { ExpandedObjective, LiveEvent, LiveResult } from '@/lib/quest-contract';
+import type { ExpandedObjective, LiveEvent, LiveResult, FixReport } from '@/lib/quest-contract';
 import styles from './quest.module.css';
 
 export default function LiveQuest({ onBusyChange }: { onBusyChange: (busy: boolean) => void }) {
@@ -15,6 +15,9 @@ export default function LiveQuest({ onBusyChange }: { onBusyChange: (busy: boole
   const [results, setResults] = useState<LiveResult[]>([]);
   const [points, setPoints] = useState(0);
   const [bugsFound, setBugsFound] = useState(0);
+  const [fixesVerified, setFixesVerified] = useState(0);
+  const [repairs, setRepairs] = useState<FixReport[]>([]);
+  const [completed, setCompleted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const abort = useRef<AbortController | null>(null);
   const terminal = useRef<HTMLDivElement | null>(null);
@@ -29,7 +32,7 @@ export default function LiveQuest({ onBusyChange }: { onBusyChange: (busy: boole
     const controller = new AbortController();
     abort.current = controller;
     setBusy(true); onBusyChange(true); setActiveAgent(agent.trim());
-    setLogs([]); setResults([]); setPlan([]); setError(null); setPoints(0); setBugsFound(0);
+    setLogs([]); setResults([]); setPlan([]); setError(null); setPoints(0); setBugsFound(0); setFixesVerified(0); setRepairs([]); setCompleted(false);
     let finished = false;
     function receive(event: LiveEvent) {
       switch (event.type) {
@@ -37,8 +40,11 @@ export default function LiveQuest({ onBusyChange }: { onBusyChange: (busy: boole
         case 'plan': setPlan(event.objectives); break;
         case 'result':
           setResults(current => [...current.filter(result => result.id !== event.result.id), event.result]);
-          setPoints(event.points); setBugsFound(event.bugsFound); break;
-        case 'done': finished = true; setPoints(event.points); setBugsFound(event.bugsFound); break;
+          setPoints(event.points); setBugsFound(event.bugsFound); setFixesVerified(event.fixesVerified ?? 0); break;
+        case 'fix':
+          setRepairs(current => [...current.filter(report => report.checkId !== event.report.checkId), event.report]);
+          setPoints(event.points); setBugsFound(event.bugsFound); setFixesVerified(event.fixesVerified); break;
+        case 'done': finished = true; setCompleted(true); setPoints(event.points); setBugsFound(event.bugsFound); setFixesVerified(event.fixesVerified ?? 0); break;
         case 'error': finished = true; setError(event.message); setLogs(current => [...current, `${agent.trim()}: ${event.message}`]); break;
       }
     }
@@ -92,17 +98,18 @@ export default function LiveQuest({ onBusyChange }: { onBusyChange: (busy: boole
               <label htmlFor="live-instruction">Your instruction</label><textarea id="live-instruction" value={instruction} onChange={event => setInstruction(event.target.value)} maxLength={1000} rows={3} required disabled={busy} placeholder="Check the pipeline ran" />
               <button className={styles.runButton} type="submit" disabled={busy || !agent.trim() || !instruction.trim()}><span aria-hidden="true">{busy ? '◌' : '▷'}</span>{busy ? 'Quest in progress' : 'Run Quest'}<span aria-hidden="true">→</span></button>
               {busy && <button className={styles.cancelButton} type="button" onClick={() => abort.current?.abort()}>Stop quest</button>}
-              <p className={styles.replayNote}>Uses OpenAI API usage and Kane credits. Chrome opens on this machine. Live mode runs checks; it does not edit or fix code.</p>
+              <p className={styles.replayNote}>Uses OpenAI API usage and Kane credits. Auto-fix can edit and commit lib/pipeline.ts after Kane verifies it. Up to three attempts; config/bugs.json is never edited.</p>
             </form>
           </section>
         </div>
-        <aside className={styles.scoreCard} aria-labelledby="live-score-title"><div className={styles.scoreTop}><span className={styles.eyebrow}>LIVE SCOREBOARD</span><span aria-hidden="true">⚑</span></div><div className={styles.agentAvatar}>{(logs.length ? activeAgent : agent).trim().slice(0, 2).toUpperCase() || 'BQ'}</div><h2 id="live-score-title">{logs.length ? activeAgent : agent.trim() || 'Your agent'}</h2><p className={styles.agentSubtitle}>Silent bug hunter</p><div className={styles.scoreTotal}>{points}<span>POINTS</span></div><div className={styles.scoreLine}><div><strong>Silent bugs caught</strong><small>+20 per distinct invariant</small></div><span className={bugsFound ? styles.earned : ''}>{bugsFound}</span></div><p className={styles.scoreNote}>A silent bug counts when the basic check passes and a precise check confirms an application bug.<br />Repeated checks of the same bug count once.</p></aside>
+        <aside className={styles.scoreCard} aria-labelledby="live-score-title"><div className={styles.scoreTop}><span className={styles.eyebrow}>LIVE SCOREBOARD</span><span aria-hidden="true">⚑</span></div><div className={styles.agentAvatar}>{(logs.length ? activeAgent : agent).trim().slice(0, 2).toUpperCase() || 'BQ'}</div><h2 id="live-score-title">{logs.length ? activeAgent : agent.trim() || 'Your agent'}</h2><p className={styles.agentSubtitle}>Silent bug hunter</p><div className={styles.scoreTotal}>{points}<span>POINTS</span></div><div className={styles.scoreLine}><div><strong>Silent bugs caught</strong><small>+20 per distinct invariant</small></div><span className={bugsFound ? styles.earned : ''}>{bugsFound}</span></div><div className={styles.scoreLine}><div><strong>Fixes verified</strong><small>+15 after precise + basic pass</small></div><span className={fixesVerified ? styles.earned : ''}>{fixesVerified}</span></div><p className={styles.scoreNote}>A silent bug counts when the basic check passes and a precise check confirms an application bug.<br />Repeated checks of the same bug count once.</p></aside>
       </div>
-      <section className={styles.terminalCard} aria-labelledby="live-log-title"><div className={styles.terminalHeading}><h2 id="live-log-title">Live quest log</h2><span>{busy ? 'Running' : logs.length ? 'Stopped' : 'Ready'}</span></div><div ref={terminal} className={styles.terminal} role="log" aria-live="polite" aria-relevant="additions">{logs.length ? logs.map((line, index) => <div key={index}><span aria-hidden="true">› </span>{line}</div>) : <p>Your agent’s progress will stream here.</p>}</div></section>
+      <section className={styles.terminalCard} aria-labelledby="live-log-title"><div className={styles.terminalHeading}><h2 id="live-log-title">Live quest log</h2><span>{busy ? 'Running' : repairs.some(report => report.status === 'escalated') ? 'Escalated to human' : completed ? 'Complete' : logs.length ? 'Stopped' : 'Ready'}</span></div><div ref={terminal} className={styles.terminal} role="log" aria-live="polite" aria-relevant="additions">{logs.length ? logs.map((line, index) => <div key={index}><span aria-hidden="true">› </span>{line}</div>) : <p>Your agent’s progress will stream here.</p>}</div></section>
       {error && <div className={styles.liveError} role="alert">{error}</div>}
       <section className={styles.resultsCard} aria-labelledby="live-results-title"><div className={styles.resultsHeading}><div><span className={styles.eyebrow}>THIS QUEST</span><h2 id="live-results-title">Live results</h2><p>Results come from each completed Kane run.</p></div><span className={styles.runCount}>{results.length} completed</span></div><div className={styles.tableWrap}><table><thead><tr><th scope="col">CHECK / OBJECTIVE</th><th scope="col">RESULT</th><th scope="col">RESULT CODE</th><th scope="col">TEST MANAGER</th></tr></thead><tbody>{checks.map(check => {
         const result = results.find(item => item.id === check.id);
-        return <tr key={check.id}><td><span className={styles.rowNumber}>{String(check.id + 1).padStart(2, '0')}</span><div><strong>{check.title}</strong><small>{result?.objective ?? check.objective}</small>{result && <small>{result.summary}</small>}</div></td><td><span className={!result ? styles.pending : result.status === 'passed' ? styles.pass : styles.fail}>{!result ? busy ? 'Waiting' : 'Not run' : result.status === 'passed' ? 'PASS' : result.status === 'failed' ? 'FAIL' : 'ERROR'}</span></td><td className="mono">{result?.resultCode ?? '—'}</td><td>{result?.testUrl ? <a href={result.testUrl} target="_blank" rel="noopener noreferrer">Test Manager ↗</a> : '—'}</td></tr>;
+        const repair = repairs.find(report => report.checkId === check.id);
+        return <Fragment key={check.id}><tr><td><span className={styles.rowNumber}>{String(check.id + 1).padStart(2, '0')}</span><div><strong>{check.title}</strong><small>{result?.objective ?? check.objective}</small>{result && <small>{result.summary}</small>}</div></td><td><span className={!result ? styles.pending : result.status === 'passed' ? styles.pass : styles.fail}>{!result ? busy ? 'Waiting' : 'Not run' : result.status === 'passed' ? 'PASS' : result.status === 'failed' ? 'FAIL' : 'ERROR'}</span></td><td className="mono">{result?.resultCode ?? '—'}</td><td>{result?.testUrl ? <a href={result.testUrl} target="_blank" rel="noopener noreferrer">Test Manager ↗</a> : '—'}</td></tr>{repair && <tr><td colSpan={4} className={styles.repairCell}><div className={styles.repairHeading}><strong>{repair.status === 'fixed' ? 'Fixed and verified' : repair.status === 'escalated' ? 'Escalated to human' : 'Auto-fix in progress'}</strong><span>{repair.attempts.length} / 3 attempts</span></div><p>{repair.message}</p>{repair.checkpoint && <p>Checkpoint <code>{repair.checkpoint.slice(0, 7)}</code>{repair.commit && <> · auto-fix commit <code>{repair.commit.slice(0, 7)}</code></>}</p>}{repair.diff.length > 0 && <div className={styles.fixDiff}><pre className={styles.repairDiff}><code>{repair.diff.map((line, index) => <span className={line.kind === 'removed' ? styles.removedLine : line.kind === 'added' ? styles.addedLine : styles.contextLine} key={index}>{line.kind === 'removed' ? '− ' : line.kind === 'added' ? '+ ' : '  '}{line.text}{'\n'}</span>)}</code></pre></div>}{repair.afterResult?.testUrl && <p><a href={repair.afterResult.testUrl} target="_blank" rel="noopener noreferrer">After-fix Test Manager report ({repair.afterResult.status.toUpperCase()}) ↗</a></p>}{repair.basicResult?.testUrl && <p><a href={repair.basicResult.testUrl} target="_blank" rel="noopener noreferrer">Basic recheck ({repair.basicResult.status.toUpperCase()}) ↗</a></p>}<details><summary>Attempt evidence</summary>{repair.attempts.map(attempt => <div key={attempt.number} className={styles.attemptEvidence}>Attempt {attempt.number}: {attempt.error || attempt.description || 'Working'}{attempt.precise?.testUrl && <> · <a href={attempt.precise.testUrl} target="_blank" rel="noopener noreferrer">precise {attempt.precise.status} ↗</a></>}{attempt.basic?.testUrl && <> · <a href={attempt.basic.testUrl} target="_blank" rel="noopener noreferrer">basic {attempt.basic.status} ↗</a></>}</div>)}</details></td></tr>}</Fragment>;
       })}</tbody></table></div></section>
       <footer className={styles.footer}><span>Bug Quest <b>/</b> Live browser verification</span><Link href="/pipelines">Inspect the pipeline →</Link></footer>
     </main>

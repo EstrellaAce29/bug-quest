@@ -51,10 +51,10 @@ test('false-success fault masks a real failed warehouse write', () => {
   assert.equal(run.status, 'success');
   assert.equal(overallStatus(run.tasks, defaults), 'failed');
 });
-test('row mismatch switch reproduces the truncated load batch', () => {
+test('regression: load must preserve all extracted rows even when the bug switch remains enabled', () => {
   const run = simulateRun(seed, { ...defaults, rowMismatchBug: true });
   assert.equal(run.tasks.find(task => task.id === 'extract')?.rows, 1000);
-  assert.equal(run.tasks.find(task => task.id === 'load')?.rows, 500);
+  assert.equal(run.tasks.find(task => task.id === 'load')?.rows, 1000);
 });
 test('deferred fault ignores unfinished sensor in the completion gate', () => {
   const run = simulateRun(seed, { ...defaults, stuckDeferredBug: true });

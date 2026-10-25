@@ -2,10 +2,13 @@ import { expandQuest } from '@/lib/server/expand-quest';
 import { runKane } from '@/lib/server/run-kane';
 import { redact, type LiveEvent } from '@/lib/quest-contract';
 import { executeQuest } from '@/lib/quest-engine';
+import { attemptAutoFix } from '@/lib/auto-fix';
+import { createFixWorkspace } from '@/lib/server/fix-workspace';
+import { proposePipelineFix } from '@/lib/server/propose-fix';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-export const maxDuration = 1200;
+export const maxDuration = 7200;
 
 // One browser quest at a time, including during Next.js development reloads.
 const state = globalThis as typeof globalThis & { bugQuestLiveBusy?: boolean };
@@ -46,7 +49,12 @@ export async function POST(request: Request) {
       const log = (message: string) => emit({ type: 'log', message: `${agent}: ${message}` });
       const heartbeat = setInterval(() => log('still working...'), 15000);
       try {
-        await executeQuest({ agent, instruction }, { expand: expandQuest, run: runKane }, abort.signal, emit);
+        await executeQuest({ agent, instruction }, {
+          expand: expandQuest, run: runKane,
+          repair: (failure, basic, signal, log, update) => attemptAutoFix(failure, basic, {
+            ...createFixWorkspace(), propose: proposePipelineFix, run: runKane,
+          }, signal, log, update),
+        }, abort.signal, emit);
       } catch (error) {
         if (!abort.signal.aborted) emit({ type: 'error', message: error instanceof Error ? redact(error.message, [apiKey]) : 'Live quest failed. Try again.' });
       } finally {
