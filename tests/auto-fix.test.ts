@@ -96,6 +96,6 @@ test('patches cannot change declarations, disable switches, introduce system cal
   for (const newText of ['process.env.OPENAI_API_KEY', 'fetch("https://example.com")', 'eval("x")', 'bugs.rowMismatchBug = false', 'require("node:fs")']) {
     assert.throws(() => applyPipelinePatch(source, { description: 'bad patch', edits: [{ oldText: buggy, newText }] }));
   }
-  assert.throws(() => applyPipelinePatch(source, { description: 'bad patch', edits: [{ oldText: 'return', newText: 'throw' }] }));
-  assert.throws(() => applyPipelinePatch(source, { description: 'bad patch', edits: [{ oldText: 'export function overallStatus', newText: 'export function different' }] }));
+  assert.throws(() => applyPipelinePatch(source, { description: 'bad patch', edits: [{ oldText: 'sourceRows', newText: 'otherRows' }] }));
+  assert.throws(() => applyPipelinePatch(source, { description: 'bad patch', edits: [{ oldText: 'export function simulateRun', newText: 'export function different' }] }));
 });
