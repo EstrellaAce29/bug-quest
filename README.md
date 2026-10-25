@@ -24,12 +24,12 @@ Runs are deterministic simulations derived from the fixture and a timestamp. The
 
 ## Bug switches
 
-Edit `config/bugs.json`, set a switch to `true`, and reload `/pipelines`. Currently `rowMismatchBug` is **on** and all other switches are off. The faulty truncation path has been restored for live testing: extract shows 1,000 rows and load shows 500. The historical fixed code and passing evidence remain in the recorded replay. The API reads the file on every request; the page reads it on reload. Turn switches on individually for the clearest demo.
+Edit `config/bugs.json`, set a switch to `true`, and reload `/pipelines`. Currently `rowMismatchBug` is **on** and all other switches are off. The live auto-fixer repaired the truncation in commit `e8560fe`, so extract and load now both show 1,000 rows while the switch stays true. The original faulty code is retained in history (`4b8fb76`), and historical evidence remains in the recorded replay. The API reads the file on every request; the page reads it on reload.
 
 | Switch | Faulty behavior | Logic to repair |
 |---|---|---|
 | `falseSuccessBug` | A warehouse write fails, but successful notification masks the failure. | `lib/pipeline.ts`: overall status uses the final task instead of checking every task. |
-| `rowMismatchBug` | Extract processes 1,000 rows but load receives only 500. | `lib/pipeline.ts`: remove the accidental half-batch slice. |
+| `rowMismatchBug` | Originally loaded 500 of 1,000 rows; repaired by the live auto-fixer while enabled. | `lib/pipeline.ts`: the entire source batch now reaches load. |
 | `stuckDeferredBug` | Sensor is deferred for seven hours, but the DAG reports success. | `lib/pipeline.ts`: deferred tasks are omitted from the completion gate and the sensor deadline is ignored. |
 | `slowApiBug` | API waits eight seconds; the UI spins past five seconds without a timeout message. | API route: upstream retry delay; `pipeline-monitor.tsx`: the request deadline is incorrectly omitted. |
 | `silentErrorBug` | API exception returns HTTP 500, but the UI shows empty tasks without an error banner. | API route: simulated source exception; `pipeline-monitor.tsx`: catch branch discards the error. |
@@ -80,7 +80,7 @@ The route is local-only, allows one quest at a time, stops each Kane process aft
 
 After a precise failure, the server creates a temporary Git checkpoint commit, retained under `refs/bug-quest/checkpoints/`, without moving HEAD or changing the real Git index. It refuses to auto-commit pre-existing edits to `lib/pipeline.ts`; unrelated working files remain untouched.
 
-OpenAI receives only the failing objective, Kane's completion summary, the contents of `lib/pipeline.ts`, and retry feedback. It proposes up to three exact replacements in that file. Edits are bounded, parsed as TypeScript, and checked to prevent new imports/system calls or assignments to bug switches. The candidate is typechecked before Kane runs.
+OpenAI receives only the failing objective, Kane's completion summary, the contents of `lib/pipeline.ts`, and retry feedback. It proposes up to three exact replacements in that file. Edits are bounded, parsed as TypeScript, and checked to prevent new imports/system calls or assignments to bug switches. The candidate must pass TypeScript and regression tests before Kane runs.
 
 The server reruns the exact same precise objective and, if it passes, the original basic instruction. Only after both pass does it commit **only `lib/pipeline.ts`**, with an `auto-fix: <description>` message. It never edits `config/bugs.json`, and verifies that the config's bytes have not changed before keeping the fix.
 
