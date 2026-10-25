@@ -2,6 +2,8 @@
 
 A local Next.js Pipeline Monitor for one simulated DAG: `enrollment_pipeline`.
 
+Fresh clone starts broken on purpose: run Live mode on /quest to watch Bug Quest catch, auto-fix, and verify the row mismatch.
+
 ## Run locally
 
 ```sh
@@ -24,12 +26,12 @@ Runs are deterministic simulations derived from the fixture and a timestamp. The
 
 ## Bug switches
 
-Edit `config/bugs.json`, set a switch to `true`, and reload `/pipelines`. Currently `rowMismatchBug` is **on** and all other switches are off. The live auto-fixer repaired the truncation in commit `e8560fe`, so extract and load now both show 1,000 rows while the switch stays true. The original faulty code is retained in history (`4b8fb76`), and historical evidence remains in the recorded replay. The API reads the file on every request; the page reads it on reload.
+Edit `config/bugs.json`, set a switch to `true`, and reload `/pipelines`. Currently `rowMismatchBug` is **on** and all other switches are off. The faulty truncation is restored for the fresh-clone demo: extract shows 1,000 rows and load shows 500. The real auto-fix commit `e8560fe` remains in history, and Live mode can repair the fault again. The API reads the file on every request; the page reads it on reload.
 
 | Switch | Faulty behavior | Logic to repair |
 |---|---|---|
 | `falseSuccessBug` | A warehouse write fails, but successful notification masks the failure. | `lib/pipeline.ts`: overall status uses the final task instead of checking every task. |
-| `rowMismatchBug` | Originally loaded 500 of 1,000 rows; repaired by the live auto-fixer while enabled. | `lib/pipeline.ts`: the entire source batch now reaches load. |
+| `rowMismatchBug` | Loads only 500 of 1,000 rows; intentionally enabled for the live auto-fix demo. | `lib/pipeline.ts`: replace the accidental half-batch slice with the full source batch. |
 | `stuckDeferredBug` | Sensor is deferred for seven hours, but the DAG reports success. | `lib/pipeline.ts`: deferred tasks are omitted from the completion gate and the sensor deadline is ignored. |
 | `slowApiBug` | API waits eight seconds; the UI spins past five seconds without a timeout message. | API route: upstream retry delay; `pipeline-monitor.tsx`: the request deadline is incorrectly omitted. |
 | `silentErrorBug` | API exception returns HTTP 500, but the UI shows empty tasks without an error banner. | API route: simulated source exception; `pipeline-monitor.tsx`: catch branch discards the error. |
