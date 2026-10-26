@@ -1,7 +1,7 @@
 # Real tennis pipeline
 
 A separate Apache Airflow project; the Bug Quest simulation and replay are unchanged.
-Uses the official [Airflow 3.3.2 Docker Compose setup](https://airflow.apache.org/docs/apache-airflow/3.3.2/docker-compose.yaml), retaining its Apache license header. Local changes build a psycopg-enabled image, disable example DAGs, mount the CSV and staging folder, and publish Postgres on loopback port 5433 and the UI on loopback port 8080.
+Uses the official [Airflow 3.3.2 Docker Compose setup](https://airflow.apache.org/docs/apache-airflow/3.3.2/docker-compose.yaml), retaining its Apache license header. Local changes build a psycopg-enabled image, disable example DAGs, mount the CSV and staging folder, and publish Postgres on loopback port 5433 and the UI on loopback port 8081.
 
 ## Data attribution
 
@@ -35,7 +35,7 @@ docker compose --env-file ../.env.local exec airflow-scheduler airflow dags trig
 
 Tasks: extract → validate → transform → load → standings → report. Extract records the full CSV count for each run in `warehouse.run_metadata`. Validation checks required columns and logs null counts. Transform cleans column names and parses tournament dates. Load replaces `warehouse.matches`, retaining original row fields in a JSONB payload. Standings builds `warehouse.player_wins`. Report logs all final counts. Run metadata retains history; matches and standings represent the latest load.
 
-The load task contains one `# PLANTED BUG`: it loads only the first half of the matches. Every task can succeed while data is lost.
+Baseline commit `3486f46` plants one `# PLANTED BUG`: load takes only the first half of the matches while every task succeeds. The end-to-end Live test repaired that line in commit `df8362979fd121e8b878797a172ae3b08be9b636`; the current DAG loads the full batch. The comment marks the original bug location.
 
 ## Check
 
@@ -45,13 +45,13 @@ From the repository root after the DAG finishes:
 node scripts/check_real_pipeline.mjs
 ```
 
-The script queries extracted rows versus loaded matches, and total player wins versus loaded matches. Expected with the planted bug: loaded matches = floor(extracted / 2), total wins = loaded matches. Exit code 2 means an invariant failed; 0 means both pass; 1 means setup/query failure. Standard PGHOST, PGPORT, PGUSER, PGPASSWORD and PGDATABASE overrides are supported.
+The script queries extracted rows versus loaded matches, and total player wins versus loaded matches. At the faulty baseline: loaded matches = floor(extracted / 2), total wins = loaded matches. After the verified fix: extracted rows = loaded matches = total wins = 2,986. Exit code 2 means an invariant failed; 0 means both pass; 1 means setup/query failure. Standard PGHOST, PGPORT, PGUSER, PGPASSWORD and PGDATABASE overrides are supported.
 
 Stop with `docker compose --env-file ../.env.local stop` from `real-pipeline/`; this preserves the database volume.
 
 ## Verification status
 
-Verified with Airflow 3.3.2: baseline run `baseline_1793002861764` completed with all six tasks successful. The checker reported 2,986 extracted rows, 1,493 loaded matches and 1,493 total wins, exiting 2 to expose the planted silent loss. Real Airflow Live auto-fix verification is recorded separately once complete.
+Verified with Airflow 3.3.2: baseline run `baseline_1793002861764` completed with all six tasks successful. The checker reported 2,986 extracted rows, 1,493 loaded matches and 1,493 total wins, exiting 2 to expose the planted silent loss. The full Real Airflow quest caught that loss, restored the checkpoint after attempt 1 failed its basic UI recheck, and succeeded on attempt 2. Fixed run `bugquest_3e1bd655-aa36-4570-a1d8-24e78e15ee57` has all six tasks successful and 2,986 extracted/loaded/wins. Kane plus SQL and the basic recheck passed before auto-fix commit `df8362979fd121e8b878797a172ae3b08be9b636`. Score: 1 silent bug (+20), 1 verified fix (+15), 35 points. The quest used 6 Kane runs and consumed 193.0611675 Kane credits. A separate sign-in navigation regression passed (code 100; 12 steps; 82.2 seconds; 27.456065 credits) after making the return to the pinned run URL explicit. Full objectives, attempt diffs, summaries and Test Manager links are in [verification.json](verification.json).
 
 ## Bug Quest Live mode
 

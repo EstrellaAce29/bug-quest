@@ -43,6 +43,12 @@ Set `OPENAI_API_KEY` in `.env.local`, then restart the dev server. Optionally se
 
 Confirmed silent bugs earn **20 points**; a verified fix earns **15**. Automation errors do not earn discovery points.
 
+## Real Airflow target
+
+Live mode also offers **Real Airflow**: Kane checks the real tennis DAG status while SQL compares extracted matches with the Postgres warehouse. The fixer changes only the tennis DAG, triggers a fresh run through Airflow REST, and requires Kane + SQL and the basic check to pass before committing. Credentials come from `.env.local`.
+
+See [real-pipeline/README.md](real-pipeline/README.md) for Docker setup, the archived Jeff Sackmann CSV (CC BY-NC-SA), login, trigger and checker commands. The verified real fix takes counts from **2,986 extracted / 1,493 loaded** to **2,986 / 2,986**; its evidence is saved in [verification.json](real-pipeline/verification.json). The real DAG is now fixed; the simulated monitor still starts with its original defect.
+
 ## Demo pipeline
 
 `/pipelines` simulates one DAG, `enrollment_pipeline`, with six tasks: wait_for_source, extract, validate, transform, load and notify. **Trigger run** simulates execution. This is JSON-backed demo data, not a real Airflow or warehouse integration.

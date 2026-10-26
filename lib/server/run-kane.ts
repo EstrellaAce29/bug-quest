@@ -8,14 +8,17 @@ export async function runKane(
   check: Pick<LiveResult, 'id' | 'title' | 'objective' | 'kind'>,
   signal: AbortSignal,
   log: (message: string) => void,
+  url?: string,
+  variablesFile?: string,
 ): Promise<LiveResult> {
   signal.throwIfAborted();
   const env: NodeJS.ProcessEnv = { ...process.env, KANE_CLI_USER_AGENT: 'codex' };
   // Kane never needs the OpenAI key. Do not pass it to subprocesses or their logs.
   delete env.OPENAI_API_KEY;
-  const secrets = [process.env.OPENAI_API_KEY?.trim() ?? ''];
+  for (const name of Object.keys(env)) if (/^(AIRFLOW_|PG|WAREHOUSE_)/.test(name)) delete env[name];
+  const secrets = Object.entries(process.env).filter(([name]) => /KEY|PASSWORD|SECRET|TOKEN/.test(name)).map(([, value]) => value || '');
   return new Promise((resolve, reject) => {
-    const child = spawn('kane-cli', kaneArguments(check.objective), {
+    const child = spawn('kane-cli', [...kaneArguments(check.objective, url), ...(variablesFile ? ['--variables-file', variablesFile] : [])], {
       cwd: process.cwd(), env, shell: false, stdio: ['ignore', 'pipe', 'pipe'],
     });
     let terminal: Record<string, unknown> | null = null;

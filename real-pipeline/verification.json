@@ -1,0 +1,299 @@
+{
+  "verifiedAt": "2026-10-26",
+  "baselineRun": "baseline_1793002861764",
+  "baselineCounts": {
+    "extracted": 2986,
+    "loaded": 1493,
+    "wins": 1493
+  },
+  "fixedRun": "bugquest_3e1bd655-aa36-4570-a1d8-24e78e15ee57",
+  "fixedCounts": {
+    "runId": "bugquest_3e1bd655-aa36-4570-a1d8-24e78e15ee57",
+    "extractedRows": 2986,
+    "matchesLoaded": 2986,
+    "totalWins": 2986,
+    "otherRunRows": 0
+  },
+  "results": [
+    {
+      "id": 0,
+      "title": "Basic instruction",
+      "objective": "Check the tennis_tournament_pipeline ran successfully",
+      "kind": "basic",
+      "status": "passed",
+      "resultCode": 100,
+      "summary": "Opened the Airflow sign-in page and accessed the tennis_tournament_pipeline run.\nVerified that the tennis_tournament_pipeline run completed successfully. REST cross-check of pinned run: all six tasks success.",
+      "testUrl": "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M5VMZHHHFJ82Y8FH3B2PBB88/dashboard/share/US_AY9L7VAFBPH9TGFVVG3NUALLABZIGSCMUKT1TITA2WSSNYFU166RFLG6U89NDP7A?type=summary&agentView=true&fqdn=summary-page",
+      "credits": 34.0359375,
+      "confirmedBug": false,
+      "source": "kane"
+    },
+    {
+      "title": "Verify pipeline run status",
+      "objective": "Open Airflow and verify that the exact run baseline_1793002861764 has status success and that all six tasks\u2014extract, validate, transform, load, standings, and report\u2014succeeded.",
+      "kind": "task_status",
+      "id": 1,
+      "status": "passed",
+      "resultCode": 100,
+      "summary": "Opened Airflow and signed in when the login page appeared.\nChecked the tennis_tournament_pipeline run baseline_1793002861764 and confirmed that it completed successfully.\nConfirmed that the extract, validate, transform, load, standings, and report tasks all completed successfully. REST cross-check of pinned run: all six tasks success.",
+      "testUrl": "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M5VN2V3317XGK1WNKZ3046G9/dashboard/share/US_CMB3JR4HX6AI74N6IH4BH4FYZK5LVQ8WYB692YQHBFW8B289D54CJYDGAKFFZ7X3?type=summary&agentView=true&fqdn=summary-page",
+      "credits": 28.684195,
+      "confirmedBug": false,
+      "source": "kane"
+    },
+    {
+      "title": "Verify row conservation",
+      "objective": "For the exact run baseline_1793002861764, verify that warehouse.run_metadata.extracted_rows equals 2986, warehouse.matches contains exactly 2986 rows for that run, and the sum of warehouse.player_wins.wins equals the number of rows loaded for that run.",
+      "kind": "row_conservation",
+      "id": 2,
+      "status": "failed",
+      "resultCode": null,
+      "summary": "SQL run baseline_1793002861764: extracted 2986 (expected 2986); loaded 1493; total wins 1493; other-run rows 0.",
+      "sql": {
+        "runId": "baseline_1793002861764",
+        "extractedRows": 2986,
+        "matchesLoaded": 1493,
+        "totalWins": 1493,
+        "otherRunRows": 0
+      },
+      "source": "sql",
+      "confirmedBug": true,
+      "testUrl": null,
+      "credits": 0
+    }
+  ],
+  "repair": {
+    "checkId": 2,
+    "status": "fixed",
+    "checkpoint": "e6362f2c421506155a72f158f57956b3dba66969",
+    "commit": "df8362979fd121e8b878797a172ae3b08be9b636",
+    "attempts": [
+      {
+        "number": 1,
+        "description": "Load the full matches batch instead of truncating it at half.",
+        "precise": {
+          "id": 2,
+          "title": "Verify row conservation (after fix 1)",
+          "objective": "For the exact run baseline_1793002861764, verify that warehouse.run_metadata.extracted_rows equals 2986, warehouse.matches contains exactly 2986 rows for that run, and the sum of warehouse.player_wins.wins equals the number of rows loaded for that run.",
+          "kind": "row_conservation",
+          "status": "passed",
+          "resultCode": 100,
+          "summary": "Opened Airflow and signed in when the login page appeared.\nViewed the tennis_tournament_pipeline run bugquest_ca943f7a-4b30-457b-a633-63648f3ecc78.\nConfirmed that the run completed successfully and that the extract, validate, transform, load, standings, and report tasks all succeeded. REST cross-check of pinned run: all six tasks success. SQL run bugquest_ca943f7a-4b30-457b-a633-63648f3ecc78: extracted 2986 (expected 2986); loaded 2986; total wins 2986; other-run rows 0.",
+          "testUrl": "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M5VN6EF5GM6GWVWN21HAZQPE/dashboard/share/US_EIZ6AUC48YDLUTPPAO4INQXO09G0KG7DB1CO24K7MCLPXXDIMF4NDMN8S40PWA6V?type=summary&agentView=true&fqdn=summary-page",
+          "credits": 35.2780925,
+          "confirmedBug": false,
+          "source": "kane+sql",
+          "sql": {
+            "runId": "bugquest_ca943f7a-4b30-457b-a633-63648f3ecc78",
+            "extractedRows": 2986,
+            "matchesLoaded": 2986,
+            "totalWins": 2986,
+            "otherRunRows": 0
+          }
+        },
+        "basic": {
+          "id": 0,
+          "title": "Basic instruction (after fix)",
+          "objective": "Check the tennis_tournament_pipeline ran successfully",
+          "kind": "basic",
+          "status": "failed",
+          "resultCode": 710,
+          "summary": "After reaching the sign-in page, the automation ended on the Airflow home page and asserted success there. It did not return to the requested pipeline-run page or inspect the status of the specific run.\nAfter signing in, navigate back to the exact tennis_tournament_pipeline run URL and verify that run\u2019s final status before asserting success. SQL run bugquest_ca943f7a-4b30-457b-a633-63648f3ecc78: extracted 2986 (expected 2986); loaded 2986; total wins 2986; other-run rows 0.",
+          "testUrl": "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M5VN9CX9JANM4N9ZEETW6SVM/dashboard/share/US_2TENMGI3SLZNQZUO3555I1FV8DNAP40Y9811LZGY4D81H69VW74J6B580LOOKTMH?type=summary&agentView=true&fqdn=summary-page",
+          "credits": 41.5192925,
+          "confirmedBug": true,
+          "source": "kane+sql",
+          "sql": {
+            "runId": "bugquest_ca943f7a-4b30-457b-a633-63648f3ecc78",
+            "extractedRows": 2986,
+            "matchesLoaded": 2986,
+            "totalWins": 2986,
+            "otherRunRows": 0
+          }
+        },
+        "error": "The basic check no longer passes: After reaching the sign-in page, the automation ended on the Airflow home page and asserted success there. It did not return to the requested pipeline-run page or inspect the status of the specific run.\nAfter signing in, navigate back to the exact tennis_tournament_pipeline run URL and verify that run\u2019s final status before asserting success. SQL run bugquest_ca943f7a-4b30-457b-a633-63648f3ecc78: extracted 2986 (expected 2986); loaded 2986; total wins 2986; other-run rows 0.",
+        "diff": [
+          {
+            "kind": "context",
+            "text": "        matches = data[\"rows\"]"
+          },
+          {
+            "kind": "context",
+            "text": "        # PLANTED BUG: accidental page-size limit silently drops the second half."
+          },
+          {
+            "kind": "removed",
+            "text": "        matches_to_load = matches[:len(matches) // 2]"
+          },
+          {
+            "kind": "added",
+            "text": "        matches_to_load = matches"
+          },
+          {
+            "kind": "context",
+            "text": "        with database() as connection:"
+          },
+          {
+            "kind": "context",
+            "text": "            connection.execute(\"TRUNCATE TABLE warehouse.matches\")"
+          }
+        ]
+      },
+      {
+        "number": 2,
+        "description": "Load the full extracted match batch.",
+        "precise": {
+          "id": 2,
+          "title": "Verify row conservation (after fix 2)",
+          "objective": "For the exact run baseline_1793002861764, verify that warehouse.run_metadata.extracted_rows equals 2986, warehouse.matches contains exactly 2986 rows for that run, and the sum of warehouse.player_wins.wins equals the number of rows loaded for that run.",
+          "kind": "row_conservation",
+          "status": "passed",
+          "resultCode": 100,
+          "summary": "Opened Airflow and signed in when the login page was shown.\nReviewed the run bugquest_3e1bd655-aa36-4570-a1d8-24e78e15ee57 for the tennis_tournament_pipeline.\nConfirmed that the run completed successfully and that extract, validate, transform, load, standings, and report all completed successfully. REST cross-check of pinned run: all six tasks success. SQL run bugquest_3e1bd655-aa36-4570-a1d8-24e78e15ee57: extracted 2986 (expected 2986); loaded 2986; total wins 2986; other-run rows 0.",
+          "testUrl": "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M5VNEE1A9B6PZ57B67YDFEQ5/dashboard/share/US_WAN49TFJYNQGD9GZY9119LHDI4R91ODH2CW2CJX9ZC0F14NAZD7P3P6FUX4GQ99T?type=summary&agentView=true&fqdn=summary-page",
+          "credits": 31.380635000000005,
+          "confirmedBug": false,
+          "source": "kane+sql",
+          "sql": {
+            "runId": "bugquest_3e1bd655-aa36-4570-a1d8-24e78e15ee57",
+            "extractedRows": 2986,
+            "matchesLoaded": 2986,
+            "totalWins": 2986,
+            "otherRunRows": 0
+          }
+        },
+        "basic": {
+          "id": 0,
+          "title": "Basic instruction (after fix)",
+          "objective": "Check the tennis_tournament_pipeline ran successfully",
+          "kind": "basic",
+          "status": "passed",
+          "resultCode": 100,
+          "summary": "Opened the Airflow login page.\nChecked the tennis_tournament_pipeline run results.\nConfirmed that the pipeline run completed successfully. REST cross-check of pinned run: all six tasks success. SQL run bugquest_3e1bd655-aa36-4570-a1d8-24e78e15ee57: extracted 2986 (expected 2986); loaded 2986; total wins 2986; other-run rows 0.",
+          "testUrl": "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M5VNJJ5XRH5R35BA2VYC52VQ/dashboard/share/US_2YP28BJBDSBKZGSS688DEGAV3Q5QMH3E0IRQUQQRRE711L0URU0FIZ58HTGGZFEL?type=summary&agentView=true&fqdn=summary-page",
+          "credits": 22.163015,
+          "confirmedBug": false,
+          "source": "kane+sql",
+          "sql": {
+            "runId": "bugquest_3e1bd655-aa36-4570-a1d8-24e78e15ee57",
+            "extractedRows": 2986,
+            "matchesLoaded": 2986,
+            "totalWins": 2986,
+            "otherRunRows": 0
+          }
+        },
+        "error": null,
+        "diff": [
+          {
+            "kind": "context",
+            "text": "        matches = data[\"rows\"]"
+          },
+          {
+            "kind": "context",
+            "text": "        # PLANTED BUG: accidental page-size limit silently drops the second half."
+          },
+          {
+            "kind": "removed",
+            "text": "        matches_to_load = matches[:len(matches) // 2]"
+          },
+          {
+            "kind": "added",
+            "text": "        matches_to_load = matches"
+          },
+          {
+            "kind": "context",
+            "text": "        with database() as connection:"
+          },
+          {
+            "kind": "context",
+            "text": "            connection.execute(\"TRUNCATE TABLE warehouse.matches\")"
+          }
+        ]
+      }
+    ],
+    "diff": [
+      {
+        "kind": "context",
+        "text": "        matches = data[\"rows\"]"
+      },
+      {
+        "kind": "context",
+        "text": "        # PLANTED BUG: accidental page-size limit silently drops the second half."
+      },
+      {
+        "kind": "removed",
+        "text": "        matches_to_load = matches[:len(matches) // 2]"
+      },
+      {
+        "kind": "added",
+        "text": "        matches_to_load = matches"
+      },
+      {
+        "kind": "context",
+        "text": "        with database() as connection:"
+      },
+      {
+        "kind": "context",
+        "text": "            connection.execute(\"TRUNCATE TABLE warehouse.matches\")"
+      }
+    ],
+    "afterResult": {
+      "id": 2,
+      "title": "Verify row conservation (after fix 2)",
+      "objective": "For the exact run baseline_1793002861764, verify that warehouse.run_metadata.extracted_rows equals 2986, warehouse.matches contains exactly 2986 rows for that run, and the sum of warehouse.player_wins.wins equals the number of rows loaded for that run.",
+      "kind": "row_conservation",
+      "status": "passed",
+      "resultCode": 100,
+      "summary": "Opened Airflow and signed in when the login page was shown.\nReviewed the run bugquest_3e1bd655-aa36-4570-a1d8-24e78e15ee57 for the tennis_tournament_pipeline.\nConfirmed that the run completed successfully and that extract, validate, transform, load, standings, and report all completed successfully. REST cross-check of pinned run: all six tasks success. SQL run bugquest_3e1bd655-aa36-4570-a1d8-24e78e15ee57: extracted 2986 (expected 2986); loaded 2986; total wins 2986; other-run rows 0.",
+      "testUrl": "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M5VNEE1A9B6PZ57B67YDFEQ5/dashboard/share/US_WAN49TFJYNQGD9GZY9119LHDI4R91ODH2CW2CJX9ZC0F14NAZD7P3P6FUX4GQ99T?type=summary&agentView=true&fqdn=summary-page",
+      "credits": 31.380635000000005,
+      "confirmedBug": false,
+      "source": "kane+sql",
+      "sql": {
+        "runId": "bugquest_3e1bd655-aa36-4570-a1d8-24e78e15ee57",
+        "extractedRows": 2986,
+        "matchesLoaded": 2986,
+        "totalWins": 2986,
+        "otherRunRows": 0
+      }
+    },
+    "basicResult": {
+      "id": 0,
+      "title": "Basic instruction (after fix)",
+      "objective": "Check the tennis_tournament_pipeline ran successfully",
+      "kind": "basic",
+      "status": "passed",
+      "resultCode": 100,
+      "summary": "Opened the Airflow login page.\nChecked the tennis_tournament_pipeline run results.\nConfirmed that the pipeline run completed successfully. REST cross-check of pinned run: all six tasks success. SQL run bugquest_3e1bd655-aa36-4570-a1d8-24e78e15ee57: extracted 2986 (expected 2986); loaded 2986; total wins 2986; other-run rows 0.",
+      "testUrl": "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M5VNJJ5XRH5R35BA2VYC52VQ/dashboard/share/US_2YP28BJBDSBKZGSS688DEGAV3Q5QMH3E0IRQUQQRRE711L0URU0FIZ58HTGGZFEL?type=summary&agentView=true&fqdn=summary-page",
+      "credits": 22.163015,
+      "confirmedBug": false,
+      "source": "kane+sql",
+      "sql": {
+        "runId": "bugquest_3e1bd655-aa36-4570-a1d8-24e78e15ee57",
+        "extractedRows": 2986,
+        "matchesLoaded": 2986,
+        "totalWins": 2986,
+        "otherRunRows": 0
+      }
+    },
+    "message": "Fixed and verified"
+  },
+  "score": {
+    "type": "done",
+    "bugsFound": 1,
+    "fixesVerified": 1,
+    "points": 35
+  },
+  "loginNavigationVerification": {
+    "status": "passed",
+    "result_code": 100,
+    "summary": "You asked to open the specified tennis_tournament_pipeline run after signing in to Airflow.\nThe Airflow sign-in page was shown, and sign-in was completed.\nThe requested pipeline run page was opened and showed that the run completed successfully.",
+    "duration": 82.2,
+    "credits": 27.456065000000002,
+    "testUrl": "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M5VNT6TTK28Y6T8D7ETWHVPX/dashboard/share/US_SONP1MM0KR7X3Q6421V25SGO8V3ALP6C8OFVTA0B12LUGGVJV5Q21N83PZM0IAIV?type=summary&agentView=true&fqdn=summary-page",
+    "steps": 12
+  },
+  "questKaneRuns": 6,
+  "questKaneCredits": 193.0611675
+}

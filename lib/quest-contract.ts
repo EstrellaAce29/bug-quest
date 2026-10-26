@@ -1,3 +1,4 @@
+export type QuestTarget = 'simulated' | 'airflow';
 export type ObjectiveKind = 'row_conservation' | 'task_status';
 export type ExpandedObjective = { title: string; objective: string; kind: ObjectiveKind };
 export type LiveResult = {
@@ -11,6 +12,8 @@ export type LiveResult = {
   testUrl: string | null;
   credits: number | null;
   confirmedBug: boolean;
+  sql?: { runId: string; extractedRows: number; matchesLoaded: number; totalWins: number };
+  source?: 'kane' | 'sql' | 'kane+sql';
 };
 export type CodeDiffLine = { kind: 'context' | 'removed' | 'added'; text: string };
 export type FixProposal = { description: string; edits: { oldText: string; newText: string }[] };

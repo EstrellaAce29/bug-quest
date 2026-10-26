@@ -1,7 +1,7 @@
 import { silentBugKinds, type ExpandedObjective, type LiveEvent, type LiveResult, type FixReport } from './quest-contract';
 
 type Check = Pick<LiveResult, 'id' | 'title' | 'objective' | 'kind'>;
-type Dependencies = {
+export type QuestDependencies = {
   expand: (instruction: string, signal: AbortSignal) => Promise<ExpandedObjective[]>;
   run: (check: Check, signal: AbortSignal, log: (message: string) => void) => Promise<LiveResult>;
   repair?: (failure: LiveResult, basic: Check, signal: AbortSignal, log: (message: string) => void, update: (report: FixReport) => void) => Promise<FixReport>;
@@ -9,7 +9,7 @@ type Dependencies = {
 
 export async function executeQuest(
   input: { agent: string; instruction: string },
-  dependencies: Dependencies,
+  dependencies: QuestDependencies,
   signal: AbortSignal,
   emit: (event: LiveEvent) => void,
 ) {
@@ -50,6 +50,6 @@ export async function executeQuest(
   emit({ type: 'done', ...score });
 }
 
-export function kaneArguments(objective: string): string[] {
-  return ['run', objective, '--url', 'http://localhost:3000/pipelines', '--agent', '--max-steps', '15'];
+export function kaneArguments(objective: string, url = 'http://localhost:3000/pipelines'): string[] {
+  return ['run', objective, '--url', url, '--agent', '--max-steps', '15'];
 }

@@ -28,7 +28,7 @@ export async function attemptAutoFix(
     log(`saved Git checkpoint ${checkpoint.commit.slice(0, 7)}.`);
   } catch {
     if (signal.aborted) signal.throwIfAborted();
-    report.status = 'escalated'; report.message = 'Escalated to human: could not create a safe checkpoint. Commit any existing lib/pipeline.ts changes first.';
+    report.status = 'escalated'; report.message = 'Escalated to human: could not create a safe checkpoint. Commit any existing changes to the selected pipeline file first.';
     update(structuredClone(report)); log(report.message); return report;
   }
   let feedback = '';
@@ -45,7 +45,7 @@ export async function attemptAutoFix(
       report.diff = attempt.diff;
       report.message = `Fix attempt ${number} of 3: validating the code change.`;
       update(structuredClone(report));
-      log('applied a minimal change to lib/pipeline.ts; validating TypeScript...');
+      log('applied a minimal change to the selected pipeline file; validating code...');
       await dependencies.validate(signal);
       log('Re-verifying with Kane...');
       // Objective text and flags are unchanged; only the display title identifies the rerun.
@@ -67,10 +67,10 @@ export async function attemptAutoFix(
       try { await dependencies.restore(checkpoint); }
       catch {
         report.status = 'escalated';
-        report.message = `Escalated to human: the file changed outside the fixer; the Git checkpoint is ${checkpoint.commit}. Manual changes were preserved.`;
+        report.message = `Escalated to human: rollback could not be fully confirmed. Git checkpoint: ${checkpoint.commit}. Review the pipeline file and any active run before continuing.`;
         update(structuredClone(report)); log(report.message); return report;
       }
-      if (signal.aborted) { log('cancelled; restored lib/pipeline.ts from the checkpoint.'); signal.throwIfAborted(); }
+      if (signal.aborted) { log('cancelled; restored the pipeline file from the checkpoint.'); signal.throwIfAborted(); }
       feedback = error instanceof Error ? error.message.slice(0, 2000) : 'Candidate could not be verified.';
       attempt.error = feedback;
       report.message = `Attempt ${number} failed; original code restored.`;
