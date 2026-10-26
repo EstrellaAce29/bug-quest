@@ -62,3 +62,9 @@ A failed precise check starts up to three fix attempts. Only `real-pipeline/dags
 Airflow passwords go from `.env.local` to Kane as masked secret variables in a private temporary file removed after the browser run. Database passwords are passed only to Postgres clients and the relevant local Airflow containers. The OpenAI key is not passed to Kane, and `.env.local` is never mounted in Airflow containers.
 
 Keep using **Simulated monitor** to exercise the original `/pipelines` target. Recorded replay remains unchanged.
+
+## Repository checks before publishing
+
+`npm run typecheck` passes. The full `npm test` run reports **25 passed, 1 failed**: the simulated monitor's row-conservation regression intentionally expects 1,000 load rows while its planted defect still loads 500. The real Airflow end-to-end verification above passed. The simulator and this assertion are preserved for the demo.
+
+Local credentials, raw CSV data, Airflow logs, staging files, generated Airflow config, and Python caches are ignored. Compose uses a named Postgres volume managed by Docker outside the repository; local `volumes/` and `postgres-data/` folders under this project are also ignored.

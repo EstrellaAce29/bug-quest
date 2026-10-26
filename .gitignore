@@ -12,3 +12,7 @@ launch/
 data/raw/
 real-pipeline/include/staging/
 real-pipeline/logs/
+__pycache__/
+*.py[cod]
+real-pipeline/volumes/
+real-pipeline/postgres-data/
