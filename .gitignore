@@ -9,3 +9,6 @@ out/
 .testmuai/evidence/
 .testmuai/tests/output-*/
 launch/
+data/raw/
+real-pipeline/include/staging/
+real-pipeline/logs/
