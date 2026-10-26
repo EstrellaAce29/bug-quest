@@ -134,7 +134,7 @@ def tennis_tournament_pipeline():
         data = read_stage(transformed_path)
         matches = data["rows"]
         # PLANTED BUG: accidental page-size limit silently drops the second half.
-        matches_to_load = matches[:len(matches) // 2]
+        matches_to_load = matches
         with database() as connection:
             connection.execute("TRUNCATE TABLE warehouse.matches")
             with connection.cursor().copy("""
