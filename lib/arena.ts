@@ -13,6 +13,7 @@ export type ArenaFinding = { invariant: ArenaCheck['invariant']; reportedBug: bo
 export type ArenaScore = { playerId: string; caught: ArenaBug[]; fixed: ArenaBug[]; falseAlarms: number; points: number };
 export type RoundSummary = { round: number; planted: ArenaBug[]; scores: ArenaScore[]; resetRunId: string };
 export type ArenaEvent =
+  | { type: 'award'; playerId: string; amount: 20 | 15 | -5; reason: 'catch' | 'fix' | 'false_alarm' }
   | { type: 'log'; playerId: string | null; message: string }
   | { type: 'turn'; playerId: string; runId: string }
   | { type: 'plan'; playerId: string; checks: ArenaCheck[] }
@@ -85,17 +86,23 @@ export async function runArenaRound(round: number, players: ArenaPlayer[], plant
       const checks = await deps.expand(player.strategy, snapshot, signal);
       emit({ type: 'plan', playerId: player.id, checks });
       const findings: ArenaFinding[] = [];
+      let awardedCatches = 0;
+      let awardedAlarms = 0;
       for (const check of checks) {
         signal.throwIfAborted();
         const finding = await deps.inspect(check, snapshot, signal, log);
         findings.push(finding);
         emit({ type: 'finding', playerId: player.id, finding });
+        const progress = scoreFindings(player.id, planted, findings);
+        for (; awardedCatches < progress.caught.length; awardedCatches++) emit({ type: 'award', playerId: player.id, amount: 20, reason: 'catch' });
+        for (; awardedAlarms < progress.falseAlarms; awardedAlarms++) emit({ type: 'award', playerId: player.id, amount: -5, reason: 'false_alarm' });
       }
       let score = scoreFindings(player.id, planted, findings);
       if (score.caught.length) {
         log('Attempting an isolated repair; a fresh run must pass the repaired checks and Kane status verification.');
         const fixed = await deps.repair(score.caught, planted, signal, log);
         score = scoreFindings(player.id, planted, findings, fixed);
+        for (const _bug of score.fixed) emit({ type: 'award', playerId: player.id, amount: 15, reason: 'fix' });
       }
       scores.push(score);
       emit({ type: 'score', score: { ...score, caught: score.caught.length, fixed: score.fixed.length } });

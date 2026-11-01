@@ -88,7 +88,7 @@ test('a failed reset prevents summary/completion and cannot award unverified rep
 test('the Python fault parser preserves ordinary demo behavior and validates Arena opt-in', () => {
   const source = readFileSync('real-pipeline/dags/tennis_tournament_pipeline.py', 'utf8');
   const script = `import ast,json,sys\nsource=ast.parse(sys.stdin.read())\nf=next(n for n in source.body if isinstance(n,ast.FunctionDef) and n.name=='arena_faults')\nns={}\nexec(compile(ast.Module(body=[f],type_ignores=[]),'faults','exec'),ns)\nclass Run: pass\nr=Run()\nns['get_current_context']=lambda:{'dag_run':r}\nr.conf={}\nassert ns['arena_faults']() is None\nr.conf={'bug_quest_arena':{'half_load':False,'standings_loss':False}}\nassert ns['arena_faults']()=={'half_load':False,'standings_loss':False}\nfor bad in [{'half_load':True},{'half_load':'false','standings_loss':False},[]]:\n r.conf={'bug_quest_arena':bad}\n try: ns['arena_faults'](); raise AssertionError('accepted bad config')\n except ValueError: pass\n`;
-  const result = spawnSync('python3', ['-c', script], { input: source, encoding: 'utf8' });
+  const result = spawnSync('python3', ['-c', script], { input: source, encoding: 'utf8', timeout: 10000 });
   assert.equal(result.status, 0, result.stderr);
   assert.ok(source.includes('        matches_to_load = matches[:len(matches) // 2]\n'));
 });

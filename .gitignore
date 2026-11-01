@@ -19,3 +19,6 @@ real-pipeline/postgres-data/
 
 # Arena interrupted-round recovery marker (no credentials)
 .arena-recovery.json
+
+# Local terminal controller reconnect credentials
+.arena/

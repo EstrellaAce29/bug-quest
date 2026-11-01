@@ -93,23 +93,32 @@ The submitted version is tagged **`hackday-submission`** at `4e19d25bc236edceab5
 
 ## Bug Quest Arena
 
-Start with `npm run dev`, then open **http://127.0.0.1:3000/arena**. Arena is a local, shared-screen game for 2–4 players. Each player names an agent and writes a coaching strategy. Create the game, then start each of its three rounds; strategies can be edited between rounds. Agent names and roster are locked after setup. Completed rounds contribute to the leaderboard, and tied leaders share the win.
+Start with `npm run dev`, then open **http://127.0.0.1:3000/arena** on a shared browser screen. Choose 2–4 player slots and click **Create lobby**. The screen displays a six-character join code and the controller command. Each player opens a separate terminal in this project:
 
-Each round secretly samples one or two faults in the **real** `tennis_tournament_pipeline`: half-batch loading and an Arena-only standings undercount. Every player gets a fresh run with identical fault settings. Coaching expands into 1–3 checks through the Real Airflow expansion module: row conservation, standings totals, duplicate match payloads, or task status. Narrow strategies stay narrow. Data checks use SQL; task checks and verified repairs use Kane plus REST. Logs, plans, findings, and evidence links stream to the player's card. Fault identities appear in the round summary after cleanup, alongside who caught each one.
+```sh
+npm run arena:player -- --code ABC234 --name "Your agent"
+```
 
-Scoring is server-owned: **+20 per distinct planted fault caught**, **+15 per independently verified repair**, **−5 per distinct false claim**. A normal check that passes is not a false alarm. An explicit claim that a defect exists when the SQL/browser evidence says otherwise is a false alarm. Repeated checks do not multiply points; infrastructure errors earn no points. All players must finish and cleanup must succeed before round scores are saved.
+Replace `ABC234` with the browser's code. Without flags, the controller prompts for the code and agent name. It prompts **Your strategy?** for each of three rounds, sends the coaching to the server, then waits for the browser host. Names are unique and the roster locks when round 1 starts. The host can start once at least two players are joined, all joined players have submitted a strategy, and their controllers are connected. Strategies can be edited for the next round in the terminal; they are locked during play.
 
-Arena repairs are **isolated runtime remediations**: the server reruns the DAG with the caught faults disabled and requires the targeted SQL invariants and Kane/REST status verification before awarding repair points. They do not invoke `/quest`'s source-editing, Git-committing auto-fixer. The next player receives the original sampled faults again. Regular runs without Arena configuration retain the original planted half-load and its existing one-line `/quest` repair target. `/quest` and `/pipelines` retain their UI and default behavior.
+The browser is the shared game screen. Every player has an original cartoon SVG robot bug-hunter on the arena stage. Live score events show green **+20** catch and **+15** verified-fix pop-ups, red **−5** false-alarm pop-ups, happy bounces, and miss shakes. Leaderboard positions slide as provisional scores change; confirmed totals are saved only after a successful reset. Reduced-motion preferences disable movement and preserve readable score messages. Each player also receives their own plans, findings, live logs, awards, round score, fault reveal, and game result in their terminal.
 
-Both Arena faults are **off after every round**, verified by a clean DAG run and warehouse counts. Stop/disconnect/errors still run cleanup with an independent timeout. If Airflow is unavailable, cleanup cannot be guaranteed: an ignored `.arena-recovery.json` marker remains, the in-process quest lock stays held, and Arena blocks new rounds until **Recover reset** succeeds. After a server restart, visit Arena and recover an interrupted round before using `/quest`. Games survive page reloads within the same browser session and server process; restarting the server clears game history. Do not manually trigger other tennis runs during a round: the warehouse stores only the most recent load. Fault settings are hidden in the Arena UI, not from someone inspecting the local Airflow administration API.
+Repeat the controller command to reconnect as the same player: its random controller credential is stored in ignored `.arena/` with mode `0600`. It is not an Airflow/model credential. `--session path` selects another local session file; `--url http://localhost:3000` selects the loopback alias. Ctrl+C disconnects that controller and does not stop an active game. Controllers keep their presence alive while waiting at the coaching prompt. A controller that goes offline prevents the host from starting the next round until it reconnects. Rooms, history, and host credentials live in the server process/browser session; after restarting the server, create a new lobby and use its new code. Codes invite players and open a spectator screen (`/arena?code=ABC234`); only the separate browser host credential can start, stop, or recover rounds, and players can submit only their own strategy.
 
-Arena uses the same Airflow, Postgres, Chrome, and Kane prerequisites as Real Airflow mode. Select the **Arena model provider** in ignored `.env.local`, then restart Next.js:
+Each round secretly samples one or two faults in the **real** `tennis_tournament_pipeline`: half-batch loading and an Arena-only standings undercount. Every player gets a fresh run with identical fault settings. Coaching expands into 1–3 checks through the Real Airflow expansion module: row conservation, standings totals, duplicate match payloads, or task status. Narrow strategies stay narrow. Data checks use SQL; task checks and verified repairs use Kane plus REST. The three-round reveal lists planted faults, who caught them, and each player's points. Live play runs on the server using Next.js `after`; refreshing or closing the shared screen does not cancel it. Polling reconnects viewers and controllers to server-owned state and ordered events without resending strategies or multiplying awards.
+
+Scoring remains **+20 per distinct planted fault caught**, **+15 per independently verified repair**, **−5 per distinct false claim**. An ordinary passing check is not a false alarm. Repeated checks do not multiply points; infrastructure errors earn no points. If a round fails or the host uses **Stop & reset**, all provisional scores for that round are void and controllers are asked for fresh coaching before retrying. All players must finish and cleanup must succeed before round scores are confirmed. Tied top scores share the win.
+
+Arena repairs are **isolated runtime remediations**: rerun with caught faults disabled, require the targeted SQL invariants and Kane/REST status verification, then award repair points. They do not invoke `/quest`'s source-editing, Git-committing auto-fixer. The next player receives the original sampled faults. Regular runs without Arena configuration retain the original planted half-load and its existing one-line `/quest` repair target. `/quest` and `/pipelines` retain their UI and default behavior.
+
+Both Arena faults are **off after every round**, verified by a clean DAG run and warehouse counts. Errors and host cancellation run cleanup with an independent timeout. If Airflow is unavailable, cleanup cannot be guaranteed: ignored `.arena-recovery.json` remains, the shared quest lock stays held, and new rounds are blocked until the host's **Recover reset** succeeds. After a server restart, recover an interrupted round before using `/quest`. Do not manually trigger other tennis runs during play: the warehouse stores only the latest load. Fault settings are hidden in the Arena UI, not from the local Airflow administration API.
+
+Arena uses the same Airflow, Postgres, Chrome, and Kane prerequisites as Real Airflow mode. Configure its model in ignored `.env.local`, then restart Next.js:
 
 ```dotenv
 ARENA_MODEL_PROVIDER=openai
-# Optional: falls back to OPENAI_MODEL.
+# Optional: falls back to OPENAI_MODEL; existing OPENAI_API_KEY applies.
 ARENA_MODEL=
-# Existing OPENAI_API_KEY and OPENAI_MODEL apply.
 ```
 
 The provider adapter also supports a local Ollama server for Llama:
@@ -122,6 +131,8 @@ OLLAMA_MODEL=llama3.1
 ARENA_MODEL=
 ```
 
-Install/pull the selected model in Ollama separately. Both adapters request JSON-schema output and validate the plan before execution; an unsupported or malformed response stops the round and resets faults. Provider configuration and keys stay server-side. `/quest` continues to use its existing OpenAI configuration.
+Install/pull the selected Ollama model separately. Both adapters request JSON-schema output and validate the plan before execution. Invalid model output stops the round and resets faults. Provider configuration and keys stay server-side. `/quest` continues to use its existing OpenAI configuration.
 
-Validation evidence for the Arena fault matrix, a live scored round, cleanup, and the Chrome setup check is in [arena-verification-2026-11-01.json](real-pipeline/arena-verification-2026-11-01.json). The Ollama transport is covered by mocked adapter tests; a local Llama model was not run.
+The original Arena fault-matrix and live-round evidence is in [arena-verification-2026-11-01.json](real-pipeline/arena-verification-2026-11-01.json). The Ollama transport is covered by mocked adapter tests; a local Llama model was not run.
+
+The game UI and terminal controllers were verified with two real terminal players across all three real Airflow rounds, including reconnecting during coaching. Final scores were Moss **135** and Coral **100**; all resets finished at **2,986 extracted = 2,986 loaded = 2,986 wins**. Typecheck and all **45 tests** pass. See [arena-terminal-verification-2026-11-01.json](real-pipeline/arena-terminal-verification-2026-11-01.json) for round scores, live awards, run IDs and the Kane browser reports.
