@@ -35,7 +35,7 @@ docker compose --env-file ../.env.local exec airflow-scheduler airflow dags trig
 
 Tasks: extract → validate → transform → load → standings → report. Extract records the full CSV count for each run in `warehouse.run_metadata`. Validation checks required columns and logs null counts. Transform cleans column names and parses tournament dates. Load replaces `warehouse.matches`, retaining original row fields in a JSONB payload. Standings builds `warehouse.player_wins`. Report logs all final counts. Run metadata retains history; matches and standings represent the latest load.
 
-Baseline commit `3486f46` plants one `# PLANTED BUG`: load takes only the first half of the matches while every task succeeds. The end-to-end Live test repaired that line in commit `df8362979fd121e8b878797a172ae3b08be9b636`; the current DAG loads the full batch. The comment marks the original bug location.
+The load task contains one `# PLANTED BUG`: it takes only the first half of the matches while every task succeeds. Fresh clones intentionally retain this faulty line so Live mode can demonstrate the repair. The successful fix commit `df8362979fd121e8b878797a172ae3b08be9b636` remains in history; later commits restore the defect for the next demo.
 
 ## Check
 
@@ -65,6 +65,8 @@ Keep using **Simulated monitor** to exercise the original `/pipelines` target. R
 
 ## Repository checks before publishing
 
-`npm run typecheck` passes. The full `npm test` run reports **25 passed, 1 failed**: the simulated monitor's row-conservation regression intentionally expects 1,000 load rows while its planted defect still loads 500. The real Airflow end-to-end verification above passed. The simulator and this assertion are preserved for the demo.
+`npm run typecheck` passes. The full `npm test` run reports **26 passed, 0 failed**. The simulator test explicitly verifies its intentional defect: all tasks succeed, extract reports 1,000 rows and load reports 500. Separate tests cover healthy row conservation, minimal repairs and rollback safeguards. Simulated repair validation requires the full extracted row count, rather than the intentional demo defect. The simulator's faulty logic remains in place for the demo.
 
 Local credentials, raw CSV data, Airflow logs, staging files, generated Airflow config, and Python caches are ignored. Compose uses a named Postgres volume managed by Docker outside the repository; local `volumes/` and `postgres-data/` folders under this project are also ignored.
+
+The 2026-10-27 end-to-end rerun passed on attempt 1 (verified fix `9bddec46552d7f9be966214b1ae2757754634eaf`): 2,986 extracted / 1,493 loaded → fixed, re-triggered and verified → 2,986 extracted / 2,986 loaded. The defect was then replanted for the next demo. See [verification-2026-10-27.json](verification-2026-10-27.json) for its before/after counts, code diff, checkpoint and Kane links.

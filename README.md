@@ -43,11 +43,29 @@ Set `OPENAI_API_KEY` in `.env.local`, then restart the dev server. Optionally se
 
 Confirmed silent bugs earn **20 points**; a verified fix earns **15**. Automation errors do not earn discovery points.
 
-## Real Airflow target
+## Real Airflow mode
 
-Live mode also offers **Real Airflow**: Kane checks the real tennis DAG status while SQL compares extracted matches with the Postgres warehouse. The fixer changes only the tennis DAG, triggers a fresh run through Airflow REST, and requires Kane + SQL and the basic check to pass before committing. Credentials come from `.env.local`.
+The real DAG, `tennis_tournament_pipeline`, reads **Jeff Sackmann's ATP 2023 match data**, licensed **CC BY-NC-SA 4.0**, from `data/raw/atp_matches_2023.csv`. The CSV is ignored by Git; get the exact Internet Archive snapshot and checksum from [DATA_SOURCE.md](real-pipeline/DATA_SOURCE.md). The repository MIT license does not cover this dataset.
 
-See [real-pipeline/README.md](real-pipeline/README.md) for Docker setup, the archived Jeff Sackmann CSV (CC BY-NC-SA), login, trigger and checker commands. The verified real fix takes counts from **2,986 extracted / 1,493 loaded** to **2,986 / 2,986**; its evidence is saved in [verification.json](real-pipeline/verification.json). The real DAG is now fixed; the simulated monitor still starts with its original defect.
+Requires Docker with Compose, Node.js, psql, Chrome and an authenticated Kane CLI. Set these keys in the ignored `.env.local` file (names only):
+
+- `OPENAI_API_KEY`
+- `AIRFLOW_URL`, `AIRFLOW_PORT`, `AIRFLOW_USERNAME`, `AIRFLOW_PASSWORD`
+- `PGHOST`, `PGPORT`, `PGUSER`, `PGPASSWORD`, `PGDATABASE`
+
+Start Airflow from the repository root:
+
+```sh
+cd real-pipeline
+cp .env.example .env
+docker compose --env-file ../.env.local up --build -d
+```
+
+Open [Airflow at localhost:8081](http://localhost:8081) and sign in using your local credentials. Postgres is exposed on localhost port 5433 (container port 5432). Unpause and trigger `tennis_tournament_pipeline`, then wait for its six tasks to succeed. Run `node scripts/check_real_pipeline.mjs` from the repository root to inspect the warehouse.
+
+Restart the Next.js dev server after configuring `.env.local`. On `/quest`, enable **Live mode**, select **Real Airflow**, name your agent, enter an instruction such as "Check the tennis pipeline ran", and click **Run Quest**. Kane checks the real run status; SQL checks row conservation. The fixer checkpoints Git, edits only the DAG, triggers a new run through Airflow REST, and requires Kane + SQL and the basic check to pass before committing. Failed attempts roll back; after three failures, it escalates.
+
+**Fresh clones start broken on purpose:** the real load task carries the marked half-batch defect. Verified result: **2,986 extracted vs 1,493 loaded → auto-fix → 2,986 extracted = 2,986 loaded**, with all six tasks successful. See [verification.json](real-pipeline/verification.json) for the real Kane evidence. The successful fix commit `df83629` remains in history; a later commit restores the planted bug for the next demo. A fresh end-to-end rerun passed on attempt 1; see [its Kane evidence and code diff](real-pipeline/verification-2026-10-27.json).
 
 ## Demo pipeline
 
@@ -65,7 +83,7 @@ npm run typecheck
 npm run build
 ```
 
-The row-conservation regression intentionally fails on the fresh-clone defect and passes after the repair. Recorded mode retains historical evidence; its totals are a snapshot, not live counters. See [VERIFICATION.md](VERIFICATION.md) for real results and limitations, including an automation timeout in the auto-fix trial.
+The intentional-bug test verifies that the simulated demo remains green while loading only half its rows; separate tests cover healthy row conservation and the guarded repair flow. Simulated repair validation requires the full extracted row count before accepting a fix. Recorded mode retains historical evidence; its totals are a snapshot, not live counters. See [VERIFICATION.md](VERIFICATION.md) for real results and limitations, including an automation timeout in the auto-fix trial.
 
 The submitted version is tagged **`hackday-submission`** at `4e19d25bc236edceab558567186f776f10cdcbe7`. The real auto-fix commit **`e8560fe`** remains in history; the faulty line was restored afterward for the fresh-clone demo.
 

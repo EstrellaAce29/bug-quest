@@ -51,10 +51,19 @@ test('false-success fault masks a real failed warehouse write', () => {
   assert.equal(run.status, 'success');
   assert.equal(overallStatus(run.tasks, defaults), 'failed');
 });
-test('regression: load must preserve all extracted rows even when the bug switch remains enabled', () => {
+const verifyingSimulatorRepair = process.env.BUG_QUEST_EXPECT_SIMULATOR_FIX === '1';
+test(verifyingSimulatorRepair
+  ? 'repair validation: the simulated load preserves every extracted row'
+  : 'intentional demo bug: a green simulated DAG silently loads only half the extracted rows', () => {
   const run = simulateRun(seed, { ...defaults, rowMismatchBug: true });
-  assert.equal(run.tasks.find(task => task.id === 'extract')?.rows, 1000);
-  assert.equal(run.tasks.find(task => task.id === 'load')?.rows, 1000);
+  assert.equal(run.status, 'success');
+  assert.ok(run.tasks.every(task => task.status === 'success'));
+  const extracted = run.tasks.find(task => task.id === 'extract')?.rows;
+  const loaded = run.tasks.find(task => task.id === 'load')?.rows;
+  assert.equal(extracted, 1000);
+  assert.equal(loaded, verifyingSimulatorRepair ? 1000 : 500);
+  if (verifyingSimulatorRepair) assert.equal(loaded, extracted);
+  else assert.notEqual(loaded, extracted);
 });
 test('deferred fault ignores unfinished sensor in the completion gate', () => {
   const run = simulateRun(seed, { ...defaults, stuckDeferredBug: true });

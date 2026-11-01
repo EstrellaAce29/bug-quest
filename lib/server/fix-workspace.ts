@@ -62,7 +62,7 @@ export function createFixWorkspace(root = process.cwd(), options?: { file: strin
       } catch { throw new Error('Candidate failed TypeScript validation.'); }
       const tests = (await readdir(path.join(root, 'tests'))).filter(name => name.endsWith('.test.ts')).map(name => path.join(root, 'tests', name));
       try {
-        await exec(process.execPath, [path.join(root, 'node_modules/tsx/dist/cli.mjs'), '--test', ...tests], { cwd: root, env: childEnv, timeout: 60000, signal, maxBuffer: 1024 * 1024 });
+        await exec(process.execPath, [path.join(root, 'node_modules/tsx/dist/cli.mjs'), '--test', ...tests], { cwd: root, env: { ...childEnv, BUG_QUEST_EXPECT_SIMULATOR_FIX: '1' }, timeout: 60000, signal, maxBuffer: 1024 * 1024 });
       } catch { throw new Error('Candidate failed the regression tests.'); }
       await unchanged();
     },
