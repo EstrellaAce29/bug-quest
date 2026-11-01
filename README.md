@@ -90,3 +90,38 @@ The submitted version is tagged **`hackday-submission`** at `4e19d25bc236edceab5
 ## License
 
 [MIT](LICENSE) © 2026 Prashansa Chaudhary.
+
+## Bug Quest Arena
+
+Start with `npm run dev`, then open **http://127.0.0.1:3000/arena**. Arena is a local, shared-screen game for 2–4 players. Each player names an agent and writes a coaching strategy. Create the game, then start each of its three rounds; strategies can be edited between rounds. Agent names and roster are locked after setup. Completed rounds contribute to the leaderboard, and tied leaders share the win.
+
+Each round secretly samples one or two faults in the **real** `tennis_tournament_pipeline`: half-batch loading and an Arena-only standings undercount. Every player gets a fresh run with identical fault settings. Coaching expands into 1–3 checks through the Real Airflow expansion module: row conservation, standings totals, duplicate match payloads, or task status. Narrow strategies stay narrow. Data checks use SQL; task checks and verified repairs use Kane plus REST. Logs, plans, findings, and evidence links stream to the player's card. Fault identities appear in the round summary after cleanup, alongside who caught each one.
+
+Scoring is server-owned: **+20 per distinct planted fault caught**, **+15 per independently verified repair**, **−5 per distinct false claim**. A normal check that passes is not a false alarm. An explicit claim that a defect exists when the SQL/browser evidence says otherwise is a false alarm. Repeated checks do not multiply points; infrastructure errors earn no points. All players must finish and cleanup must succeed before round scores are saved.
+
+Arena repairs are **isolated runtime remediations**: the server reruns the DAG with the caught faults disabled and requires the targeted SQL invariants and Kane/REST status verification before awarding repair points. They do not invoke `/quest`'s source-editing, Git-committing auto-fixer. The next player receives the original sampled faults again. Regular runs without Arena configuration retain the original planted half-load and its existing one-line `/quest` repair target. `/quest` and `/pipelines` retain their UI and default behavior.
+
+Both Arena faults are **off after every round**, verified by a clean DAG run and warehouse counts. Stop/disconnect/errors still run cleanup with an independent timeout. If Airflow is unavailable, cleanup cannot be guaranteed: an ignored `.arena-recovery.json` marker remains, the in-process quest lock stays held, and Arena blocks new rounds until **Recover reset** succeeds. After a server restart, visit Arena and recover an interrupted round before using `/quest`. Games survive page reloads within the same browser session and server process; restarting the server clears game history. Do not manually trigger other tennis runs during a round: the warehouse stores only the most recent load. Fault settings are hidden in the Arena UI, not from someone inspecting the local Airflow administration API.
+
+Arena uses the same Airflow, Postgres, Chrome, and Kane prerequisites as Real Airflow mode. Select the **Arena model provider** in ignored `.env.local`, then restart Next.js:
+
+```dotenv
+ARENA_MODEL_PROVIDER=openai
+# Optional: falls back to OPENAI_MODEL.
+ARENA_MODEL=
+# Existing OPENAI_API_KEY and OPENAI_MODEL apply.
+```
+
+The provider adapter also supports a local Ollama server for Llama:
+
+```dotenv
+ARENA_MODEL_PROVIDER=ollama
+OLLAMA_BASE_URL=http://127.0.0.1:11434
+OLLAMA_MODEL=llama3.1
+# Optional: overrides OLLAMA_MODEL.
+ARENA_MODEL=
+```
+
+Install/pull the selected model in Ollama separately. Both adapters request JSON-schema output and validate the plan before execution; an unsupported or malformed response stops the round and resets faults. Provider configuration and keys stay server-side. `/quest` continues to use its existing OpenAI configuration.
+
+Validation evidence for the Arena fault matrix, a live scored round, cleanup, and the Chrome setup check is in [arena-verification-2026-11-01.json](real-pipeline/arena-verification-2026-11-01.json). The Ollama transport is covered by mocked adapter tests; a local Llama model was not run.

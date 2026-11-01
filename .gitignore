@@ -16,3 +16,6 @@ __pycache__/
 *.py[cod]
 real-pipeline/volumes/
 real-pipeline/postgres-data/
+
+# Arena interrupted-round recovery marker (no credentials)
+.arena-recovery.json

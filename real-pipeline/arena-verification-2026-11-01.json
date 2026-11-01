@@ -1,0 +1,97 @@
+{
+  "verifiedAt": "2026-11-01",
+  "automatedChecks": {
+    "testsPassed": 37,
+    "testsFailed": 0,
+    "typecheck": "passed",
+    "threeRounds": "dependency-injected engine test; live verification below covers one round"
+  },
+  "realAirflowFaultMatrix": [
+    {
+      "halfLoad": false,
+      "standingsLoss": false,
+      "runId": "arena_e3a8284f-d9a3-4f09-8b82-c61ef751b3a9",
+      "extracted": 2986,
+      "loaded": 2986,
+      "wins": 2986,
+      "checkerExit": 0
+    },
+    {
+      "halfLoad": true,
+      "standingsLoss": false,
+      "runId": "arena_92c37cbf-be89-46ad-99ca-1671b142bc7f",
+      "extracted": 2986,
+      "loaded": 1493,
+      "wins": 1493,
+      "checkerExit": 2
+    },
+    {
+      "halfLoad": false,
+      "standingsLoss": true,
+      "runId": "arena_d55390ed-765f-4401-b19b-51b545635434",
+      "extracted": 2986,
+      "loaded": 2986,
+      "wins": 2684,
+      "checkerExit": 2
+    },
+    {
+      "halfLoad": true,
+      "standingsLoss": true,
+      "runId": "arena_d3b59634-32aa-4555-9457-77b7440e140b",
+      "extracted": 2986,
+      "loaded": 1493,
+      "wins": 1314,
+      "checkerExit": 2
+    }
+  ],
+  "liveArenaRound": {
+    "round": 1,
+    "planted": [
+      "half_load"
+    ],
+    "players": [
+      {
+        "name": "Integration Counts",
+        "strategy": "Compare extracted versus loaded row counts AND compare the sum of standings wins to loaded matches.",
+        "caught": [
+          "half_load"
+        ],
+        "verifiedRuntimeRepairs": [
+          "half_load"
+        ],
+        "falseAlarms": 0,
+        "points": 35,
+        "baselineRunId": "arena_23ce13c3-df68-4858-87b1-7acf8de9957a"
+      },
+      {
+        "name": "Integration Claim",
+        "strategy": "I assert duplicate full match payloads are present. Verify this specific claim only.",
+        "caught": [],
+        "verifiedRuntimeRepairs": [],
+        "falseAlarms": 1,
+        "points": -5,
+        "baselineRunId": "arena_bb710ba6-4287-4d5a-8873-2f7d634b2e90"
+      }
+    ],
+    "resetRunId": "arena_f9aa0197-4a41-4691-b28c-cce31d34eb7b",
+    "resetCounts": {
+      "extracted": 2986,
+      "loaded": 2986,
+      "wins": 2986
+    },
+    "repairVerification": "Fresh isolated runtime remediation passed SQL, Kane, and REST; no source edits or fix commits."
+  },
+  "browserSetup": {
+    "status": "passed",
+    "steps": 16,
+    "durationSeconds": 101.7,
+    "credits": 36.176155,
+    "testFile": ".testmuai/tests/arena-setup-verified_test.md",
+    "testManagerUrl": "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M6B5521KCVJSJNQVZ3R970EB/dashboard/share/US_X8GJHI94K337GBIDGSYVZCW4NZ50VNGKA5V3ES059XVVBUVJ7PEA9Z9SV6RNFIZQ?type=summary&agentView=true&fqdn=summary-page"
+  },
+  "limitations": [
+    "Ollama adapter verified with mocked transport; no local Llama model run.",
+    "Interrupted-process recovery is manual through Recover reset; running-process cancellation automatically resets."
+  ],
+  "defaultDemo": "Original planted half-batch assignment is retained for runs without Arena configuration."
+}

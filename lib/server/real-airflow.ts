@@ -47,7 +47,7 @@ export async function warehouseCounts(runId: string | undefined, signal: AbortSi
   return parseWarehouseCounts(JSON.parse(stdout.trim()), runId);
 }
 
-export async function createRealAirflow(signal: AbortSignal, log: (message: string) => void) {
+export async function createRealAirflow(signal: AbortSignal, log: (message: string) => void, selectedRunId?: string) {
   const base = airflowSettings();
   let token = '';
   async function api(endpoint: string, method = 'GET', body?: unknown, requestSignal = signal) {
@@ -62,7 +62,7 @@ export async function createRealAirflow(signal: AbortSignal, log: (message: stri
     return response.json();
   }
   // Bind this quest to one completed run; do not compare data from an unrelated DAG run.
-  const initial = await warehouseCounts(undefined, signal);
+  const initial = await warehouseCounts(selectedRunId, signal);
   const expectedRows = initial.extractedRows;
   if (expectedRows < 1) throw new Error('The extracted source must contain at least one match.');
   let runId = initial.runId;
