@@ -49,7 +49,8 @@ export async function POST(request: Request) {
       return Response.json({ room: roomView(room, Number.isSafeInteger(input.after) && input.after >= 0 ? input.after : 0, input.playerToken), recovery: !!state.arenaCleanupRequired || (!state.bugQuestLiveBusy && await hasArenaRecovery()) }, { headers: { 'Cache-Control': 'no-store' } });
     }
     if (input.action === 'join') {
-      const player = joinRoom(room, input.name, randomUUID());
+      const player = joinRoom(room, input.name, randomUUID(), Date.now(), input.character);
+      recordRoomEvent(room, { type: 'joined', playerId: player.id, name: player.name, publicBio: player.character?.publicBio ?? '' });
       return Response.json({ playerId: player.id, playerToken: player.token, room: roomView(room, 0, player.token) });
     }
     if (input.action === 'strategy') {

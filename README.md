@@ -99,6 +99,17 @@ Start with `npm run dev`, then open **http://127.0.0.1:3000/arena** on a shared 
 npm run arena:player -- --code ABC234 --name "Your agent"
 ```
 
+Character creation runs before joining:
+
+1. **Name** — your agent's name, such as Winter, Blaze or Moss.
+2. **Traits** — choose numbers from the two numbered 3×3 charts, add your own words, or mix both, separated by commas. Chosen traits echo in green in color-enabled terminals.
+3. **Private character** — what the agent really wants, its quirks, voice and triggers. This stays out of the shared character description.
+4. **Public bio** — write 1–3 sentences. The bio is broadcast when the agent joins and shown on the shared Arena screen.
+
+Traits and private character guide strategy expansion. A `duplicate-hunter` favors duplicate checks for broad coaching; `speedrunner` caps a turn at one check and favors available SQL checks over browser work. Explicit coaching still sets the inspection scope. Characters cannot change expected counts, fault settings, point rules or reset behavior. Traits about unsupported checks shape temperament or the closest supported invariant; they do not pretend to add new SQL checks.
+
+Complete profiles are saved privately in ignored `.arena/characters/` (files `0600`, directory `0700`). Reuse one with `npm run arena:player -- --code ABC234 --character Winter`; use `--name Winter --new` to create a revised profile. Joining locks that character for the current game; edits apply to a new game. The raw private description is sent to the selected server-side model to shape checks and short reactions, but is not included in room snapshots, join announcements, server/game logs or public character cards. Published plans and speech are bounded and checked against copied private passages. Only your chosen bio and validated short reactions are public. Speech-generation failures use a safe reaction or omit it, without changing points or cleanup. No borrowed game dialogue or characters are used.
+
 Replace `ABC234` with the browser's code. Without flags, the controller prompts for the code and agent name. It prompts **Your strategy?** for each of three rounds, sends the coaching to the server, then waits for the browser host. Names are unique and the roster locks when round 1 starts. The host can start once at least two players are joined, all joined players have submitted a strategy, and their controllers are connected. Strategies can be edited for the next round in the terminal; they are locked during play.
 
 The browser is the shared game screen. Every player has an original cartoon SVG robot bug-hunter on the arena stage. Live score events show green **+20** catch and **+15** verified-fix pop-ups, red **−5** false-alarm pop-ups, happy bounces, and miss shakes. Leaderboard positions slide as provisional scores change; confirmed totals are saved only after a successful reset. Reduced-motion preferences disable movement and preserve readable score messages. Each player also receives their own plans, findings, live logs, awards, round score, fault reveal, and game result in their terminal.
@@ -136,3 +147,5 @@ Install/pull the selected Ollama model separately. Both adapters request JSON-sc
 The original Arena fault-matrix and live-round evidence is in [arena-verification-2026-11-01.json](real-pipeline/arena-verification-2026-11-01.json). The Ollama transport is covered by mocked adapter tests; a local Llama model was not run.
 
 The game UI and terminal controllers were verified with two real terminal players across all three real Airflow rounds, including reconnecting during coaching. Final scores were Moss **135** and Coral **100**; all resets finished at **2,986 extracted = 2,986 loaded = 2,986 wins**. Typecheck and all **45 tests** pass. See [arena-terminal-verification-2026-11-01.json](real-pipeline/arena-terminal-verification-2026-11-01.json) for round scores, live awards, run IDs and the Kane browser reports.
+
+The character wizard was verified with two real terminal players, saved-profile reuse, green trait echo, public bios and generated speech bubbles. In one real Airflow round, the speedrunner/duplicate-hunter used one duplicate check while the thorough row-counter checked rows and wins. Scoring stayed **Blaze 70 / Winter 0** and the clean reset returned **2,986 / 2,986 / 2,986**. Typecheck and all **53 tests** pass. Public evidence: [arena-character-verification-2026-11-01.json](real-pipeline/arena-character-verification-2026-11-01.json). Private descriptions are not included in that record.

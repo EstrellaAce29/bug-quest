@@ -6,6 +6,7 @@ import { promisify } from 'node:util';
 import { setTimeout as delay } from 'node:timers/promises';
 import { airflowSettings, createRealAirflow, warehouseCounts, REAL_DAG_FILE } from './real-airflow';
 import { expandArenaStrategy } from './expand-quest';
+import { generateCharacterSpeech } from '../arena-personality';
 import { detectedBugs, type ArenaBug, type ArenaDependencies, type ArenaSnapshot, type ArenaCheck, type ArenaFinding } from '../arena';
 
 const exec = promisify(execFile);
@@ -112,7 +113,8 @@ export function arenaAirflow(log: (message: string) => void): ArenaDependencies 
   }
   return {
     prepare,
-    expand: (strategy, snapshot, signal) => expandArenaStrategy(strategy, { runId: snapshot.runId, extractedRows: snapshot.counts.extractedRows }, signal),
+    expand: (strategy, snapshot, signal, character) => expandArenaStrategy(strategy, { runId: snapshot.runId, extractedRows: snapshot.counts.extractedRows }, signal, character),
+    speak: (player, reason, signal) => player.character ? generateCharacterSpeech(player.character, reason, signal) : Promise.resolve(null),
     inspect,
     repair: async (caught, planted, signal, playerLog) => {
       // Arena repairs are isolated runtime remediations, not permanent source edits

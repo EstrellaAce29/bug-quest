@@ -1,0 +1,170 @@
+{
+  "verifiedAt": "2026-11-01",
+  "checks": {
+    "typecheck": "passed",
+    "tests": {
+      "passed": 53,
+      "failed": 0,
+      "skipped": 0
+    },
+    "realTerminalWizard": "two players completed all four steps",
+    "savedProfileReuse": "Winter reconnected using --character without retyping private text",
+    "greenTraitEcho": "observed ANSI green in a color-enabled TTY",
+    "profilesAreIgnored": true,
+    "profileFileMode": "0600",
+    "profileDirectoryMode": "0700",
+    "privateFieldsInRoomResponses": false,
+    "privatePassageEchoesObserved": false,
+    "liveRoundsVerified": 1
+  },
+  "players": [
+    {
+      "id": "player-1",
+      "name": "Blaze",
+      "publicBio": "I count before I cheer. Bring me rows that do not add up."
+    },
+    {
+      "id": "player-2",
+      "name": "Winter",
+      "publicBio": "I follow repeated records. I keep my checks short."
+    }
+  ],
+  "plans": [
+    {
+      "playerId": "player-1",
+      "checks": [
+        {
+          "title": "Verify row conservation",
+          "objective": "Compare extracted metadata rows and loaded matches; confirm both equal 2986.",
+          "invariant": "rows",
+          "expectsBug": false
+        },
+        {
+          "title": "Verify wins conservation",
+          "objective": "Sum player wins in the standings and confirm the total equals the number of loaded matches.",
+          "invariant": "wins",
+          "expectsBug": false
+        }
+      ]
+    },
+    {
+      "playerId": "player-2",
+      "checks": [
+        {
+          "title": "Check for duplicate matches",
+          "objective": "Use SQL to verify that no two loaded matches have identical full payloads.",
+          "invariant": "duplicates",
+          "expectsBug": false
+        }
+      ]
+    }
+  ],
+  "speeches": [
+    {
+      "seq": 12,
+      "at": 1793576814810,
+      "round": 1,
+      "event": {
+        "type": "speech",
+        "playerId": "player-1",
+        "text": "A clean catch; steady work, and I'll check the repair before celebrating.",
+        "reason": "catch"
+      }
+    },
+    {
+      "seq": 41,
+      "at": 1793576925197,
+      "round": 1,
+      "event": {
+        "type": "speech",
+        "playerId": "player-1",
+        "text": "That’s fixed; let’s check it holds.",
+        "reason": "fix"
+      }
+    },
+    {
+      "seq": 50,
+      "at": 1793576938267,
+      "round": 1,
+      "event": {
+        "type": "speech",
+        "playerId": "player-2",
+        "text": "Gone again. What did we overlook?",
+        "reason": "miss"
+      }
+    }
+  ],
+  "round": {
+    "round": 1,
+    "planted": [
+      "half_load",
+      "standings_loss"
+    ],
+    "scores": [
+      {
+        "playerId": "player-1",
+        "caught": [
+          "half_load",
+          "standings_loss"
+        ],
+        "fixed": [
+          "half_load",
+          "standings_loss"
+        ],
+        "falseAlarms": 0,
+        "points": 70
+      },
+      {
+        "playerId": "player-2",
+        "caught": [],
+        "fixed": [],
+        "falseAlarms": 0,
+        "points": 0
+      }
+    ],
+    "resetRunId": "arena_1f1867cb-577d-4bb3-87d5-e180584e75fc"
+  },
+  "standings": [
+    {
+      "playerId": "player-1",
+      "name": "Blaze",
+      "points": 70,
+      "caught": 2,
+      "fixed": 2,
+      "falseAlarms": 0
+    },
+    {
+      "playerId": "player-2",
+      "name": "Winter",
+      "points": 0,
+      "caught": 0,
+      "fixed": 0,
+      "falseAlarms": 0
+    }
+  ],
+  "finalWarehouse": {
+    "runId": "arena_1f1867cb-577d-4bb3-87d5-e180584e75fc",
+    "extractedRows": 2986,
+    "matchesLoaded": 2986,
+    "totalWins": 2986,
+    "checkerExit": 0
+  },
+  "browserChecks": {
+    "bios": {
+      "status": "passed",
+      "resultCode": 100,
+      "summary": "Opened the shared Arena HDAFV3 as requested.\nConfirmed that the public character bios are visible: Winter says, “I follow repeated records. I keep my checks short,” and Blaze says, “I count before I cheer. Bring me rows that do not add up.”\nConfirmed that both robot hunters, Winter and Blaze, are present and marked ready.\nDid not start a round or change any game settings.",
+      "durationSeconds": 28,
+      "credits": 16.6279475,
+      "testManagerUrl": "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M6CR0S9YR5259JZM43DY0GDJ/dashboard/share/US_C0SEHQ850DG51QPRLUO6DTIAYLJXIVDYW7KCZ2OSJKPRI32QLDOT8DEZTPWSZEAC?type=summary&agentView=true&fqdn=summary-page"
+    },
+    "speechBubbles": {
+      "status": "passed",
+      "resultCode": 100,
+      "summary": "Opened Arena HDAFV3 as requested.\nConfirmed that public bio cards are shown for Winter and Blaze.\nConfirmed Winter’s message reads “Gone again. What did we overlook?” and Blaze’s reads “That’s fixed; let’s check it holds.”\nConfirmed the round 1 leaderboard shows Blaze with 70 points and Winter with 0 points, and the reveal includes a clean reset run ID.\nLeft the settings unchanged and did not start round 2.",
+      "durationSeconds": 46.4,
+      "credits": 12.75151,
+      "testManagerUrl": "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M6CRDNKE0TK3371RPXDE6YTJ/dashboard/share/US_E6RVHJ173K91UMGQ9BYD68SSTA0WNV9EOYYNYC103ZGA2TSOXUGXZCU8B5KTYB0I?type=summary&agentView=true&fqdn=summary-page"
+    }
+  }
+}

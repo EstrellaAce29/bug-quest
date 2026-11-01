@@ -1,3 +1,4 @@
+import { validateCharacter } from './arena-character.mjs';
 import type { ArenaEvent, ArenaPlayer, RoundSummary } from './arena';
 
 export type RoomPhase = 'lobby' | 'coaching' | 'running' | 'resetting' | 'finished' | 'recovery';
@@ -11,7 +12,7 @@ export type ArenaRoom = {
 };
 export type RoomView = {
   code: string; capacity: number; phase: RoomPhase; round: number; canStart: boolean;
-  players: { id: string; name: string; ready: boolean; connected: boolean }[];
+  players: { id: string; name: string; publicBio: string; ready: boolean; connected: boolean }[];
   standings: Standing[]; rounds: RoundSummary[]; events: RoomEvent[]; cursor: number; error: string | null;
   self?: { id: string; name: string; ready: boolean };
 };
@@ -20,12 +21,12 @@ export function createRoom(code: string, hostToken: string, capacity: unknown, n
   if (!Number.isInteger(capacity) || Number(capacity) < 2 || Number(capacity) > 4) throw new Error('Choose 2–4 player slots.');
   return { code, hostToken, capacity: Number(capacity), created: now, phase: 'lobby', rosterLocked: false, players: [], rounds: [], events: [], nextSeq: 1, live: {}, error: null };
 }
-export function joinRoom(room: ArenaRoom, name: unknown, token: string, now = Date.now()) {
+export function joinRoom(room: ArenaRoom, name: unknown, token: string, now = Date.now(), character?: unknown) {
   if (room.phase !== 'lobby' || room.rosterLocked) throw new Error('The roster is locked after the first round starts.');
   if (room.players.length >= room.capacity) throw new Error('This lobby is full.');
   if (typeof name !== 'string' || !name.trim() || name.trim().length > 60 || /[\x00-\x1f\x7f]/.test(name)) throw new Error('Use an agent name of 1–60 printable characters.');
   if (room.players.some(p => p.name.toLowerCase() === name.trim().toLowerCase())) throw new Error('That agent name is already taken.');
-  const player = { id: `player-${room.players.length + 1}`, name: name.trim(), strategy: '', token, strategyRound: 0, lastSeen: now };
+  const player = { id: `player-${room.players.length + 1}`, name: name.trim(), strategy: '', token, strategyRound: 0, lastSeen: now, ...(character === undefined ? {} : { character: validateCharacter(character) }) };
   room.players.push(player);
   return player;
 }
@@ -52,7 +53,7 @@ export function startRoom(room: ArenaRoom, token: unknown, round: unknown, now =
   if (round !== room.rounds.length + 1) throw new Error('The requested round is stale.');
   if (!canStartRoom(room, now)) throw new Error('Wait for at least two connected players and a strategy from every joined player.');
   room.phase = 'running'; room.rosterLocked = true; room.error = null; room.live = {}; room.controller = new AbortController();
-  return room.players.map(({ id, name, strategy }) => ({ id, name, strategy }));
+  return room.players.map(({ id, name, strategy, character }) => ({ id, name, strategy, ...(character ? { character: structuredClone(character) } : {}) }));
 }
 export function recordRoomEvent(room: ArenaRoom, event: ArenaEvent, now = Date.now()) {
   const round = Math.min(room.rounds.length + 1, 3);
@@ -89,10 +90,10 @@ export function roomView(room: ArenaRoom, after = 0, playerToken?: string, now =
     const live = room.live[p.id];
     return { playerId: p.id, name: p.name, points: saved.reduce((sum, s) => sum + s.points, 0) + (live?.points ?? 0), caught: saved.reduce((sum, s) => sum + s.caught.length, 0) + (live?.caught ?? 0), fixed: saved.reduce((sum, s) => sum + s.fixed.length, 0) + (live?.fixed ?? 0), falseAlarms: saved.reduce((sum, s) => sum + s.falseAlarms, 0) + (live?.falseAlarms ?? 0) };
   }).sort((a, b) => b.points - a.points);
-  const events = room.events.filter(e => e.seq > after && (!self || !('playerId' in e.event) || e.event.playerId === null || e.event.playerId === self.id));
+  const events = room.events.filter(e => e.seq > after && (!self || e.event.type === 'joined' || !('playerId' in e.event) || e.event.playerId === null || e.event.playerId === self.id));
   return {
     code: room.code, capacity: room.capacity, phase: room.phase, round: Math.min(room.rounds.length + 1, 3), canStart: canStartRoom(room, now),
-    players: room.players.map(p => ({ id: p.id, name: p.name, ready: p.strategyRound === room.rounds.length + 1, connected: now - p.lastSeen < 15000 })),
+    players: room.players.map(p => ({ id: p.id, name: p.name, publicBio: p.character?.publicBio ?? '', ready: p.strategyRound === room.rounds.length + 1, connected: now - p.lastSeen < 15000 })),
     standings, rounds: room.rounds, events, cursor: room.nextSeq - 1, error: room.error,
     ...(self ? { self: { id: self.id, name: self.name, ready: self.strategyRound === room.rounds.length + 1 } } : {}),
   };
