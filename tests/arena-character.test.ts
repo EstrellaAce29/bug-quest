@@ -1,16 +1,16 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, rm, stat, chmod } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, stat, chmod, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { parseTraits, validateCharacter, characterPolicy, containsPrivateEcho } from '../lib/arena-character.mjs';
+import { ANIMALS, parseAnimal, parseTraits, validateCharacter, characterPolicy, containsPrivateEcho } from '../lib/arena-character.mjs';
 import { traitChart, characterFile, characterWizard, saveCharacter, loadCharacter } from '../scripts/arena-character.mjs';
 import { expandCharacterStrategy, generateCharacterSpeech } from '../lib/arena-personality';
 import { createRoom, joinRoom, roomView, submitStrategy, startRoom, recordRoomEvent } from '../lib/arena-room';
 import { runArenaRound, type ArenaDependencies } from '../lib/arena';
 
 const privateText = 'My hidden compass points toward copper moons and I speak in clipped little questions.';
-const character = { traits: ['duplicate-hunter', 'speedrunner'], privateCharacter: privateText, publicBio: 'I follow suspicious rows. Ask me what the counts are hiding.' };
+const character = { animal: 'fox' as const, traits: ['duplicate-hunter', 'speedrunner'], privateCharacter: privateText, publicBio: 'I follow suspicious rows. Ask me what the counts are hiding.' };
 const signal = new AbortController().signal;
 const env = { NODE_ENV: 'test', OPENAI_API_KEY: 'fixture-key', OPENAI_MODEL: 'test-model' } as NodeJS.ProcessEnv;
 const checks = [
@@ -25,10 +25,10 @@ function model(output: unknown, capture?: (value: Record<string, any>) => void) 
   } };
 }
 
-test('trait chart has both numbered 3×3 grids; mixed own words and duplicate selections are preserved honestly', () => {
+test('trait chart has the 3×3 personality grid and numbered focus traits; mixed own words and duplicate selections are preserved honestly', () => {
   const chart = traitChart();
-  for (const name of ['Careful', 'Balanced', 'Bold', 'Data', 'Systems', 'Wild']) assert.ok(chart.includes(name));
-  for (let n = 1; n <= 18; n++) assert.match(chart, new RegExp(`\\b${n} `));
+  for (const name of ['Careful', 'Balanced', 'Bold', 'Data', 'Systems']) assert.ok(chart.includes(name));
+  for (let n = 1; n <= 15; n++) assert.match(chart, new RegExp(`\\b${n} `));
   assert.deepEqual(parseTraits('1, 11, 9, asks twice, THOROUGH, 11'), ['thorough', 'duplicate-hunter', 'speedrunner', 'asks twice']);
   for (const input of ['', '0', '19', '1, \u001b[2J']) assert.throws(() => parseTraits(input));
   assert.deepEqual(characterPolicy({ ...character, traits: ['constructor', '__proto__'] }).preferredInvariants, []);
@@ -38,22 +38,24 @@ test('trait chart has both numbered 3×3 grids; mixed own words and duplicate se
 
 test('character validation bounds fields, limits the public bio to three sentences, and strips unexpected keys', () => {
   const safe = validateCharacter({ ...character, privateToken: 'not-a-public-field' });
-  assert.deepEqual(Object.keys(safe).sort(), ['privateCharacter', 'publicBio', 'traits']);
+  assert.deepEqual(Object.keys(safe).sort(), ['animal', 'privateCharacter', 'publicBio', 'traits']);
   assert.throws(() => validateCharacter({ ...character, publicBio: 'One. Two. Three. Four.' }));
   assert.throws(() => validateCharacter({ ...character, privateCharacter: '' }));
   assert.throws(() => validateCharacter({ ...character, traits: ['bad\u001b'] }));
 });
 
-test('wizard asks four steps, echoes only traits, saves private profiles securely, and reuses them without retyping', async () => {
+test('wizard asks five steps, echoes only traits, saves private profiles securely, and reuses them without retyping', async () => {
   const directory = await mkdtemp(path.join(tmpdir(), 'arena-character-'));
   try {
-    const answers = ['Winter', '1, 11, 9, asks twice', privateText, character.publicBio];
+    const answers = ['Winter', '3', '1, 11, 9, asks twice', privateText, character.publicBio];
     const output: string[] = [], green: string[] = [];
     const profile = await characterWizard({ directory, ask: async (label: string) => { output.push(label); return answers.shift()!; }, print: (value: string) => output.push(value), green: (value: string) => green.push(value) });
-    for (let step = 1; step <= 4; step++) assert.ok(output.some(line => line.includes(`Step ${step}/4`)));
+    for (let step = 1; step <= 5; step++) assert.ok(output.some(line => line.includes(`Step ${step}/5`)));
+    assert.equal(profile.animal, 'fox');
     assert.equal(profile.privateCharacter, privateText);
     assert.ok(!output.join('\n').includes(privateText));
-    assert.match(green[0], /thorough, duplicate-hunter, speedrunner, asks twice/);
+    assert.equal(green[0], 'Chosen animal: fox');
+    assert.match(green.find(line => line.startsWith('Chosen traits:'))!, /thorough, duplicate-hunter, speedrunner, asks twice/);
     assert.equal((await stat(characterFile('Winter', directory))).mode & 0o777, 0o600);
     assert.equal((await stat(directory)).mode & 0o777, 0o700);
     const reused = await characterWizard({ directory, options: { character: 'Winter' }, ask: async () => { throw new Error('Unexpected prompt'); }, print: () => {}, green: () => {} });
@@ -140,4 +142,34 @@ test('character-aware expansion and speech preserve points and cleanup, even whe
   await runArenaRound(2, [player], ['half_load'], deps, signal, e => events.push(e));
   assert.deepEqual(spoken, ['catch', 'fix']);
   assert.equal(reset, 3);
+});
+
+
+test('animal choices accept exactly the eight offered species; visuals never change personality policy', () => {
+  assert.deepEqual(ANIMALS, ['rabbit', 'wolf', 'fox', 'owl', 'bear', 'cat', 'raccoon', 'hedgehog']);
+  for (let i = 0; i < ANIMALS.length; i++) {
+    assert.equal(parseAnimal(String(i + 1)), ANIMALS[i]);
+    assert.equal(parseAnimal(ANIMALS[i].toUpperCase()), ANIMALS[i]);
+    assert.equal(validateCharacter({ ...character, animal: ANIMALS[i] }).animal, ANIMALS[i]);
+    assert.deepEqual(characterPolicy({ ...character, animal: ANIMALS[i] }), characterPolicy(character));
+  }
+  for (const choice of ['0', '9', 'dragon', '', '\u001b[2J']) assert.throws(() => parseAnimal(choice));
+  assert.throws(() => validateCharacter({ ...character, animal: 'dragon' }));
+});
+
+test('saved four-step profiles ask once for an animal and keep private text during migration', async () => {
+  const directory = await mkdtemp(path.join(tmpdir(), 'bugquest-legacy-profile-'));
+  try {
+    const { animal: _animal, ...old } = character;
+    await writeFile(characterFile('Moss', directory), JSON.stringify({ version: 1, name: 'Moss', ...old }), { mode: 0o600 });
+    const labels: string[] = [];
+    const migrated = await characterWizard({ directory, options: { character: 'Moss' }, ask: async (label: string) => { labels.push(label); return '5'; }, print: () => {}, green: () => {} });
+    assert.equal(migrated.animal, 'bear');
+    assert.equal(migrated.privateCharacter, privateText);
+    assert.equal(labels.length, 1);
+    const saved = JSON.parse(await readFile(characterFile('Moss', directory), 'utf8'));
+    assert.equal(saved.version, 2);
+    assert.equal(saved.animal, 'bear');
+    await characterWizard({ directory, options: { character: 'Moss' }, ask: async () => { throw new Error('Migration repeated'); }, print: () => {}, green: () => {} });
+  } finally { await rm(directory, { recursive: true, force: true }); }
 });

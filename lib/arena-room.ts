@@ -12,7 +12,7 @@ export type ArenaRoom = {
 };
 export type RoomView = {
   code: string; capacity: number; phase: RoomPhase; round: number; canStart: boolean;
-  players: { id: string; name: string; publicBio: string; ready: boolean; connected: boolean }[];
+  players: { id: string; name: string; animal: string; publicBio: string; ready: boolean; connected: boolean }[];
   standings: Standing[]; rounds: RoundSummary[]; events: RoomEvent[]; cursor: number; error: string | null;
   self?: { id: string; name: string; ready: boolean };
 };
@@ -93,7 +93,7 @@ export function roomView(room: ArenaRoom, after = 0, playerToken?: string, now =
   const events = room.events.filter(e => e.seq > after && (!self || e.event.type === 'joined' || !('playerId' in e.event) || e.event.playerId === null || e.event.playerId === self.id));
   return {
     code: room.code, capacity: room.capacity, phase: room.phase, round: Math.min(room.rounds.length + 1, 3), canStart: canStartRoom(room, now),
-    players: room.players.map(p => ({ id: p.id, name: p.name, publicBio: p.character?.publicBio ?? '', ready: p.strategyRound === room.rounds.length + 1, connected: now - p.lastSeen < 15000 })),
+    players: room.players.map(p => ({ id: p.id, name: p.name, animal: p.character?.animal ?? 'rabbit', publicBio: p.character?.publicBio ?? '', ready: p.strategyRound === room.rounds.length + 1, connected: now - p.lastSeen < 15000 })),
     standings, rounds: room.rounds, events, cursor: room.nextSeq - 1, error: room.error,
     ...(self ? { self: { id: self.id, name: self.name, ready: self.strategyRound === room.rounds.length + 1 } } : {}),
   };

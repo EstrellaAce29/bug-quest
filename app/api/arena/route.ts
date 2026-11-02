@@ -21,10 +21,10 @@ function local(request: Request) {
 }
 
 export async function POST(request: Request) {
-  if (!local(request)) return Response.json({ error: 'Use the local Arena server on port 3000.' }, { status: 403 });
+  if (!local(request)) return Response.json({ error: 'Use the local Bug Quest server on port 3000.' }, { status: 403 });
   if (!request.headers.get('content-type')?.includes('application/json')) return Response.json({ error: 'Send JSON.' }, { status: 415 });
   const text = await request.text();
-  if (text.length > 10000) return Response.json({ error: 'Arena input is too long.' }, { status: 400 });
+  if (text.length > 10000) return Response.json({ error: 'Bug Quest input is too long.' }, { status: 400 });
   let input;
   try { input = JSON.parse(text); } catch { return Response.json({ error: 'Invalid JSON.' }, { status: 400 }); }
   if (!input || typeof input !== 'object') return Response.json({ error: 'Invalid request.' }, { status: 400 });
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
     }
     if (input.action === 'join') {
       const player = joinRoom(room, input.name, randomUUID(), Date.now(), input.character);
-      recordRoomEvent(room, { type: 'joined', playerId: player.id, name: player.name, publicBio: player.character?.publicBio ?? '' });
+      recordRoomEvent(room, { type: 'joined', playerId: player.id, name: player.name, animal: player.character?.animal ?? 'rabbit', publicBio: player.character?.publicBio ?? '' });
       return Response.json({ playerId: player.id, playerToken: player.token, room: roomView(room, 0, player.token) });
     }
     if (input.action === 'strategy') {
@@ -79,8 +79,8 @@ export async function POST(request: Request) {
         return Response.json({ error: 'Reset is still pending. Confirm Airflow is reachable, then retry Recover reset.' }, { status: 503 });
       } finally { state.arenaRecovering = false; }
     }
-    if (input.action !== 'start') throw new Error('Unknown Arena action.');
-    if (state.bugQuestLiveBusy) return Response.json({ error: 'Another quest or Arena round is running.' }, { status: 409 });
+    if (input.action !== 'start') throw new Error('Unknown Bug Quest action.');
+    if (state.bugQuestLiveBusy) return Response.json({ error: 'Another quest or Bug Quest round is running.' }, { status: 409 });
     if (state.arenaCleanupRequired || await hasArenaRecovery()) return Response.json({ error: 'An interrupted round needs Recover reset first.' }, { status: 409 });
     modelSettings();
     // Recheck after filesystem awaits to acquire the shared quest lock atomically.
@@ -105,5 +105,5 @@ export async function POST(request: Request) {
       }
     });
     return Response.json({ room: roomView(room) }, { status: 202 });
-  } catch (error) { return Response.json({ error: safe(error instanceof Error ? error.message : 'Arena request failed.') }, { status: 400 }); }
+  } catch (error) { return Response.json({ error: safe(error instanceof Error ? error.message : 'Bug Quest request failed.') }, { status: 400 }); }
 }

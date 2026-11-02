@@ -20,7 +20,7 @@ function harness() {
   return { deps, prepared, get resets() { return resets; } };
 }
 
-test('Arena accepts 2–4 unique agents and bounded coaching; rejects tampered rosters and plans', () => {
+test('Bug Quest accepts 2–4 unique agents and bounded coaching; rejects tampered rosters and plans', () => {
   assert.equal(players.length, 2);
   for (const value of [[], [players[0]], [...players, ...players, players[0]], [{ name: 'X', strategy: 'rows' }, { name: 'x', strategy: 'wins' }], [{ name: 'X', strategy: '' }, players[1]]]) assert.throws(() => validatePlayers(value));
   const check = { title: 'Rows', objective: 'Compare rows', invariant: 'rows', expectsBug: false };
@@ -85,7 +85,7 @@ test('a failed reset prevents summary/completion and cannot award unverified rep
   assert.equal(summary.scores[0].points, 20);
 });
 
-test('the Python fault parser preserves ordinary demo behavior and validates Arena opt-in', () => {
+test('the Python fault parser preserves ordinary demo behavior and validates Bug Quest opt-in', () => {
   const source = readFileSync('real-pipeline/dags/tennis_tournament_pipeline.py', 'utf8');
   const script = `import ast,json,sys\nsource=ast.parse(sys.stdin.read())\nf=next(n for n in source.body if isinstance(n,ast.FunctionDef) and n.name=='arena_faults')\nns={}\nexec(compile(ast.Module(body=[f],type_ignores=[]),'faults','exec'),ns)\nclass Run: pass\nr=Run()\nns['get_current_context']=lambda:{'dag_run':r}\nr.conf={}\nassert ns['arena_faults']() is None\nr.conf={'bug_quest_arena':{'half_load':False,'standings_loss':False}}\nassert ns['arena_faults']()=={'half_load':False,'standings_loss':False}\nfor bad in [{'half_load':True},{'half_load':'false','standings_loss':False},[]]:\n r.conf={'bug_quest_arena':bad}\n try: ns['arena_faults'](); raise AssertionError('accepted bad config')\n except ValueError: pass\n`;
   const result = spawnSync('python3', ['-c', script], { input: source, encoding: 'utf8', timeout: 10000 });

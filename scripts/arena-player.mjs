@@ -18,13 +18,13 @@ export function controllerOptions(args) {
   }
   if (options.character && (options.new || options.name)) throw new Error('Use --character to reuse a profile, or --name with --new to create one.');
   const url = new URL(options.url || 'http://127.0.0.1:3000');
-  if (!['localhost', '127.0.0.1'].includes(url.hostname) || url.protocol !== 'http:' || url.port !== '3000' || url.username || url.password || url.pathname !== '/' || url.search || url.hash) throw new Error('Use the local Arena server at http://127.0.0.1:3000.');
+  if (!['localhost', '127.0.0.1'].includes(url.hostname) || url.protocol !== 'http:' || url.port !== '3000' || url.username || url.password || url.pathname !== '/' || url.search || url.hash) throw new Error('Use the local Bug Quest server at http://127.0.0.1:3000.');
   return { ...options, url: url.origin };
 }
 export async function arenaRequest(url, body, signal) {
   const response = await fetch(`${url}/api/arena`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: AbortSignal.any([signal, AbortSignal.timeout(15000)]) });
   const data = await response.json();
-  if (!response.ok) { const error = new Error(data.error || `Arena HTTP ${response.status}`); error.httpStatus = response.status; throw error; }
+  if (!response.ok) { const error = new Error(data.error || `Bug Quest HTTP ${response.status}`); error.httpStatus = response.status; throw error; }
   return data;
 }
 export function terminalText(value) {
@@ -33,7 +33,7 @@ export function terminalText(value) {
 }
 export function playerEventText(envelope, playerId) {
   const e = envelope.event;
-  if (e.type === 'joined') return `${e.name} joined${e.publicBio ? ` · ${e.publicBio}` : ''}`;
+  if (e.type === 'joined') return `${e.name}${e.animal ? ` the ${e.animal}` : ''} joined${e.publicBio ? ` · ${e.publicBio}` : ''}`;
   if (e.type === 'speech' && e.playerId === playerId) return `Your agent: “${e.text}”`;
   if (e.type === 'award' && e.playerId === playerId) return `${e.amount > 0 ? '+' : ''}${e.amount} · ${e.reason === 'catch' ? 'bug caught' : e.reason === 'fix' ? 'verified fix' : 'false alarm'}`;
   if (e.type === 'turn' && e.playerId === playerId) return `Your turn · ${e.runId}`;
@@ -47,7 +47,7 @@ export function playerEventText(envelope, playerId) {
 
 export async function runController(args = process.argv.slice(2)) {
   const options = controllerOptions(args);
-  if (options.help) { stdout.write('npm run arena:player -- --code CODE --name "Agent"\nCreate a character in four steps, or add --character NAME to reuse one. --new rewrites a saved character.\nOne terminal per player. Keep it open for all three rounds. Ctrl+C disconnects without stopping the game.\n'); return; }
+  if (options.help) { stdout.write('npm run arena:player -- --code CODE --name "Agent"\nCreate a character in five steps, or add --character NAME to reuse one. --new rewrites a saved character.\nOne terminal per player. Keep it open for all three rounds. Ctrl+C disconnects without stopping the game.\n'); return; }
   const stop = new AbortController();
   let heartbeat;
   const rl = createInterface({ input: stdin, output: stdout });
@@ -64,7 +64,7 @@ export async function runController(args = process.argv.slice(2)) {
       stdout.write(stdout.isTTY && !process.env.NO_COLOR ? `\x1b[32m${safe}\x1b[0m\n` : safe + '\n');
     } });
     const name = profile.name;
-    const character = { traits: profile.traits, privateCharacter: profile.privateCharacter, publicBio: profile.publicBio };
+    const character = { animal: profile.animal, traits: profile.traits, privateCharacter: profile.privateCharacter, publicBio: profile.publicBio };
     const code = (options.code || await ask('Game code? ')).trim().toUpperCase();
     if (!/^[A-Z2-9]{6}$/.test(code)) throw new Error('Enter the six-character game code shown in the browser.');
     const sessionFile = path.resolve(options.session || path.join('.arena', `${code}-${createHash('sha256').update(name).digest('hex').slice(0, 20)}.json`));
@@ -82,7 +82,7 @@ export async function runController(args = process.argv.slice(2)) {
       await mkdir(path.dirname(sessionFile), { recursive: true });
       await writeFile(sessionFile, JSON.stringify({ code, name, url: options.url, token }), { mode: 0o600 });
     }
-    print(`\nBUG QUEST ARENA · ${code}\nJoined as ${name}. Watch ${options.url}/arena?code=${code}\nYour controller reconnects when you repeat this command. Ctrl+C leaves play running.\n`);
+    print(`\nBUG QUEST · ${code}\nJoined as ${name}. Watch ${options.url}/arena?code=${code}\nYour controller reconnects when you repeat this command. Ctrl+C leaves play running.\n`);
     let cursor = 0; let failures = 0; let lastPhase = ''; const printedRounds = new Set();
     // Coaching is interactive: keep presence alive without consuming events while
     // the main loop waits at the prompt. The next poll still prints each result.
@@ -99,7 +99,7 @@ export async function runController(args = process.argv.slice(2)) {
       catch (error) {
         if (stop.signal.aborted) break;
         if (error.httpStatus) throw error;
-        if (++failures > 5) throw new Error('Arena server is unavailable. Repeat this command after the server returns.');
+        if (++failures > 5) throw new Error('Bug Quest server is unavailable. Repeat this command after the server returns.');
         print('Connection interrupted; retrying…'); await delay(2000, undefined, { signal: stop.signal }); continue;
       }
       for (const event of room.events) { const text = playerEventText(event, playerId); if (text) print(text); }

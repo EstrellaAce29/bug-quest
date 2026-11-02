@@ -1,0 +1,231 @@
+{
+  "verifiedAt": "2026-11-01",
+  "checks": {
+    "typecheck": "passed",
+    "tests": {
+      "passed": 56,
+      "failed": 0,
+      "skipped": 0
+    },
+    "terminalPlayers": 2,
+    "wizardSteps": 5,
+    "savedProfileReuse": "Juniper reconnected using --character; animal and traits restored without wizard",
+    "greenEcho": "animal and traits observed green in color-enabled terminals",
+    "privateFieldsInRoomResponses": false,
+    "privatePassageEchoesObserved": false,
+    "profileFileMode": "0600",
+    "profileDirectoryMode": "0700",
+    "liveRoundsVerified": 1,
+    "animationScope": "Original SVGs for all eight species; CSS idle, join, thinking, score reactions and leaderboard transitions. Browser assertions cover two selected species and stable before/after states, not every animation frame."
+  },
+  "players": [
+    {
+      "id": "player-1",
+      "name": "Juniper",
+      "animal": "rabbit",
+      "publicBio": "I follow every row from start to finish. Quiet paws, careful counts."
+    },
+    {
+      "id": "player-2",
+      "name": "Pebble",
+      "animal": "fox",
+      "publicBio": "Quick questions and a nose for copies. I make one sharp check at a time."
+    }
+  ],
+  "plans": [
+    {
+      "type": "plan",
+      "playerId": "player-1",
+      "checks": [
+        {
+          "title": "Verify row conservation",
+          "objective": "Compare extracted metadata rows and loaded matches; both counts should equal 2986.",
+          "invariant": "rows",
+          "expectsBug": false
+        },
+        {
+          "title": "Verify win conservation",
+          "objective": "Sum player wins in the standings and compare the total with loaded matches.",
+          "invariant": "wins",
+          "expectsBug": false
+        },
+        {
+          "title": "Verify run completion",
+          "objective": "Use Kane and REST to confirm the run and all six tasks succeeded.",
+          "invariant": "tasks",
+          "expectsBug": false
+        }
+      ]
+    },
+    {
+      "type": "plan",
+      "playerId": "player-2",
+      "checks": [
+        {
+          "title": "Check for duplicate match payloads",
+          "objective": "Use SQL to verify that warehouse.matches contains no duplicate full match payloads.",
+          "invariant": "duplicates",
+          "expectsBug": true
+        }
+      ]
+    }
+  ],
+  "speeches": [
+    {
+      "type": "speech",
+      "playerId": "player-1",
+      "text": "A neat little catch; every detail hopped into place.",
+      "reason": "catch"
+    },
+    {
+      "type": "speech",
+      "playerId": "player-1",
+      "text": "All set; the details are back in order.",
+      "reason": "fix"
+    },
+    {
+      "type": "speech",
+      "playerId": "player-2",
+      "text": "A convincing shadow, then. What made us think otherwise?",
+      "reason": "false_alarm"
+    }
+  ],
+  "awards": [
+    {
+      "type": "award",
+      "playerId": "player-1",
+      "amount": 20,
+      "reason": "catch"
+    },
+    {
+      "type": "award",
+      "playerId": "player-1",
+      "amount": 15,
+      "reason": "fix"
+    },
+    {
+      "type": "award",
+      "playerId": "player-2",
+      "amount": -5,
+      "reason": "false_alarm"
+    }
+  ],
+  "findings": [
+    {
+      "type": "finding",
+      "playerId": "player-1",
+      "finding": {
+        "invariant": "rows",
+        "reportedBug": true,
+        "summary": "FAIL · SQL run arena_366eb6d8-f804-4503-9bad-a453bac10723: extracted 2986; loaded 1493."
+      }
+    },
+    {
+      "type": "finding",
+      "playerId": "player-1",
+      "finding": {
+        "invariant": "wins",
+        "reportedBug": false,
+        "summary": "PASS · SQL run arena_366eb6d8-f804-4503-9bad-a453bac10723: loaded 1493; total wins 1493."
+      }
+    },
+    {
+      "type": "finding",
+      "playerId": "player-1",
+      "finding": {
+        "invariant": "tasks",
+        "reportedBug": false,
+        "summary": "Opened Airflow to review the tennis_tournament_pipeline run; no sign-in was needed because an active session was already available.\nVerified that run arena_366eb6d8-f804-4503-9bad-a453bac10723 completed successfully.\nConfirmed that all six tasks—extract, validate, transform, load, standings, and report—completed successfully. REST cross-check of pinned run: all six tasks success.",
+        "testUrl": "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M6CSTDJ83V102QZ1M9GWFDN3/dashboard/share/US_7LQ0OJ367M4LVINMEKSMLLW6KNMGQKXGEOO7WKYFA85AVMI3ZFNWUL77850N1YF7?type=summary&agentView=true&fqdn=summary-page"
+      }
+    },
+    {
+      "type": "finding",
+      "playerId": "player-2",
+      "finding": {
+        "invariant": "duplicates",
+        "reportedBug": true,
+        "summary": "PASS · SQL run arena_e78f6ef8-1050-48b6-a5fb-54376eecacfd: duplicate full match payloads 0. Claimed defect was not present: false alarm."
+      }
+    }
+  ],
+  "repairVerification": [
+    {
+      "type": "log",
+      "playerId": "player-1",
+      "message": "Repair verified on arena_4fad2af4-3816-401f-b10f-444076d53c29: SQL invariants and Kane + REST passed."
+    }
+  ],
+  "round": {
+    "round": 1,
+    "planted": [
+      "half_load"
+    ],
+    "scores": [
+      {
+        "playerId": "player-1",
+        "caught": [
+          "half_load"
+        ],
+        "fixed": [
+          "half_load"
+        ],
+        "falseAlarms": 0,
+        "points": 35
+      },
+      {
+        "playerId": "player-2",
+        "caught": [],
+        "fixed": [],
+        "falseAlarms": 1,
+        "points": -5
+      }
+    ],
+    "resetRunId": "arena_8168329f-db89-4bfd-837f-0fdea14b7a41"
+  },
+  "standings": [
+    {
+      "playerId": "player-1",
+      "name": "Juniper",
+      "points": 35,
+      "caught": 1,
+      "fixed": 1,
+      "falseAlarms": 0
+    },
+    {
+      "playerId": "player-2",
+      "name": "Pebble",
+      "points": -5,
+      "caught": 0,
+      "fixed": 0,
+      "falseAlarms": 1
+    }
+  ],
+  "finalWarehouse": {
+    "runId": "arena_8168329f-db89-4bfd-837f-0fdea14b7a41",
+    "extractedRows": 2986,
+    "matchesLoaded": 2986,
+    "totalWins": 2986,
+    "checkerExit": 0
+  },
+  "browserChecks": {
+    "lobby": {
+      "status": "passed",
+      "resultCode": 100,
+      "summary": "Opened the shared Bug Quest game without starting a round.\nConfirmed the page title is “Bug Quest” and that “Bug Quest Arena” is not shown.\nConfirmed Juniper appears as a rabbit and Pebble as a fox on both the stage and leaderboard.\nConfirmed the stage displays Juniper’s and Pebble’s public bios.\nThe shared game was opened successfully and remained before the start of any round.",
+      "durationSeconds": 52.1,
+      "credits": 14.115829999999999,
+      "testManagerUrl": "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M6CSJCCWTR23A2B3W5Z2W6D1/dashboard/share/US_1MF4DT7LJCIXETKTDX363UVOMVA2UB1J4V0LHHBZ40X1N8VAPLNIAVX07N67IKQE?type=summary&agentView=true&fqdn=summary-page",
+      "steps": 6
+    },
+    "results": {
+      "status": "passed",
+      "resultCode": 100,
+      "summary": "Opened the shared Bug Quest game without starting another round or changing any settings.\nConfirmed the leaderboard showed Juniper with 35 points and Pebble with -5 points.\nConfirmed Juniper was shown as a rabbit and Pebble as a fox, with short reactions displayed for both characters.\nConfirmed the Round 1 reveal included a clean reset run ID.",
+      "durationSeconds": 46.8,
+      "credits": 13.939379999999998,
+      "testManagerUrl": "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M6CT4GFWSSQ4YBKWE2QKQ5C6/dashboard/share/US_HB06WNSOL31N3X1LMVNK16VEUAZBTV3B41CCDOY8EBAVDQA2TVOLSVPKJDA1MJCB?type=summary&agentView=true&fqdn=summary-page",
+      "steps": 6
+    }
+  }
+}

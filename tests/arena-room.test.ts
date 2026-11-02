@@ -95,3 +95,13 @@ test('failed rounds void provisional awards and require fresh coaching; recovery
   assert.equal(room.phase, 'coaching');
   assert.equal(one.strategyRound, 0);
 });
+
+
+test('Bug Quest publishes the chosen animal and bio without publishing private character fields', () => {
+  const room = createRoom('BUG234', 'host-only', 2, 1000);
+  joinRoom(room, 'Pip', 'pip-token', 1000, { animal: 'hedgehog', traits: ['curious'], privateCharacter: 'A private goal nobody should read.', publicBio: 'I check the small details.' });
+  const view = roomView(room, 0, undefined, 1000);
+  assert.equal(view.players[0].animal, 'hedgehog');
+  assert.equal(view.players[0].publicBio, 'I check the small details.');
+  assert.ok(!JSON.stringify(view).includes('private goal'));
+});

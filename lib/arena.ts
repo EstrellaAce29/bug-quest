@@ -16,7 +16,7 @@ export type ArenaFinding = { invariant: ArenaCheck['invariant']; reportedBug: bo
 export type ArenaScore = { playerId: string; caught: ArenaBug[]; fixed: ArenaBug[]; falseAlarms: number; points: number };
 export type RoundSummary = { round: number; planted: ArenaBug[]; scores: ArenaScore[]; resetRunId: string };
 export type ArenaEvent =
-  | { type: 'joined'; playerId: string; name: string; publicBio: string }
+  | { type: 'joined'; playerId: string; name: string; animal?: string; publicBio: string }
   | { type: 'speech'; playerId: string; text: string; reason: SpeechReason }
   | { type: 'award'; playerId: string; amount: 20 | 15 | -5; reason: 'catch' | 'fix' | 'false_alarm' }
   | { type: 'log'; playerId: string | null; message: string }
@@ -40,7 +40,7 @@ export function validatePlayers(value: unknown): ArenaPlayer[] {
 export function validateArenaPlan(value: unknown): ArenaCheck[] {
   const checks = (value as { checks?: unknown })?.checks;
   if (!Array.isArray(checks) || checks.length < 1 || checks.length > 3) throw new Error('The model must return 1–3 checks.');
-  if (checks.some(c => !c || !['rows', 'wins', 'duplicates', 'tasks'].includes(c.invariant) || typeof c.expectsBug !== 'boolean' || typeof c.title !== 'string' || !c.title.trim() || c.title.length > 120 || typeof c.objective !== 'string' || !c.objective.trim() || c.objective.length > 2000)) throw new Error('The model returned an invalid Arena check.');
+  if (checks.some(c => !c || !['rows', 'wins', 'duplicates', 'tasks'].includes(c.invariant) || typeof c.expectsBug !== 'boolean' || typeof c.title !== 'string' || !c.title.trim() || c.title.length > 120 || typeof c.objective !== 'string' || !c.objective.trim() || c.objective.length > 2000)) throw new Error('The model returned an invalid Bug Quest check.');
   if (new Set(checks.map(c => c.invariant)).size !== checks.length) throw new Error('The model repeated an invariant.');
   return checks.map(({ title, objective, invariant, expectsBug }) => ({ title, objective, invariant, expectsBug }));
 }
@@ -126,7 +126,7 @@ export async function runArenaRound(round: number, players: ArenaPlayer[], plant
       log(`Turn complete: ${score.points} points.`);
     }
   } finally {
-    emit({ type: 'log', playerId: null, message: 'Resetting both Arena faults off and verifying a clean warehouse run.' });
+    emit({ type: 'log', playerId: null, message: 'Resetting both Bug Quest faults off and verifying a clean warehouse run.' });
     // Independent cleanup must finish even after Stop, disconnect, or a model/browser failure.
     resetRunId = await deps.reset();
   }
