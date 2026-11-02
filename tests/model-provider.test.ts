@@ -17,7 +17,7 @@ test('OpenAI adapter uses structured Responses output and keeps provider errors 
 });
 
 test('Ollama adapter sends schema and messages locally without OpenAI credentials', async () => {
-  const result = await structuredModel('rules', { strategy: 'wins' }, { type: 'object' }, signal, { env: { ...env, ARENA_MODEL_PROVIDER: 'ollama', OLLAMA_MODEL: 'llama-test' }, fetch: async (url, init) => {
+  const result = await structuredModel('rules', { strategy: 'wins' }, { type: 'object' }, signal, { env: { ...env, PLAY_MODEL_PROVIDER: 'ollama', OLLAMA_MODEL: 'llama-test' }, fetch: async (url, init) => {
     assert.equal(url, 'http://127.0.0.1:11434/api/chat');
     assert.equal((init?.headers as Record<string, string>).Authorization, undefined);
     const body = JSON.parse(String(init?.body));
@@ -26,8 +26,8 @@ test('Ollama adapter sends schema and messages locally without OpenAI credential
     return Response.json({ done: true, message: { content: '{"ok":true}' } });
   } });
   assert.deepEqual(result, { ok: true });
-  assert.throws(() => modelSettings({ ...env, ARENA_MODEL_PROVIDER: 'unknown' }));
-  assert.throws(() => modelSettings({ ...env, ARENA_MODEL_PROVIDER: 'ollama', OLLAMA_BASE_URL: 'https://remote.example' }));
+  assert.throws(() => modelSettings({ ...env, PLAY_MODEL_PROVIDER: 'unknown' }));
+  assert.throws(() => modelSettings({ ...env, PLAY_MODEL_PROVIDER: 'ollama', OLLAMA_BASE_URL: 'https://remote.example' }));
 });
 
 test('adapters reject truncated and malformed output rather than running unvalidated checks', async () => {

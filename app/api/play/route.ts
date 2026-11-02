@@ -1,18 +1,18 @@
 import { randomInt, randomUUID } from 'node:crypto';
 import { after } from 'next/server';
-import { chooseBugs, runArenaRound, type ArenaEvent } from '@/lib/arena';
-import { createRoom, joinRoom, requireHost, roomPlayer, roomView, startRoom, submitStrategy, recordRoomEvent, finishRoomJob, type ArenaRoom } from '@/lib/arena-room';
+import { chooseBugs, runPlayRound, type PlayEvent } from '@/lib/play';
+import { createRoom, joinRoom, requireHost, roomPlayer, roomView, startRoom, submitStrategy, recordRoomEvent, finishRoomJob, type PlayRoom } from '@/lib/play-room';
 import { modelSettings } from '@/lib/model-provider';
-import { arenaAirflow, hasArenaRecovery } from '@/lib/server/arena-airflow';
+import { playAirflow, hasPlayRecovery } from '@/lib/server/play-airflow';
 import { redact } from '@/lib/quest-contract';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 7200;
 const state = globalThis as typeof globalThis & {
-  bugQuestLiveBusy?: boolean; arenaCleanupRequired?: boolean; arenaRecovering?: boolean; arenaRooms?: Map<string, ArenaRoom>;
+  bugQuestLiveBusy?: boolean; playCleanupRequired?: boolean; playRecovering?: boolean; playRooms?: Map<string, PlayRoom>;
 };
-const rooms = state.arenaRooms ??= new Map();
+const rooms = state.playRooms ??= new Map();
 const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 function code() { return Array.from({ length: 6 }, () => alphabet[randomInt(alphabet.length)]).join(''); }
 function local(request: Request) {
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
   try {
     if (input.action === 'state') {
       if (input.playerToken) roomPlayer(room, input.playerToken);
-      return Response.json({ room: roomView(room, Number.isSafeInteger(input.after) && input.after >= 0 ? input.after : 0, input.playerToken), recovery: !!state.arenaCleanupRequired || (!state.bugQuestLiveBusy && await hasArenaRecovery()) }, { headers: { 'Cache-Control': 'no-store' } });
+      return Response.json({ room: roomView(room, Number.isSafeInteger(input.after) && input.after >= 0 ? input.after : 0, input.playerToken), recovery: !!state.playCleanupRequired || (!state.bugQuestLiveBusy && await hasPlayRecovery()) }, { headers: { 'Cache-Control': 'no-store' } });
     }
     if (input.action === 'join') {
       const player = joinRoom(room, input.name, randomUUID(), Date.now(), input.character);
@@ -67,21 +67,21 @@ export async function POST(request: Request) {
       return Response.json({ stopping: true });
     }
     if (input.action === 'recover') {
-      if (state.arenaRecovering || (state.bugQuestLiveBusy && !state.arenaCleanupRequired)) return Response.json({ error: 'A quest or round is still running.' }, { status: 409 });
-      state.bugQuestLiveBusy = true; state.arenaRecovering = true; room.phase = 'resetting';
+      if (state.playRecovering || (state.bugQuestLiveBusy && !state.playCleanupRequired)) return Response.json({ error: 'A quest or round is still running.' }, { status: 409 });
+      state.bugQuestLiveBusy = true; state.playRecovering = true; room.phase = 'resetting';
       try {
-        const runId = await arenaAirflow(message => recordRoomEvent(room, { type: 'log', playerId: null, message: safe(message) })).reset();
-        state.arenaCleanupRequired = false; state.bugQuestLiveBusy = false;
+        const runId = await playAirflow(message => recordRoomEvent(room, { type: 'log', playerId: null, message: safe(message) })).reset();
+        state.playCleanupRequired = false; state.bugQuestLiveBusy = false;
         finishRoomJob(room, false); room.error = null;
         return Response.json({ runId });
       } catch {
-        state.arenaCleanupRequired = true; room.phase = 'recovery';
+        state.playCleanupRequired = true; room.phase = 'recovery';
         return Response.json({ error: 'Reset is still pending. Confirm Airflow is reachable, then retry Recover reset.' }, { status: 503 });
-      } finally { state.arenaRecovering = false; }
+      } finally { state.playRecovering = false; }
     }
     if (input.action !== 'start') throw new Error('Unknown Bug Quest action.');
     if (state.bugQuestLiveBusy) return Response.json({ error: 'Another quest or Bug Quest round is running.' }, { status: 409 });
-    if (state.arenaCleanupRequired || await hasArenaRecovery()) return Response.json({ error: 'An interrupted round needs Recover reset first.' }, { status: 409 });
+    if (state.playCleanupRequired || await hasPlayRecovery()) return Response.json({ error: 'An interrupted round needs Recover reset first.' }, { status: 409 });
     modelSettings();
     // Recheck after filesystem awaits to acquire the shared quest lock atomically.
     if (state.bugQuestLiveBusy) return Response.json({ error: 'Another round just started.' }, { status: 409 });
@@ -90,18 +90,18 @@ export async function POST(request: Request) {
     const signal = room.controller!.signal;
     const round = room.rounds.length + 1;
     after(async () => {
-      const emit = (event: ArenaEvent) => recordRoomEvent(room, JSON.parse(safe(JSON.stringify(event))));
+      const emit = (event: PlayEvent) => recordRoomEvent(room, JSON.parse(safe(JSON.stringify(event))));
       const heartbeat = setInterval(() => emit({ type: 'log', playerId: null, message: 'Airflow and agent checks are still running…' }), 15000);
       try {
-        await runArenaRound(round, players, chooseBugs(randomInt), arenaAirflow(message => emit({ type: 'log', playerId: null, message })), signal, emit);
+        await runPlayRound(round, players, chooseBugs(randomInt), playAirflow(message => emit({ type: 'log', playerId: null, message })), signal, emit);
       } catch (error) {
         emit({ type: 'error', message: signal.aborted ? 'Round stopped. Its scores are void; faults are being reset.' : safe(error instanceof Error ? error.message : 'Round failed; no round scores saved.') });
       } finally {
         clearInterval(heartbeat);
-        try { state.arenaCleanupRequired = await hasArenaRecovery(); }
-        catch { state.arenaCleanupRequired = true; }
-        state.bugQuestLiveBusy = state.arenaCleanupRequired;
-        finishRoomJob(room, !!state.arenaCleanupRequired);
+        try { state.playCleanupRequired = await hasPlayRecovery(); }
+        catch { state.playCleanupRequired = true; }
+        state.bugQuestLiveBusy = state.playCleanupRequired;
+        finishRoomJob(room, !!state.playCleanupRequired);
       }
     });
     return Response.json({ room: roomView(room) }, { status: 202 });

@@ -122,7 +122,7 @@
         "points": 0
       }
     ],
-    "resetRunId": "arena_1f1867cb-577d-4bb3-87d5-e180584e75fc"
+    "resetRunId": "play_1f1867cb-577d-4bb3-87d5-e180584e75fc"
   },
   "standings": [
     {
@@ -143,7 +143,7 @@
     }
   ],
   "finalWarehouse": {
-    "runId": "arena_1f1867cb-577d-4bb3-87d5-e180584e75fc",
+    "runId": "play_1f1867cb-577d-4bb3-87d5-e180584e75fc",
     "extractedRows": 2986,
     "matchesLoaded": 2986,
     "totalWins": 2986,
@@ -153,7 +153,7 @@
     "bios": {
       "status": "passed",
       "resultCode": 100,
-      "summary": "Opened the shared Arena HDAFV3 as requested.\nConfirmed that the public character bios are visible: Winter says, “I follow repeated records. I keep my checks short,” and Blaze says, “I count before I cheer. Bring me rows that do not add up.”\nConfirmed that both robot hunters, Winter and Blaze, are present and marked ready.\nDid not start a round or change any game settings.",
+      "summary": "Opened the shared Play HDAFV3 as requested.\nConfirmed that the public character bios are visible: Winter says, “I follow repeated records. I keep my checks short,” and Blaze says, “I count before I cheer. Bring me rows that do not add up.”\nConfirmed that both robot hunters, Winter and Blaze, are present and marked ready.\nDid not start a round or change any game settings.",
       "durationSeconds": 28,
       "credits": 16.6279475,
       "testManagerUrl": "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M6CR0S9YR5259JZM43DY0GDJ/dashboard/share/US_C0SEHQ850DG51QPRLUO6DTIAYLJXIVDYW7KCZ2OSJKPRI32QLDOT8DEZTPWSZEAC?type=summary&agentView=true&fqdn=summary-page"
@@ -161,7 +161,7 @@
     "speechBubbles": {
       "status": "passed",
       "resultCode": 100,
-      "summary": "Opened Arena HDAFV3 as requested.\nConfirmed that public bio cards are shown for Winter and Blaze.\nConfirmed Winter’s message reads “Gone again. What did we overlook?” and Blaze’s reads “That’s fixed; let’s check it holds.”\nConfirmed the round 1 leaderboard shows Blaze with 70 points and Winter with 0 points, and the reveal includes a clean reset run ID.\nLeft the settings unchanged and did not start round 2.",
+      "summary": "Opened Play HDAFV3 as requested.\nConfirmed that public bio cards are shown for Winter and Blaze.\nConfirmed Winter’s message reads “Gone again. What did we overlook?” and Blaze’s reads “That’s fixed; let’s check it holds.”\nConfirmed the round 1 leaderboard shows Blaze with 70 points and Winter with 0 points, and the reveal includes a clean reset run ID.\nLeft the settings unchanged and did not start round 2.",
       "durationSeconds": 46.4,
       "credits": 12.75151,
       "testManagerUrl": "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M6CRDNKE0TK3371RPXDE6YTJ/dashboard/share/US_E6RVHJ173K91UMGQ9BYD68SSTA0WNV9EOYYNYC103ZGA2TSOXUGXZCU8B5KTYB0I?type=summary&agentView=true&fqdn=summary-page"

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { controllerOptions, terminalText, playerEventText } from '../scripts/arena-player.mjs';
+import { controllerOptions, terminalText, playerEventText } from '../scripts/player.mjs';
 
 test('terminal controller accepts local game connections and rejects remote or credential URLs', () => {
   const options = controllerOptions(['--code', 'ABCD23', '--name', 'Moss']);

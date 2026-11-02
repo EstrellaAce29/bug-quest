@@ -2,22 +2,22 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { BUG_LABELS } from '@/lib/arena';
-import type { RoomEvent, RoomView } from '@/lib/arena-room';
+import { BUG_LABELS } from '@/lib/play';
+import type { RoomEvent, RoomView } from '@/lib/play-room';
 import Animal, { PLAYER_COLORS } from './animal';
-import { ANIMALS } from '@/lib/arena-character.mjs';
-import styles from './arena.module.css';
+import { ANIMALS } from '@/lib/play-character.mjs';
+import styles from './play.module.css';
 
 type Connection = { code: string; hostToken?: string };
-const SESSION = 'bug-quest-arena-host-v2';
+const SESSION = 'bug-quest-play-host-v2';
 async function request(body: unknown, signal?: AbortSignal) {
-  const response = await fetch('/api/arena', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(20000)]) : AbortSignal.timeout(20000) });
+  const response = await fetch('/api/play', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(20000)]) : AbortSignal.timeout(20000) });
   const data = await response.json();
   if (!response.ok) throw new Error(data.error || 'Bug Quest request failed.');
   return data;
 }
 
-export default function Arena() {
+export default function Play() {
   const [connection, setConnection] = useState<Connection | null>(null);
   const [room, setRoom] = useState<RoomView | null>(null);
   const [events, setEvents] = useState<RoomEvent[]>([]);
@@ -62,7 +62,7 @@ export default function Arena() {
       const session = { code: data.room.code, hostToken: data.hostToken };
       sessionStorage.setItem(SESSION, JSON.stringify(session));
       setRoom(data.room); setConnection(session);
-      window.history.replaceState(null, '', `/arena?code=${session.code}`);
+      window.history.replaceState(null, '', `/play?code=${session.code}`);
     } catch (e) { setError(e instanceof Error ? e.message : 'Could not create lobby.'); }
     finally { setBusy(false); }
   }
@@ -71,7 +71,7 @@ export default function Arena() {
     setBusy(true); setError(''); setMessage('');
     try {
       // A verified reset can take longer than ordinary polling requests.
-      const response = await fetch('/api/arena', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action, ...connection, round: room.round }) });
+      const response = await fetch('/api/play', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action, ...connection, round: room.round }) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Could not control this round.');
       if (data.room) setRoom(data.room);
@@ -82,7 +82,7 @@ export default function Arena() {
   }
   function newLobby() {
     sessionStorage.removeItem(SESSION); setConnection(null); setRoom(null); setEvents([]); setError(''); setMessage(''); cursor.current = 0;
-    window.history.replaceState(null, '', '/arena');
+    window.history.replaceState(null, '', '/play');
   }
   const playing = room?.phase === 'running' || room?.phase === 'resetting';
   const players = room?.players ?? [];
@@ -97,14 +97,14 @@ export default function Arena() {
   const phaseLabel = !room ? connection ? 'CONNECTING' : 'READY TO HOST' : room.phase === 'lobby' ? 'WAITING FOR HUNTERS' : room.phase === 'coaching' ? 'COACHING BREAK' : room.phase === 'running' ? 'HUNT IN PROGRESS' : room.phase === 'resetting' ? 'RESETTING FAULTS' : room.phase === 'recovery' ? 'RESET NEEDS RECOVERY' : 'GAME COMPLETE';
 
   return <div className={styles.shell}>
-    <header className={styles.header}><Link href="/arena" className={styles.brand}><span className={styles.brandIcon}>⌘</span> BUG QUEST</Link><div><Link href="/quest">Solo quest ↗</Link><Link href="/pipelines">Monitor ↗</Link><span className={styles.connection}><i className={connected ? styles.online : ''} />{connection ? connected ? 'LIVE' : 'RECONNECTING' : 'LOCAL PLAY'}</span></div></header>
+    <header className={styles.header}><Link href="/play" className={styles.brand}><span className={styles.brandIcon}>⌘</span> BUG QUEST</Link><div><Link href="/quest">Solo quest ↗</Link><Link href="/pipelines">Monitor ↗</Link><span className={styles.connection}><i className={connected ? styles.online : ''} />{connection ? connected ? 'LIVE' : 'RECONNECTING' : 'LOCAL PLAY'}</span></div></header>
     <main className={styles.main}>
       <section className={styles.hero}><div><p className={styles.eyebrow}>COACH YOUR BOT. CATCH THE BUGS.</p><h1>Bug Quest<span>Small paws. Sharp checks.</span></h1><p>A three-round showdown inside a real data pipeline.<br />The tasks are green. Your agents know better.</p></div><div className={styles.scoreRules}><span><b>+20</b> BUG CAUGHT</span><span><b>+15</b> VERIFIED FIX</span><span><b>−5</b> FALSE ALARM</span></div></section>
       {error && <div role="alert" className={styles.error}>{error}<button onClick={() => setError('')} aria-label="Dismiss error">×</button></div>}
       {message && <p role="status" className={styles.notice}>{message}</p>}
       <section className={styles.lobby} aria-label="Game lobby">
         <div><p className={styles.eyebrow}>{connection ? 'YOUR LOBBY' : 'HOST A SHOWDOWN'}</p>{connection ? <><strong className={styles.joinCode} aria-label="Game join code">{connection.code}</strong><p>{players.length}/{slots} hunters joined · {players.filter(p => p.ready).length} strategies ready</p></> : <><h2>Bring your terminal. Pick your hunter.</h2><p>One shared screen. One terminal per player. No sign-up.</p></>}</div>
-        <div className={styles.lobbyControls}>{!connection ? <><label>Player slots <select aria-label="Player slots" value={capacity} onChange={e => setCapacity(Number(e.target.value))}>{[2, 3, 4].map(n => <option key={n}>{n}</option>)}</select></label><button className={styles.primary} onClick={create} disabled={busy}>{busy ? 'Creating…' : 'Create lobby →'}</button></> : <><code>npm run arena:player -- --code {connection.code} --name &quot;Your agent&quot;</code><small>Run this in each player’s terminal from the project folder.</small></>}</div>
+        <div className={styles.lobbyControls}>{!connection ? <><label>Player slots <select aria-label="Player slots" value={capacity} onChange={e => setCapacity(Number(e.target.value))}>{[2, 3, 4].map(n => <option key={n}>{n}</option>)}</select></label><button className={styles.primary} onClick={create} disabled={busy}>{busy ? 'Creating…' : 'Create lobby →'}</button></> : <><code>npm run player -- --code {connection.code} --name &quot;Your agent&quot;</code><small>Run this in each player’s terminal from the project folder.</small></>}</div>
       </section>
       {players.some(player => player.publicBio) && <details className={styles.rosterBios}><summary>Meet the characters</summary><section className={styles.bioGrid} aria-label="Public character bios">{players.map(player => player.publicBio && <article key={player.id}><h2>{player.name} · {player.animal}</h2><p>{player.publicBio}</p></article>)}</section></details>}
       <div className={styles.gameLayout}>

@@ -17,15 +17,15 @@ RAW_FILE = Path(os.environ.get("TENNIS_CSV_PATH", "/opt/airflow/data/raw/atp_mat
 STAGING = Path("/opt/airflow/include/staging")
 
 
-def arena_faults():
-    # Opt-in, per-run Arena configuration. Ordinary /quest runs retain the
+def play_faults():
+    # Opt-in, per-run Play configuration. Ordinary /quest runs retain the
     # original planted half-batch defect, including its one-line repair target.
     conf = get_current_context()["dag_run"].conf or {}
-    flags = conf.get("bug_quest_arena")
+    flags = conf.get("bug_quest_play")
     if flags is None:
         return None
     if not isinstance(flags, dict) or set(flags) != {"half_load", "standings_loss"} or any(type(value) is not bool for value in flags.values()):
-        raise ValueError("Arena requires exactly two boolean fault switches.")
+        raise ValueError("Play requires exactly two boolean fault switches.")
     return flags
 
 
@@ -147,9 +147,9 @@ def tennis_tournament_pipeline():
         matches = data["rows"]
         # PLANTED BUG: accidental page-size limit silently drops the second half.
         matches_to_load = matches[:len(matches) // 2]
-        arena = arena_faults()
-        if arena is not None:
-            matches_to_load = matches if not arena["half_load"] else matches[:len(matches) // 2]
+        play = play_faults()
+        if play is not None:
+            matches_to_load = matches if not play["half_load"] else matches[:len(matches) // 2]
         with database() as connection:
             connection.execute("TRUNCATE TABLE warehouse.matches")
             with connection.cursor().copy("""
@@ -172,9 +172,9 @@ def tennis_tournament_pipeline():
                 SELECT winner_name, COUNT(*) FROM warehouse.matches
                 WHERE run_id = %s AND winner_name IS NOT NULL GROUP BY winner_name
             """, (run_id,))
-            arena = arena_faults()
-            if arena is not None and arena["standings_loss"]:
-                # ARENA PLANTED BUG: one legitimate win is lost for every player.
+            play = play_faults()
+            if play is not None and play["standings_loss"]:
+                # PLAY PLANTED BUG: one legitimate win is lost for every player.
                 connection.execute("UPDATE warehouse.player_wins SET wins = GREATEST(wins - 1, 0)")
             players = connection.execute("SELECT COUNT(*) FROM warehouse.player_wins").fetchone()[0]
         LOG.info("Built standings for %d players", players)

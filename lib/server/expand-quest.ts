@@ -49,7 +49,7 @@ Always include a row_conservation objective and a task_status objective. Prefer 
 
 // Bug Quest shares the Real Airflow expansion boundary and SQL/browser execution kinds,
 // but respects a player's scope instead of giving every player every invariant.
-export async function expandArenaStrategy(strategy: string, real: { runId: string; extractedRows: number }, signal: AbortSignal, character?: import('../arena').ArenaCharacter) {
-  const { expandCharacterStrategy } = await import('../arena-personality');
+export async function expandPlayStrategy(strategy: string, real: { runId: string; extractedRows: number }, signal: AbortSignal, character?: import('../play').PlayCharacter) {
+  const { expandCharacterStrategy } = await import('../play-personality');
   return expandCharacterStrategy(strategy, real, signal, character);
 }

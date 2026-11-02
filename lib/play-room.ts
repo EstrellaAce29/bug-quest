@@ -1,11 +1,11 @@
-import { validateCharacter } from './arena-character.mjs';
-import type { ArenaEvent, ArenaPlayer, RoundSummary } from './arena';
+import { validateCharacter } from './play-character.mjs';
+import type { PlayEvent, PlayPlayer, RoundSummary } from './play';
 
 export type RoomPhase = 'lobby' | 'coaching' | 'running' | 'resetting' | 'finished' | 'recovery';
-export type RoomPlayer = ArenaPlayer & { token: string; strategyRound: number; lastSeen: number };
-export type RoomEvent = { seq: number; at: number; round: number; event: ArenaEvent };
+export type RoomPlayer = PlayPlayer & { token: string; strategyRound: number; lastSeen: number };
+export type RoomEvent = { seq: number; at: number; round: number; event: PlayEvent };
 export type Standing = { playerId: string; name: string; points: number; caught: number; fixed: number; falseAlarms: number };
-export type ArenaRoom = {
+export type PlayRoom = {
   code: string; hostToken: string; capacity: number; created: number; phase: RoomPhase; rosterLocked: boolean;
   players: RoomPlayer[]; rounds: RoundSummary[]; events: RoomEvent[]; nextSeq: number;
   live: Record<string, Omit<Standing, 'name'>>; error: string | null; controller?: AbortController;
@@ -17,11 +17,11 @@ export type RoomView = {
   self?: { id: string; name: string; ready: boolean };
 };
 
-export function createRoom(code: string, hostToken: string, capacity: unknown, now = Date.now()): ArenaRoom {
+export function createRoom(code: string, hostToken: string, capacity: unknown, now = Date.now()): PlayRoom {
   if (!Number.isInteger(capacity) || Number(capacity) < 2 || Number(capacity) > 4) throw new Error('Choose 2–4 player slots.');
   return { code, hostToken, capacity: Number(capacity), created: now, phase: 'lobby', rosterLocked: false, players: [], rounds: [], events: [], nextSeq: 1, live: {}, error: null };
 }
-export function joinRoom(room: ArenaRoom, name: unknown, token: string, now = Date.now(), character?: unknown) {
+export function joinRoom(room: PlayRoom, name: unknown, token: string, now = Date.now(), character?: unknown) {
   if (room.phase !== 'lobby' || room.rosterLocked) throw new Error('The roster is locked after the first round starts.');
   if (room.players.length >= room.capacity) throw new Error('This lobby is full.');
   if (typeof name !== 'string' || !name.trim() || name.trim().length > 60 || /[\x00-\x1f\x7f]/.test(name)) throw new Error('Use an agent name of 1–60 printable characters.');
@@ -30,32 +30,32 @@ export function joinRoom(room: ArenaRoom, name: unknown, token: string, now = Da
   room.players.push(player);
   return player;
 }
-export function roomPlayer(room: ArenaRoom, token: unknown) {
+export function roomPlayer(room: PlayRoom, token: unknown) {
   const player = typeof token === 'string' ? room.players.find(p => p.token === token) : undefined;
   if (!player) throw new Error('Invalid player session. Rejoin with your saved controller session.');
   return player;
 }
-export function requireHost(room: ArenaRoom, token: unknown) {
+export function requireHost(room: PlayRoom, token: unknown) {
   if (typeof token !== 'string' || token !== room.hostToken) throw new Error('Only the browser host can control rounds.');
 }
-export function submitStrategy(room: ArenaRoom, token: unknown, round: unknown, strategy: unknown, now = Date.now()) {
+export function submitStrategy(room: PlayRoom, token: unknown, round: unknown, strategy: unknown, now = Date.now()) {
   const player = roomPlayer(room, token);
   if (!['lobby', 'coaching'].includes(room.phase)) throw new Error('Strategies are locked while a round runs.');
   if (round !== room.rounds.length + 1 || Number(round) > 3) throw new Error('That strategy belongs to a different round.');
   if (typeof strategy !== 'string' || !strategy.trim() || strategy.trim().length > 1000 || /[\x00-\x08\x0b-\x1f\x7f]/.test(strategy)) throw new Error('Enter a strategy of 1–1,000 printable characters.');
   player.strategy = strategy.trim(); player.strategyRound = Number(round); player.lastSeen = now;
 }
-export function canStartRoom(room: ArenaRoom, now = Date.now()) {
+export function canStartRoom(room: PlayRoom, now = Date.now()) {
   return ['lobby', 'coaching'].includes(room.phase) && room.rounds.length < 3 && room.players.length >= 2 && room.players.every(p => p.strategyRound === room.rounds.length + 1 && now - p.lastSeen < 15000);
 }
-export function startRoom(room: ArenaRoom, token: unknown, round: unknown, now = Date.now()): ArenaPlayer[] {
+export function startRoom(room: PlayRoom, token: unknown, round: unknown, now = Date.now()): PlayPlayer[] {
   requireHost(room, token);
   if (round !== room.rounds.length + 1) throw new Error('The requested round is stale.');
   if (!canStartRoom(room, now)) throw new Error('Wait for at least two connected players and a strategy from every joined player.');
   room.phase = 'running'; room.rosterLocked = true; room.error = null; room.live = {}; room.controller = new AbortController();
   return room.players.map(({ id, name, strategy, character }) => ({ id, name, strategy, ...(character ? { character: structuredClone(character) } : {}) }));
 }
-export function recordRoomEvent(room: ArenaRoom, event: ArenaEvent, now = Date.now()) {
+export function recordRoomEvent(room: PlayRoom, event: PlayEvent, now = Date.now()) {
   const round = Math.min(room.rounds.length + 1, 3);
   room.events.push({ seq: room.nextSeq++, at: now, round, event });
   if (room.events.length > 2000) room.events.splice(0, room.events.length - 2000);
@@ -73,7 +73,7 @@ export function recordRoomEvent(room: ArenaRoom, event: ArenaEvent, now = Date.n
     room.phase = room.rounds.length === 3 ? 'finished' : 'coaching';
   } else if (event.type === 'error') { room.error = event.message; room.live = {}; }
 }
-export function finishRoomJob(room: ArenaRoom, recovery: boolean) {
+export function finishRoomJob(room: PlayRoom, recovery: boolean) {
   room.controller = undefined;
   if (recovery) room.phase = 'recovery';
   else if (['running', 'resetting', 'recovery'].includes(room.phase)) {
@@ -82,7 +82,7 @@ export function finishRoomJob(room: ArenaRoom, recovery: boolean) {
     for (const p of room.players) p.strategyRound = 0;
   }
 }
-export function roomView(room: ArenaRoom, after = 0, playerToken?: string, now = Date.now()): RoomView {
+export function roomView(room: PlayRoom, after = 0, playerToken?: string, now = Date.now()): RoomView {
   const self = playerToken ? roomPlayer(room, playerToken) : undefined;
   if (self) self.lastSeen = now;
   const standings = room.players.map(p => {

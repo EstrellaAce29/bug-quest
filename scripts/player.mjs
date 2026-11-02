@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { characterWizard } from './arena-character.mjs';
+import { characterWizard } from './play-character.mjs';
 import { createInterface } from 'node:readline/promises';
 import { stdin, stdout } from 'node:process';
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
@@ -21,8 +21,8 @@ export function controllerOptions(args) {
   if (!['localhost', '127.0.0.1'].includes(url.hostname) || url.protocol !== 'http:' || url.port !== '3000' || url.username || url.password || url.pathname !== '/' || url.search || url.hash) throw new Error('Use the local Bug Quest server at http://127.0.0.1:3000.');
   return { ...options, url: url.origin };
 }
-export async function arenaRequest(url, body, signal) {
-  const response = await fetch(`${url}/api/arena`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: AbortSignal.any([signal, AbortSignal.timeout(15000)]) });
+export async function playRequest(url, body, signal) {
+  const response = await fetch(`${url}/api/play`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: AbortSignal.any([signal, AbortSignal.timeout(15000)]) });
   const data = await response.json();
   if (!response.ok) { const error = new Error(data.error || `Bug Quest HTTP ${response.status}`); error.httpStatus = response.status; throw error; }
   return data;
@@ -47,7 +47,7 @@ export function playerEventText(envelope, playerId) {
 
 export async function runController(args = process.argv.slice(2)) {
   const options = controllerOptions(args);
-  if (options.help) { stdout.write('npm run arena:player -- --code CODE --name "Agent"\nCreate a character in five steps, or add --character NAME to reuse one. --new rewrites a saved character.\nOne terminal per player. Keep it open for all three rounds. Ctrl+C disconnects without stopping the game.\n'); return; }
+  if (options.help) { stdout.write('npm run player -- --code CODE --name "Agent"\nCreate a character in five steps, or add --character NAME to reuse one. --new rewrites a saved character.\nOne terminal per player. Keep it open for all three rounds. Ctrl+C disconnects without stopping the game.\n'); return; }
   const stop = new AbortController();
   let heartbeat;
   const rl = createInterface({ input: stdin, output: stdout });
@@ -67,22 +67,22 @@ export async function runController(args = process.argv.slice(2)) {
     const character = { animal: profile.animal, traits: profile.traits, privateCharacter: profile.privateCharacter, publicBio: profile.publicBio };
     const code = (options.code || await ask('Game code? ')).trim().toUpperCase();
     if (!/^[A-Z2-9]{6}$/.test(code)) throw new Error('Enter the six-character game code shown in the browser.');
-    const sessionFile = path.resolve(options.session || path.join('.arena', `${code}-${createHash('sha256').update(name).digest('hex').slice(0, 20)}.json`));
+    const sessionFile = path.resolve(options.session || path.join('.play', `${code}-${createHash('sha256').update(name).digest('hex').slice(0, 20)}.json`));
     let token; let playerId;
     try {
       const saved = JSON.parse(await readFile(sessionFile, 'utf8'));
       if (saved.code === code && saved.name === name && saved.url === options.url && typeof saved.token === 'string') {
-        const data = await arenaRequest(options.url, { action: 'state', code, playerToken: saved.token, after: 0 }, stop.signal);
+        const data = await playRequest(options.url, { action: 'state', code, playerToken: saved.token, after: 0 }, stop.signal);
         token = saved.token; playerId = data.room.self.id;
       }
     } catch (error) { if (error.httpStatus && error.httpStatus !== 404) throw error; }
     if (!token) {
-      const joined = await arenaRequest(options.url, { action: 'join', code, name, character }, stop.signal);
+      const joined = await playRequest(options.url, { action: 'join', code, name, character }, stop.signal);
       token = joined.playerToken; playerId = joined.playerId;
       await mkdir(path.dirname(sessionFile), { recursive: true });
       await writeFile(sessionFile, JSON.stringify({ code, name, url: options.url, token }), { mode: 0o600 });
     }
-    print(`\nBUG QUEST · ${code}\nJoined as ${name}. Watch ${options.url}/arena?code=${code}\nYour controller reconnects when you repeat this command. Ctrl+C leaves play running.\n`);
+    print(`\nBUG QUEST · ${code}\nJoined as ${name}. Watch ${options.url}/play?code=${code}\nYour controller reconnects when you repeat this command. Ctrl+C leaves play running.\n`);
     let cursor = 0; let failures = 0; let lastPhase = ''; const printedRounds = new Set();
     // Coaching is interactive: keep presence alive without consuming events while
     // the main loop waits at the prompt. The next poll still prints each result.
@@ -90,12 +90,12 @@ export async function runController(args = process.argv.slice(2)) {
     heartbeat = setInterval(() => {
       if (heartbeatBusy || stop.signal.aborted) return;
       heartbeatBusy = true;
-      arenaRequest(options.url, { action: 'state', code, playerToken: token, after: cursor }, stop.signal)
+      playRequest(options.url, { action: 'state', code, playerToken: token, after: cursor }, stop.signal)
         .catch(() => {}).finally(() => { heartbeatBusy = false; });
     }, 4000);
     while (!stop.signal.aborted) {
       let room;
-      try { ({ room } = await arenaRequest(options.url, { action: 'state', code, playerToken: token, after: cursor }, stop.signal)); failures = 0; }
+      try { ({ room } = await playRequest(options.url, { action: 'state', code, playerToken: token, after: cursor }, stop.signal)); failures = 0; }
       catch (error) {
         if (stop.signal.aborted) break;
         if (error.httpStatus) throw error;
@@ -117,7 +117,7 @@ export async function runController(args = process.argv.slice(2)) {
       if (`${room.round}:${room.phase}` !== lastPhase) { lastPhase = `${room.round}:${room.phase}`; print(`Round ${room.round} · ${room.phase}${room.phase === 'recovery' ? ' — the host must recover the reset' : ''}`); }
       if (['lobby', 'coaching'].includes(room.phase) && !room.self.ready) {
         const strategy = await ask(`Round ${room.round} — Your strategy? `);
-        try { await arenaRequest(options.url, { action: 'strategy', code, playerToken: token, round: room.round, strategy }, stop.signal); print('Strategy locked in. Waiting for the browser host to start the round…'); }
+        try { await playRequest(options.url, { action: 'strategy', code, playerToken: token, round: room.round, strategy }, stop.signal); print('Strategy locked in. Waiting for the browser host to start the round…'); }
         catch (error) { if (error.httpStatus === 400) print(error.message); else throw error; }
       }
       await delay(1000, undefined, { signal: stop.signal });

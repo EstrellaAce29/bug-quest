@@ -3,11 +3,11 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm, stat, chmod, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { ANIMALS, parseAnimal, parseTraits, validateCharacter, characterPolicy, containsPrivateEcho } from '../lib/arena-character.mjs';
-import { traitChart, characterFile, characterWizard, saveCharacter, loadCharacter } from '../scripts/arena-character.mjs';
-import { expandCharacterStrategy, generateCharacterSpeech } from '../lib/arena-personality';
-import { createRoom, joinRoom, roomView, submitStrategy, startRoom, recordRoomEvent } from '../lib/arena-room';
-import { runArenaRound, type ArenaDependencies } from '../lib/arena';
+import { ANIMALS, parseAnimal, parseTraits, validateCharacter, characterPolicy, containsPrivateEcho } from '../lib/play-character.mjs';
+import { traitChart, characterFile, characterWizard, saveCharacter, loadCharacter } from '../scripts/play-character.mjs';
+import { expandCharacterStrategy, generateCharacterSpeech } from '../lib/play-personality';
+import { createRoom, joinRoom, roomView, submitStrategy, startRoom, recordRoomEvent } from '../lib/play-room';
+import { runPlayRound, type PlayDependencies } from '../lib/play';
 
 const privateText = 'My hidden compass points toward copper moons and I speak in clipped little questions.';
 const character = { animal: 'fox' as const, traits: ['duplicate-hunter', 'speedrunner'], privateCharacter: privateText, publicBio: 'I follow suspicious rows. Ask me what the counts are hiding.' };
@@ -45,7 +45,7 @@ test('character validation bounds fields, limits the public bio to three sentenc
 });
 
 test('wizard asks five steps, echoes only traits, saves private profiles securely, and reuses them without retyping', async () => {
-  const directory = await mkdtemp(path.join(tmpdir(), 'arena-character-'));
+  const directory = await mkdtemp(path.join(tmpdir(), 'play-character-'));
   try {
     const answers = ['Winter', '3', '1, 11, 9, asks twice', privateText, character.publicBio];
     const output: string[] = [], green: string[] = [];
@@ -86,21 +86,21 @@ test('room snapshots publish the bio and join announcement, never traits, privat
 
 test('duplicate focus and speedrunner affect actual published plans; private fields stay in model input', async () => {
   let sent: Record<string, any> = {};
-  const result = await expandCharacterStrategy('Inspect data integrity', { runId: 'arena_run', extractedRows: 2986 }, signal, character, model({ checks }, value => { sent = value; }));
+  const result = await expandCharacterStrategy('Inspect data integrity', { runId: 'play_run', extractedRows: 2986 }, signal, character, model({ checks }, value => { sent = value; }));
   assert.equal(result.length, 1);
   assert.equal(result[0].invariant, 'duplicates');
   assert.equal(JSON.parse(sent.input).character.privateCharacter, privateText);
   assert.equal(sent.text.format.schema.properties.checks.maxItems, 1);
   assert.ok(!JSON.stringify(result).includes(privateText));
-  const fast = await expandCharacterStrategy('Inspect integrity', { runId: 'arena_run', extractedRows: 2986 }, signal, { ...character, traits: ['speedrunner'] }, model({ checks }));
+  const fast = await expandCharacterStrategy('Inspect integrity', { runId: 'play_run', extractedRows: 2986 }, signal, { ...character, traits: ['speedrunner'] }, model({ checks }));
   assert.equal(fast[0].invariant, 'rows');
-  const narrow = await expandCharacterStrategy('Compare only row counts', { runId: 'arena_run', extractedRows: 2986 }, signal, character, model({ checks: [checks[1]] }));
+  const narrow = await expandCharacterStrategy('Compare only row counts', { runId: 'play_run', extractedRows: 2986 }, signal, character, model({ checks: [checks[1]] }));
   assert.equal(narrow[0].invariant, 'rows');
 });
 
 test('model output cannot expose private character passages or smuggle extra fields into public checks', async () => {
-  await assert.rejects(expandCharacterStrategy('Inspect', { runId: 'arena_run', extractedRows: 2986 }, signal, character, model({ checks: [{ ...checks[0], objective: privateText }] })), error => error instanceof Error && !error.message.includes(privateText));
-  const result = await expandCharacterStrategy('Inspect rows', { runId: 'arena_run', extractedRows: 2986 }, signal, undefined, model({ checks: [{ ...checks[1], privateCharacter: privateText }] }));
+  await assert.rejects(expandCharacterStrategy('Inspect', { runId: 'play_run', extractedRows: 2986 }, signal, character, model({ checks: [{ ...checks[0], objective: privateText }] })), error => error instanceof Error && !error.message.includes(privateText));
+  const result = await expandCharacterStrategy('Inspect rows', { runId: 'play_run', extractedRows: 2986 }, signal, undefined, model({ checks: [{ ...checks[1], privateCharacter: privateText }] }));
   assert.ok(!JSON.stringify(result).includes(privateText));
   assert.equal(containsPrivateEcho('My hidden compass points toward copper moons', privateText), true);
 });
@@ -119,8 +119,8 @@ test('speech uses private voice guidance but publishes a short validated line, w
 test('character-aware expansion and speech preserve points and cleanup, even when speech generation fails', async () => {
   const player = { id: 'player-1', name: 'Winter', strategy: 'Inspect rows', character };
   let reset = 0, seen = false;
-  const deps: ArenaDependencies = {
-    prepare: async () => ({ runId: 'arena_run', counts: { runId: 'arena_run', extractedRows: 2986, matchesLoaded: 1493, totalWins: 1493, otherRunRows: 0 }, duplicates: 0 }),
+  const deps: PlayDependencies = {
+    prepare: async () => ({ runId: 'play_run', counts: { runId: 'play_run', extractedRows: 2986, matchesLoaded: 1493, totalWins: 1493, otherRunRows: 0 }, duplicates: 0 }),
     expand: async (_strategy, _snapshot, _signal, profile) => { seen = profile?.privateCharacter === privateText; return [checks[1] as any]; },
     inspect: async () => ({ invariant: 'rows', reportedBug: true, summary: 'Rows missing' }),
     repair: async caught => caught,
@@ -128,18 +128,18 @@ test('character-aware expansion and speech preserve points and cleanup, even whe
     reset: async () => `clean-${++reset}`,
   };
   const events: unknown[] = [];
-  const result = await runArenaRound(1, [player], ['half_load'], deps, signal, e => events.push(e));
+  const result = await runPlayRound(1, [player], ['half_load'], deps, signal, e => events.push(e));
   assert.equal(result.scores[0].points, 35);
   assert.equal(seen, true); assert.equal(reset, 1);
   assert.ok(!JSON.stringify(events).includes(privateText));
   deps.speak = async () => privateText;
   const blocked: unknown[] = [];
-  await runArenaRound(2, [player], ['half_load'], deps, signal, e => blocked.push(e));
+  await runPlayRound(2, [player], ['half_load'], deps, signal, e => blocked.push(e));
   assert.ok(!JSON.stringify(blocked).includes(privateText));
   assert.equal(reset, 2);
   const spoken: string[] = [];
   deps.speak = async (_player, reason) => { spoken.push(reason); return 'I have another question.'; };
-  await runArenaRound(2, [player], ['half_load'], deps, signal, e => events.push(e));
+  await runPlayRound(2, [player], ['half_load'], deps, signal, e => events.push(e));
   assert.deepEqual(spoken, ['catch', 'fix']);
   assert.equal(reset, 3);
 });

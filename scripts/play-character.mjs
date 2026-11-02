@@ -1,7 +1,7 @@
 import { readFile, writeFile, mkdir, chmod, rename, unlink } from 'node:fs/promises';
 import { createHash, randomUUID } from 'node:crypto';
 import path from 'node:path';
-import { ANIMALS, parseAnimal, TRAIT_GROUPS, parseTraits, validateAgentName, validateCharacter } from '../lib/arena-character.mjs';
+import { ANIMALS, parseAnimal, TRAIT_GROUPS, parseTraits, validateAgentName, validateCharacter } from '../lib/play-character.mjs';
 
 export function traitChart() {
   const lines = [];
@@ -14,7 +14,7 @@ export function traitChart() {
   }
   return lines.join('\n');
 }
-export function characterFile(name, directory = path.join('.arena', 'characters')) {
+export function characterFile(name, directory = path.join('.play', 'characters')) {
   return path.join(directory, `${createHash('sha256').update(validateAgentName(name).toLowerCase()).digest('hex')}.json`);
 }
 export async function loadCharacter(name, directory) {
@@ -30,7 +30,7 @@ export async function loadCharacter(name, directory) {
     return { name: checkedName, ...validateCharacter(saved), ...(saved.animal === undefined ? { needsAnimal: true } : {}) };
   } catch { throw new Error('That saved character is not valid. Use --new to write a fresh profile.'); }
 }
-export async function saveCharacter(profile, directory = path.join('.arena', 'characters')) {
+export async function saveCharacter(profile, directory = path.join('.play', 'characters')) {
   const name = validateAgentName(profile.name);
   const character = validateCharacter(profile);
   await mkdir(directory, { recursive: true, mode: 0o700 });
@@ -45,7 +45,7 @@ export async function saveCharacter(profile, directory = path.join('.arena', 'ch
 export function animalMenu() {
   return [ANIMALS.slice(0, 4), ANIMALS.slice(4)].map((row, index) => row.map((animal, col) => `${index * 4 + col + 1} ${animal}`.padEnd(18)).join('')).join('\n');
 }
-export async function characterWizard({ ask, print, green, options = {}, directory = path.join('.arena', 'characters') }) {
+export async function characterWizard({ ask, print, green, options = {}, directory = path.join('.play', 'characters') }) {
   const retry = async (label, validate) => {
     while (true) {
       const answer = await ask(label);

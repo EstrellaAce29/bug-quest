@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createRoom, joinRoom, submitStrategy, roomView, requireHost, startRoom, recordRoomEvent, finishRoomJob, canStartRoom } from '../lib/arena-room';
-import { runArenaRound, type ArenaDependencies } from '../lib/arena';
+import { createRoom, joinRoom, submitStrategy, roomView, requireHost, startRoom, recordRoomEvent, finishRoomJob, canStartRoom } from '../lib/play-room';
+import { runPlayRound, type PlayDependencies } from '../lib/play';
 
 function lobby() {
   const room = createRoom('ABCD23', 'host-only', 2, 1000);
@@ -62,7 +62,7 @@ test('poll cursors and controller sessions filter turn events without exposing h
 test('three rounds accept fresh terminal strategies, retain roster, reveal only after reset and finish', async () => {
   const { room, one, two } = lobby();
   let reset = 0;
-  const deps: ArenaDependencies = {
+  const deps: PlayDependencies = {
     prepare: async () => ({ runId: 'round-run', counts: { runId: 'round-run', extractedRows: 1000, matchesLoaded: 500, totalWins: 500, otherRunRows: 0 }, duplicates: 0 }),
     expand: async () => [{ title: 'Rows', objective: 'Compare extracted and loaded rows', invariant: 'rows', expectsBug: false }],
     inspect: async () => ({ invariant: 'rows', reportedBug: true, summary: 'Rows lost' }),
@@ -72,7 +72,7 @@ test('three rounds accept fresh terminal strategies, retain roster, reveal only 
   for (let round = 1; round <= 3; round++) {
     if (round > 1) for (const p of [one, two]) submitStrategy(room, p.token, round, `Round ${round}: compare all rows`, 1000 + round);
     const players = startRoom(room, 'host-only', round, 1000 + round);
-    await runArenaRound(round, players, ['half_load'], deps, new AbortController().signal, e => recordRoomEvent(room, e, 2000 + round));
+    await runPlayRound(round, players, ['half_load'], deps, new AbortController().signal, e => recordRoomEvent(room, e, 2000 + round));
     finishRoomJob(room, false);
     if (round < 3) assert.equal(roomView(room, 0, one.token, 2000 + round).self?.ready, false);
   }

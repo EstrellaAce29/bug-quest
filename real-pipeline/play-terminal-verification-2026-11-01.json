@@ -38,7 +38,7 @@
           "points": 35
         }
       ],
-      "resetRunId": "arena_30126d13-779b-4695-bd00-448e1de58442"
+      "resetRunId": "play_30126d13-779b-4695-bd00-448e1de58442"
     },
     {
       "round": 2,
@@ -68,7 +68,7 @@
           "points": -5
         }
       ],
-      "resetRunId": "arena_d671aa1f-20ef-403a-864c-b5d5db244625"
+      "resetRunId": "play_d671aa1f-20ef-403a-864c-b5d5db244625"
     },
     {
       "round": 3,
@@ -104,7 +104,7 @@
           "points": 70
         }
       ],
-      "resetRunId": "arena_6faa6de7-488e-417a-8442-f3d5e5734142"
+      "resetRunId": "play_6faa6de7-488e-417a-8442-f3d5e5734142"
     }
   ],
   "standings": [
@@ -308,37 +308,37 @@
       "round": 1,
       "type": "turn",
       "playerId": "player-1",
-      "runId": "arena_c69c7686-06c0-4c8d-a270-8d7c493d3863"
+      "runId": "play_c69c7686-06c0-4c8d-a270-8d7c493d3863"
     },
     {
       "round": 1,
       "type": "turn",
       "playerId": "player-2",
-      "runId": "arena_816d4c4e-9207-46ba-9e97-8ff4867481f0"
+      "runId": "play_816d4c4e-9207-46ba-9e97-8ff4867481f0"
     },
     {
       "round": 2,
       "type": "turn",
       "playerId": "player-1",
-      "runId": "arena_d164c8c3-9881-4722-a10c-27e0fb131178"
+      "runId": "play_d164c8c3-9881-4722-a10c-27e0fb131178"
     },
     {
       "round": 2,
       "type": "turn",
       "playerId": "player-2",
-      "runId": "arena_54592894-be6c-43b6-a9f1-b448b2dc420d"
+      "runId": "play_54592894-be6c-43b6-a9f1-b448b2dc420d"
     },
     {
       "round": 3,
       "type": "turn",
       "playerId": "player-1",
-      "runId": "arena_05a085d7-f6e8-482d-96a2-754938381582"
+      "runId": "play_05a085d7-f6e8-482d-96a2-754938381582"
     },
     {
       "round": 3,
       "type": "turn",
       "playerId": "player-2",
-      "runId": "arena_c24379a9-cfd6-4448-abdb-9c9a1d1ffb95"
+      "runId": "play_c24379a9-cfd6-4448-abdb-9c9a1d1ffb95"
     }
   ],
   "errors": [],
@@ -375,7 +375,7 @@
         "finding": {
           "invariant": "duplicates",
           "reportedBug": true,
-          "summary": "PASS · SQL run arena_c69c7686-06c0-4c8d-a270-8d7c493d3863: duplicate full match payloads 0. Claimed defect was not present: false alarm."
+          "summary": "PASS · SQL run play_c69c7686-06c0-4c8d-a270-8d7c493d3863: duplicate full match payloads 0. Claimed defect was not present: false alarm."
         }
       }
     },
@@ -389,7 +389,7 @@
         "finding": {
           "invariant": "rows",
           "reportedBug": false,
-          "summary": "PASS · SQL run arena_816d4c4e-9207-46ba-9e97-8ff4867481f0: extracted 2986; loaded 2986."
+          "summary": "PASS · SQL run play_816d4c4e-9207-46ba-9e97-8ff4867481f0: extracted 2986; loaded 2986."
         }
       }
     },
@@ -403,7 +403,7 @@
         "finding": {
           "invariant": "wins",
           "reportedBug": true,
-          "summary": "FAIL · SQL run arena_816d4c4e-9207-46ba-9e97-8ff4867481f0: loaded 2986; total wins 2684."
+          "summary": "FAIL · SQL run play_816d4c4e-9207-46ba-9e97-8ff4867481f0: loaded 2986; total wins 2684."
         }
       }
     },
@@ -417,7 +417,7 @@
         "finding": {
           "invariant": "rows",
           "reportedBug": true,
-          "summary": "FAIL · SQL run arena_d164c8c3-9881-4722-a10c-27e0fb131178: extracted 2986; loaded 1493."
+          "summary": "FAIL · SQL run play_d164c8c3-9881-4722-a10c-27e0fb131178: extracted 2986; loaded 1493."
         }
       }
     },
@@ -431,7 +431,7 @@
         "finding": {
           "invariant": "wins",
           "reportedBug": true,
-          "summary": "FAIL · SQL run arena_d164c8c3-9881-4722-a10c-27e0fb131178: loaded 1493; total wins 1314."
+          "summary": "FAIL · SQL run play_d164c8c3-9881-4722-a10c-27e0fb131178: loaded 1493; total wins 1314."
         }
       }
     },
@@ -445,7 +445,7 @@
         "finding": {
           "invariant": "duplicates",
           "reportedBug": true,
-          "summary": "PASS · SQL run arena_54592894-be6c-43b6-a9f1-b448b2dc420d: duplicate full match payloads 0. Claimed defect was not present: false alarm."
+          "summary": "PASS · SQL run play_54592894-be6c-43b6-a9f1-b448b2dc420d: duplicate full match payloads 0. Claimed defect was not present: false alarm."
         }
       }
     },
@@ -459,7 +459,7 @@
         "finding": {
           "invariant": "rows",
           "reportedBug": true,
-          "summary": "FAIL · SQL run arena_05a085d7-f6e8-482d-96a2-754938381582: extracted 2986; loaded 1493."
+          "summary": "FAIL · SQL run play_05a085d7-f6e8-482d-96a2-754938381582: extracted 2986; loaded 1493."
         }
       }
     },
@@ -473,7 +473,7 @@
         "finding": {
           "invariant": "wins",
           "reportedBug": true,
-          "summary": "FAIL · SQL run arena_05a085d7-f6e8-482d-96a2-754938381582: loaded 1493; total wins 1314."
+          "summary": "FAIL · SQL run play_05a085d7-f6e8-482d-96a2-754938381582: loaded 1493; total wins 1314."
         }
       }
     },
@@ -487,7 +487,7 @@
         "finding": {
           "invariant": "rows",
           "reportedBug": true,
-          "summary": "FAIL · SQL run arena_c24379a9-cfd6-4448-abdb-9c9a1d1ffb95: extracted 2986; loaded 1493."
+          "summary": "FAIL · SQL run play_c24379a9-cfd6-4448-abdb-9c9a1d1ffb95: extracted 2986; loaded 1493."
         }
       }
     },
@@ -501,7 +501,7 @@
         "finding": {
           "invariant": "wins",
           "reportedBug": true,
-          "summary": "FAIL · SQL run arena_c24379a9-cfd6-4448-abdb-9c9a1d1ffb95: loaded 1493; total wins 1314."
+          "summary": "FAIL · SQL run play_c24379a9-cfd6-4448-abdb-9c9a1d1ffb95: loaded 1493; total wins 1314."
         }
       }
     }
@@ -509,22 +509,22 @@
   "resets": [
     {
       "round": 1,
-      "message": "Both Arena faults are off; clean run arena_30126d13-779b-4695-bd00-448e1de58442: 2986 extracted / 2986 loaded / 2986 wins."
+      "message": "Both Play faults are off; clean run play_30126d13-779b-4695-bd00-448e1de58442: 2986 extracted / 2986 loaded / 2986 wins."
     },
     {
       "round": 2,
-      "message": "Both Arena faults are off; clean run arena_d671aa1f-20ef-403a-864c-b5d5db244625: 2986 extracted / 2986 loaded / 2986 wins."
+      "message": "Both Play faults are off; clean run play_d671aa1f-20ef-403a-864c-b5d5db244625: 2986 extracted / 2986 loaded / 2986 wins."
     },
     {
       "round": 3,
-      "message": "Both Arena faults are off; clean run arena_6faa6de7-488e-417a-8442-f3d5e5734142: 2986 extracted / 2986 loaded / 2986 wins."
+      "message": "Both Play faults are off; clean run play_6faa6de7-488e-417a-8442-f3d5e5734142: 2986 extracted / 2986 loaded / 2986 wins."
     }
   ],
   "browserChecks": {
     "joinedLobby": {
       "status": "passed",
       "resultCode": 100,
-      "summary": "Opened the shared Bug Quest Arena screen for join code UE7NCT.\nConfirmed that the original robot hunters Moss and Coral were on the arena stage and both showed “STRATEGY READY.”\nConfirmed the leaderboard showed Moss and Coral at 0 points, with all three round markers visible.\nConfirmed the scoring rules: +20 for a bug caught, +15 for a verified fix, and -5 for a false alarm.\nLeft the lobby unchanged and did not start any rounds.",
+      "summary": "Opened the shared Bug Quest screen for join code UE7NCT.\nConfirmed that the original robot hunters Moss and Coral were on the play stage and both showed “STRATEGY READY.”\nConfirmed the leaderboard showed Moss and Coral at 0 points, with all three round markers visible.\nConfirmed the scoring rules: +20 for a bug caught, +15 for a verified fix, and -5 for a false alarm.\nLeft the lobby unchanged and did not start any rounds.",
       "durationSeconds": 42.7,
       "steps": 6,
       "credits": 13.633329999999999,
@@ -533,7 +533,7 @@
     "completedGame": {
       "status": "passed",
       "resultCode": 100,
-      "summary": "Opened the shared Bug Quest Arena game with code UE7NCT.\nConfirmed the completed game lists the robot hunters as Moss and Coral, with Moss leading 135 points to Coral’s 100 points.\nConfirmed Moss was announced as the winner.\nConfirmed the Round 1, Round 2, and Round 3 reveal panels are visible and each shows a clean reset run ID.\nNo game was created or started, settings were changed, or Airflow was triggered.",
+      "summary": "Opened the shared Bug Quest game with code UE7NCT.\nConfirmed the completed game lists the robot hunters as Moss and Coral, with Moss leading 135 points to Coral’s 100 points.\nConfirmed Moss was announced as the winner.\nConfirmed the Round 1, Round 2, and Round 3 reveal panels are visible and each shows a clean reset run ID.\nNo game was created or started, settings were changed, or Airflow was triggered.",
       "durationSeconds": 44,
       "steps": 7,
       "credits": 13.90634,
@@ -541,7 +541,7 @@
     }
   },
   "finalWarehouse": {
-    "runId": "arena_6faa6de7-488e-417a-8442-f3d5e5734142",
+    "runId": "play_6faa6de7-488e-417a-8442-f3d5e5734142",
     "extractedRows": 2986,
     "matchesLoaded": 2986,
     "totalWins": 2986,

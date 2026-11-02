@@ -117,7 +117,7 @@
       "finding": {
         "invariant": "rows",
         "reportedBug": true,
-        "summary": "FAIL · SQL run arena_366eb6d8-f804-4503-9bad-a453bac10723: extracted 2986; loaded 1493."
+        "summary": "FAIL · SQL run play_366eb6d8-f804-4503-9bad-a453bac10723: extracted 2986; loaded 1493."
       }
     },
     {
@@ -126,7 +126,7 @@
       "finding": {
         "invariant": "wins",
         "reportedBug": false,
-        "summary": "PASS · SQL run arena_366eb6d8-f804-4503-9bad-a453bac10723: loaded 1493; total wins 1493."
+        "summary": "PASS · SQL run play_366eb6d8-f804-4503-9bad-a453bac10723: loaded 1493; total wins 1493."
       }
     },
     {
@@ -135,7 +135,7 @@
       "finding": {
         "invariant": "tasks",
         "reportedBug": false,
-        "summary": "Opened Airflow to review the tennis_tournament_pipeline run; no sign-in was needed because an active session was already available.\nVerified that run arena_366eb6d8-f804-4503-9bad-a453bac10723 completed successfully.\nConfirmed that all six tasks—extract, validate, transform, load, standings, and report—completed successfully. REST cross-check of pinned run: all six tasks success.",
+        "summary": "Opened Airflow to review the tennis_tournament_pipeline run; no sign-in was needed because an active session was already available.\nVerified that run play_366eb6d8-f804-4503-9bad-a453bac10723 completed successfully.\nConfirmed that all six tasks—extract, validate, transform, load, standings, and report—completed successfully. REST cross-check of pinned run: all six tasks success.",
         "testUrl": "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M6CSTDJ83V102QZ1M9GWFDN3/dashboard/share/US_7LQ0OJ367M4LVINMEKSMLLW6KNMGQKXGEOO7WKYFA85AVMI3ZFNWUL77850N1YF7?type=summary&agentView=true&fqdn=summary-page"
       }
     },
@@ -145,7 +145,7 @@
       "finding": {
         "invariant": "duplicates",
         "reportedBug": true,
-        "summary": "PASS · SQL run arena_e78f6ef8-1050-48b6-a5fb-54376eecacfd: duplicate full match payloads 0. Claimed defect was not present: false alarm."
+        "summary": "PASS · SQL run play_e78f6ef8-1050-48b6-a5fb-54376eecacfd: duplicate full match payloads 0. Claimed defect was not present: false alarm."
       }
     }
   ],
@@ -153,7 +153,7 @@
     {
       "type": "log",
       "playerId": "player-1",
-      "message": "Repair verified on arena_4fad2af4-3816-401f-b10f-444076d53c29: SQL invariants and Kane + REST passed."
+      "message": "Repair verified on play_4fad2af4-3816-401f-b10f-444076d53c29: SQL invariants and Kane + REST passed."
     }
   ],
   "round": {
@@ -181,7 +181,7 @@
         "points": -5
       }
     ],
-    "resetRunId": "arena_8168329f-db89-4bfd-837f-0fdea14b7a41"
+    "resetRunId": "play_8168329f-db89-4bfd-837f-0fdea14b7a41"
   },
   "standings": [
     {
@@ -202,7 +202,7 @@
     }
   ],
   "finalWarehouse": {
-    "runId": "arena_8168329f-db89-4bfd-837f-0fdea14b7a41",
+    "runId": "play_8168329f-db89-4bfd-837f-0fdea14b7a41",
     "extractedRows": 2986,
     "matchesLoaded": 2986,
     "totalWins": 2986,
@@ -212,7 +212,7 @@
     "lobby": {
       "status": "passed",
       "resultCode": 100,
-      "summary": "Opened the shared Bug Quest game without starting a round.\nConfirmed the page title is “Bug Quest” and that “Bug Quest Arena” is not shown.\nConfirmed Juniper appears as a rabbit and Pebble as a fox on both the stage and leaderboard.\nConfirmed the stage displays Juniper’s and Pebble’s public bios.\nThe shared game was opened successfully and remained before the start of any round.",
+      "summary": "Opened the shared Bug Quest game without starting a round.\nConfirmed the page title is “Bug Quest” and that “Bug Quest” is not shown.\nConfirmed Juniper appears as a rabbit and Pebble as a fox on both the stage and leaderboard.\nConfirmed the stage displays Juniper’s and Pebble’s public bios.\nThe shared game was opened successfully and remained before the start of any round.",
       "durationSeconds": 52.1,
       "credits": 14.115829999999999,
       "testManagerUrl": "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M6CSJCCWTR23A2B3W5Z2W6D1/dashboard/share/US_1MF4DT7LJCIXETKTDX363UVOMVA2UB1J4V0LHHBZ40X1N8VAPLNIAVX07N67IKQE?type=summary&agentView=true&fqdn=summary-page",

@@ -17,8 +17,8 @@ __pycache__/
 real-pipeline/volumes/
 real-pipeline/postgres-data/
 
-# Arena interrupted-round recovery marker (no credentials)
-.arena-recovery.json
+# Play interrupted-round recovery marker (no credentials)
+.play-recovery.json
 
 # Local terminal controller reconnect credentials
-.arena/
+.play/

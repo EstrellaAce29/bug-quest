@@ -1,5 +1,5 @@
-import styles from './arena.module.css';
-import { ANIMALS } from '@/lib/arena-character.mjs';
+import styles from './play.module.css';
+import { ANIMALS } from '@/lib/play-character.mjs';
 
 export const PLAYER_COLORS = [
   { body: '#b7ef91', dark: '#5e8150', accent: '#e8ffc1' },

@@ -93,10 +93,10 @@ The submitted version is tagged **`hackday-submission`** at `4e19d25bc236edceab5
 
 ## Bug Quest
 
-Start with `npm run dev`, then open **http://127.0.0.1:3000/arena** on a shared browser screen. Choose 2–4 player slots and click **Create lobby**. The screen displays a six-character join code and the controller command. Each player opens a separate terminal in this project:
+Start with `npm run dev`, then open **http://127.0.0.1:3000/play** on a shared browser screen. Choose 2–4 player slots and click **Create lobby**. The screen displays a six-character join code and the controller command. Each player opens a separate terminal in this project:
 
 ```sh
-npm run arena:player -- --code ABC234 --name "Your agent"
+npm run player -- --code ABC234 --name "Your agent"
 ```
 
 Character creation runs before joining:
@@ -109,13 +109,13 @@ Character creation runs before joining:
 
 Traits and private character guide strategy expansion. A `duplicate-hunter` favors duplicate checks for broad coaching; `speedrunner` caps a turn at one check and favors available SQL checks over browser work. Explicit coaching still sets the inspection scope. Characters cannot change expected counts, fault settings, point rules or reset behavior. Traits about unsupported checks shape temperament or the closest supported invariant; they do not pretend to add new SQL checks.
 
-Existing saved characters get a one-time animal choice without retyping their private description. Animal choice changes appearance, not testing rules. Complete profiles are saved privately in ignored `.arena/characters/` (files `0600`, directory `0700`). Reuse one with `npm run arena:player -- --code ABC234 --character Winter`; use `--name Winter --new` to create a revised profile. Joining locks that character for the current game; edits apply to a new game. The raw private description is sent to the selected server-side model to shape checks and short reactions, but is not included in room snapshots, join announcements, server/game logs or public character cards. Published plans and speech are bounded and checked against copied private passages. Only your chosen bio and validated short reactions are public. Speech-generation failures use a safe reaction or omit it, without changing points or cleanup. No borrowed game dialogue or characters are used.
+Existing saved characters get a one-time animal choice without retyping their private description. Animal choice changes appearance, not testing rules. Complete profiles are saved privately in ignored `.play/characters/` (files `0600`, directory `0700`). Reuse one with `npm run player -- --code ABC234 --character Winter`; use `--name Winter --new` to create a revised profile. Joining locks that character for the current game; edits apply to a new game. The raw private description is sent to the selected server-side model to shape checks and short reactions, but is not included in room snapshots, join announcements, server/game logs or public character cards. Published plans and speech are bounded and checked against copied private passages. Only your chosen bio and validated short reactions are public. Speech-generation failures use a safe reaction or omit it, without changing points or cleanup. No borrowed game dialogue or characters are used.
 
 Replace `ABC234` with the browser's code. Without flags, the controller prompts for the code and agent name. It prompts **Your strategy?** for each of three rounds, sends the coaching to the server, then waits for the browser host. Names are unique and the roster locks when round 1 starts. The host can start once at least two players are joined, all joined players have submitted a strategy, and their controllers are connected. Strategies can be edited for the next round in the terminal; they are locked during play.
 
 The browser is the shared game screen. Every player has an original cute SVG animal on the stage. Animals breathe, blink and wiggle their ears or tails while idle, hop in with their name and public bio, and think visibly while checks run. Live score events show green **+20** catch and **+15** verified-fix pop-ups, red **−5** false-alarm pop-ups, happy bounces, and miss shakes. Leaderboard positions slide as provisional scores change; confirmed totals are saved only after a successful reset. Reduced-motion preferences disable movement and preserve readable score messages. Each player also receives their own plans, findings, live logs, awards, round score, fault reveal, and game result in their terminal.
 
-Repeat the controller command to reconnect as the same player: its random controller credential is stored in ignored `.arena/` with mode `0600`. It is not an Airflow/model credential. `--session path` selects another local session file; `--url http://localhost:3000` selects the loopback alias. Ctrl+C disconnects that controller and does not stop an active game. Controllers keep their presence alive while waiting at the coaching prompt. A controller that goes offline prevents the host from starting the next round until it reconnects. Rooms, history, and host credentials live in the server process/browser session; after restarting the server, create a new lobby and use its new code. Codes invite players and open a spectator screen (`/arena?code=ABC234`); only the separate browser host credential can start, stop, or recover rounds, and players can submit only their own strategy.
+Repeat the controller command to reconnect as the same player: its random controller credential is stored in ignored `.play/` with mode `0600`. It is not an Airflow/model credential. `--session path` selects another local session file; `--url http://localhost:3000` selects the loopback alias. Ctrl+C disconnects that controller and does not stop an active game. Controllers keep their presence alive while waiting at the coaching prompt. A controller that goes offline prevents the host from starting the next round until it reconnects. Rooms, history, and host credentials live in the server process/browser session; after restarting the server, create a new lobby and use its new code. Codes invite players and open a spectator screen (`/play?code=ABC234`); only the separate browser host credential can start, stop, or recover rounds, and players can submit only their own strategy.
 
 Each round secretly samples one or two faults in the **real** `tennis_tournament_pipeline`: half-batch loading and a Bug Quest-only standings undercount. Every player gets a fresh run with identical fault settings. Coaching expands into 1–3 checks through the Real Airflow expansion module: row conservation, standings totals, duplicate match payloads, or task status. Narrow strategies stay narrow. Data checks use SQL; task checks and verified repairs use Kane plus REST. The three-round reveal lists planted faults, who caught them, and each player's points. Live play runs on the server using Next.js `after`; refreshing or closing the shared screen does not cancel it. Polling reconnects viewers and controllers to server-owned state and ordered events without resending strategies or multiplying awards.
 
@@ -123,32 +123,34 @@ Scoring remains **+20 per distinct planted fault caught**, **+15 per independent
 
 Bug Quest repairs are **isolated runtime remediations**: rerun with caught faults disabled, require the targeted SQL invariants and Kane/REST status verification, then award repair points. They do not invoke `/quest`'s source-editing, Git-committing auto-fixer. The next player receives the original sampled faults. Regular runs without Bug Quest configuration retain the original planted half-load and its existing one-line `/quest` repair target. `/quest` and `/pipelines` retain their UI and default behavior.
 
-Both Bug Quest faults are **off after every round**, verified by a clean DAG run and warehouse counts. Errors and host cancellation run cleanup with an independent timeout. If Airflow is unavailable, cleanup cannot be guaranteed: ignored `.arena-recovery.json` remains, the shared quest lock stays held, and new rounds are blocked until the host's **Recover reset** succeeds. After a server restart, recover an interrupted round before using `/quest`. Do not manually trigger other tennis runs during play: the warehouse stores only the latest load. Fault settings are hidden in the Bug Quest UI, not from the local Airflow administration API.
+Both Bug Quest faults are **off after every round**, verified by a clean DAG run and warehouse counts. Errors and host cancellation run cleanup with an independent timeout. If Airflow is unavailable, cleanup cannot be guaranteed: ignored `.play-recovery.json` remains, the shared quest lock stays held, and new rounds are blocked until the host's **Recover reset** succeeds. After a server restart, recover an interrupted round before using `/quest`. Do not manually trigger other tennis runs during play: the warehouse stores only the latest load. Fault settings are hidden in the Bug Quest UI, not from the local Airflow administration API.
 
 Bug Quest uses the same Airflow, Postgres, Chrome, and Kane prerequisites as Real Airflow mode. Configure its model in ignored `.env.local`, then restart Next.js:
 
 ```dotenv
-ARENA_MODEL_PROVIDER=openai
+PLAY_MODEL_PROVIDER=openai
 # Optional: falls back to OPENAI_MODEL; existing OPENAI_API_KEY applies.
-ARENA_MODEL=
+PLAY_MODEL=
 ```
 
 The provider adapter also supports a local Ollama server for Llama:
 
 ```dotenv
-ARENA_MODEL_PROVIDER=ollama
+PLAY_MODEL_PROVIDER=ollama
 OLLAMA_BASE_URL=http://127.0.0.1:11434
 OLLAMA_MODEL=llama3.1
 # Optional: overrides OLLAMA_MODEL.
-ARENA_MODEL=
+PLAY_MODEL=
 ```
 
 Install/pull the selected Ollama model separately. Both adapters request JSON-schema output and validate the plan before execution. Invalid model output stops the round and resets faults. Provider configuration and keys stay server-side. `/quest` continues to use its existing OpenAI configuration.
 
-The original Bug Quest fault-matrix and live-round evidence is in [arena-verification-2026-11-01.json](real-pipeline/arena-verification-2026-11-01.json). The Ollama transport is covered by mocked adapter tests; a local Llama model was not run.
+The original Bug Quest fault-matrix and live-round evidence is in [play-verification-2026-11-01.json](real-pipeline/play-verification-2026-11-01.json). The Ollama transport is covered by mocked adapter tests; a local Llama model was not run.
 
-The game UI and terminal controllers were verified with two real terminal players across all three real Airflow rounds, including reconnecting during coaching. Final scores were Moss **135** and Coral **100**; all resets finished at **2,986 extracted = 2,986 loaded = 2,986 wins**. Typecheck and all **45 tests** pass. See [arena-terminal-verification-2026-11-01.json](real-pipeline/arena-terminal-verification-2026-11-01.json) for round scores, live awards, run IDs and the Kane browser reports.
+The game UI and terminal controllers were verified with two real terminal players across all three real Airflow rounds, including reconnecting during coaching. Final scores were Moss **135** and Coral **100**; all resets finished at **2,986 extracted = 2,986 loaded = 2,986 wins**. Typecheck and all **45 tests** pass. See [play-terminal-verification-2026-11-01.json](real-pipeline/play-terminal-verification-2026-11-01.json) for round scores, live awards, run IDs and the Kane browser reports.
 
-The character wizard was verified with two real terminal players, saved-profile reuse, green trait echo, public bios and generated speech bubbles. In one real Airflow round, the speedrunner/duplicate-hunter used one duplicate check while the thorough row-counter checked rows and wins. Scoring stayed **Blaze 70 / Winter 0** and the clean reset returned **2,986 / 2,986 / 2,986**. Typecheck and all **53 tests** pass. Public evidence: [arena-character-verification-2026-11-01.json](real-pipeline/arena-character-verification-2026-11-01.json). Private descriptions are not included in that record.
+The character wizard was verified with two real terminal players, saved-profile reuse, green trait echo, public bios and generated speech bubbles. In one real Airflow round, the speedrunner/duplicate-hunter used one duplicate check while the thorough row-counter checked rows and wins. Scoring stayed **Blaze 70 / Winter 0** and the clean reset returned **2,986 / 2,986 / 2,986**. Typecheck and all **53 tests** pass. Public evidence: [play-character-verification-2026-11-01.json](real-pipeline/play-character-verification-2026-11-01.json). Private descriptions are not included in that record.
 
-The five-step animal wizard and stage were verified with two terminal players: Juniper (rabbit) caught and verified the half-load fix for **35 points**; Pebble (fox, speedrunner/duplicate-hunter) ran one duplicate check and scored **−5** for a false claim. Both received character reactions and the next strategy prompt. Saved-profile reuse passed, and the round reset to **2,986 extracted / 2,986 loaded / 2,986 wins**. Typecheck and all **56 tests** pass. Browser checks covered the renamed title, selected animals, join bios, leaderboard and reaction bubbles. See [animal verification evidence](real-pipeline/arena-animal-verification-2026-11-01.json).
+The five-step animal wizard and stage were verified with two terminal players: Juniper (rabbit) caught and verified the half-load fix for **35 points**; Pebble (fox, speedrunner/duplicate-hunter) ran one duplicate check and scored **−5** for a false claim. Both received character reactions and the next strategy prompt. Saved-profile reuse passed, and the round reset to **2,986 extracted / 2,986 loaded / 2,986 wins**. Typecheck and all **56 tests** pass. Browser checks covered the renamed title, selected animals, join bios, leaderboard and reaction bubbles. See [animal verification evidence](real-pipeline/play-animal-verification-2026-11-01.json).
+
+Game routes use `/play` and `/api/play`; terminal players join with `npm run player -- --code CODE`. Local profiles live in ignored `.play/`, and optional game model settings use `PLAY_MODEL_PROVIDER` and `PLAY_MODEL`. Verification snapshots use the current naming; linked external reports preserve the original captured names and run identifiers.
