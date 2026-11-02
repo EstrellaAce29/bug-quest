@@ -60,7 +60,7 @@ test('original instruction runs verbatim before expanded objectives, without ove
     },
   }, new AbortController().signal, event => events.push(event));
   assert.deepEqual(seen, [instruction, ...objectives.map(item => item.objective)]);
-  assert.deepEqual(events.at(-1), { type: 'done', bugsFound: 1, fixesVerified: 0, points: 20 });
+  assert.deepEqual(events.at(-1), { type: 'done', bugsFound: 1, fixesVerified: 0, falseAlarms: 0, points: 20 });
   assert.ok(events.some(event => event.type === 'log' && event.message === 'Winter: running check 2 of 2...'));
   assert.deepEqual(kaneArguments(instruction), ['run', instruction, '--url', 'http://localhost:3000/pipelines', '--agent', '--max-steps', '15', '--headless']);
 });
@@ -125,4 +125,15 @@ test('Kane is headless by default; environment and explicit demo watch control v
 test('optional quest instructions use the same default for omitted and blank input', () => {
   for (const value of [undefined, '', '   ']) assert.equal(questInstruction(value), 'Check the pipeline ran');
   assert.equal(questInstruction('  Verify loaded rows equal extracted rows  '), 'Verify loaded rows equal extracted rows');
+});
+
+
+test('duplicate disproven claims lose five points once per invariant', async () => {
+  const events: LiveEvent[] = [];
+  await executeQuest({ agent: 'Winter', instruction: 'I claim rows are missing' }, {
+    expand: async () => [{ title: 'Rows', objective: 'Verify rows', kind: 'row_conservation', expectsBug: true }, { title: 'Rows again', objective: 'Verify rows again', kind: 'row_conservation', expectsBug: true }, { title: 'Tasks', objective: 'Verify tasks', kind: 'task_status' }],
+    run: async check => ({ ...basic, ...check }),
+  }, new AbortController().signal, e => events.push(e));
+  assert.deepEqual(events.at(-1), { type: 'done', bugsFound: 0, fixesVerified: 0, falseAlarms: 1, points: -5 });
+  assert.throws(() => validatePlan({ objectives: [{ title: 'Rows', objective: 'Verify rows', kind: 'row_conservation', expectsBug: 'yes' }, { title: 'Tasks', objective: 'Verify tasks', kind: 'task_status' }] }));
 });

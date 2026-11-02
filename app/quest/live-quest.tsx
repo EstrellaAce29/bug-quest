@@ -19,6 +19,7 @@ export default function LiveQuest() {
   const [results, setResults] = useState<LiveResult[]>([]);
   const [points, setPoints] = useState(0);
   const [bugsFound, setBugsFound] = useState(0);
+  const [falseAlarms, setFalseAlarms] = useState(0);
   const [fixesVerified, setFixesVerified] = useState(0);
   const [repairs, setRepairs] = useState<FixReport[]>([]);
   const [completed, setCompleted] = useState(false);
@@ -36,7 +37,7 @@ export default function LiveQuest() {
     const controller = new AbortController();
     abort.current = controller;
     setBusy(true); setActiveAgent(agent.trim());
-    setLogs([]); setResults([]); setPlan([]); setError(null); setPoints(0); setBugsFound(0); setFixesVerified(0); setRepairs([]); setCompleted(false);
+    setLogs([]); setResults([]); setPlan([]); setError(null); setPoints(0); setFalseAlarms(0); setBugsFound(0); setFixesVerified(0); setRepairs([]); setCompleted(false);
     let finished = false;
     function receive(event: LiveEvent) {
       switch (event.type) {
@@ -44,11 +45,11 @@ export default function LiveQuest() {
         case 'plan': setPlan(event.objectives); break;
         case 'result':
           setResults(current => [...current.filter(result => result.id !== event.result.id), event.result]);
-          setPoints(event.points); setBugsFound(event.bugsFound); setFixesVerified(event.fixesVerified ?? 0); break;
+          setFalseAlarms(event.falseAlarms ?? 0); setPoints(event.points); setBugsFound(event.bugsFound); setFixesVerified(event.fixesVerified ?? 0); break;
         case 'fix':
           setRepairs(current => [...current.filter(report => report.checkId !== event.report.checkId), event.report]);
-          setPoints(event.points); setBugsFound(event.bugsFound); setFixesVerified(event.fixesVerified); break;
-        case 'done': finished = true; setCompleted(true); setPoints(event.points); setBugsFound(event.bugsFound); setFixesVerified(event.fixesVerified ?? 0); break;
+          setFalseAlarms(event.falseAlarms ?? 0); setPoints(event.points); setBugsFound(event.bugsFound); setFixesVerified(event.fixesVerified); break;
+        case 'done': finished = true; setCompleted(true); setFalseAlarms(event.falseAlarms ?? 0); setPoints(event.points); setBugsFound(event.bugsFound); setFixesVerified(event.fixesVerified ?? 0); break;
         case 'error': finished = true; setError(event.message); setLogs(current => [...current, `${agent.trim()}: ${event.message}`]); break;
       }
     }
@@ -91,7 +92,7 @@ export default function LiveQuest() {
     ...plan.map((item, index) => ({ id: index + 1, title: item.title, objective: item.objective })),
   ];
   return <div className={styles.shell}>
-    <header className={styles.header}><Link href="/quest" className={styles.logo}><span>⌘</span>Bug Quest<i /></Link><div className={styles.headerRight}><span className={styles.liveTag}>Live mode</span><Link href="/pipelines">Pipeline Monitor ↗</Link></div></header>
+    <header className={styles.header}><Link href="/quest" className={styles.logo}><span>⌘</span>Bug Quest<i /></Link><div className={styles.headerRight}><span className={styles.liveTag}>Live mode</span><Link href="/stage" target="_blank" rel="noopener noreferrer">Open stage ↗</Link><Link href="/pipelines">Pipeline Monitor ↗</Link></div></header>
     <main className={styles.main}>
       <div className={styles.intro}><span className={styles.eyebrow}>REAL CHECKS. REAL EVIDENCE.</span><h1>Bug Quest<span>.</span></h1><p>Name your agent and click Run Quest. Checks, repairs, and verification run automatically after that; nothing runs on page load.</p></div>
       <div className={styles.layout}>
@@ -108,7 +109,7 @@ export default function LiveQuest() {
             </form>
           </section>
         </div>
-        <aside className={styles.scoreCard} aria-labelledby="live-score-title"><div className={styles.scoreTop}><span className={styles.eyebrow}>LIVE SCOREBOARD</span><span aria-hidden="true">⚑</span></div><div className={styles.agentAvatar}>{(logs.length ? activeAgent : agent).trim().slice(0, 2).toUpperCase() || 'BQ'}</div><h2 id="live-score-title">{logs.length ? activeAgent : agent.trim() || 'Your agent'}</h2><p className={styles.agentSubtitle}>Silent bug hunter</p><div className={styles.scoreTotal}>{points}<span>POINTS</span></div><div className={styles.scoreLine}><div><strong>Silent bugs caught</strong><small>+20 per distinct invariant</small></div><span className={bugsFound ? styles.earned : ''}>{bugsFound}</span></div><div className={styles.scoreLine}><div><strong>Fixes verified</strong><small>+15 after precise + basic pass</small></div><span className={fixesVerified ? styles.earned : ''}>{fixesVerified}</span></div><p className={styles.scoreNote}>A silent bug counts when the basic check passes and a precise check confirms an application bug.<br />Repeated checks of the same bug count once.</p></aside>
+        <aside className={styles.scoreCard} aria-labelledby="live-score-title"><div className={styles.scoreTop}><span className={styles.eyebrow}>LIVE SCOREBOARD</span><span aria-hidden="true">⚑</span></div><div className={styles.agentAvatar}>{(logs.length ? activeAgent : agent).trim().slice(0, 2).toUpperCase() || 'BQ'}</div><h2 id="live-score-title">{logs.length ? activeAgent : agent.trim() || 'Your agent'}</h2><p className={styles.agentSubtitle}>Silent bug hunter</p><div className={styles.scoreTotal}>{points}<span>POINTS</span></div><div className={styles.scoreLine}><div><strong>Silent bugs caught</strong><small>+20 per distinct invariant</small></div><span className={bugsFound ? styles.earned : ''}>{bugsFound}</span></div><div className={styles.scoreLine}><div><strong>Fixes verified</strong><small>+15 after precise + basic pass</small></div><span className={fixesVerified ? styles.earned : ''}>{fixesVerified}</span></div><div className={styles.scoreLine}><div><strong>False alarms</strong><small>−5 per disproven bug claim</small></div><span>{falseAlarms}</span></div><p className={styles.scoreNote}>A silent bug counts when the basic check passes and a precise check confirms an application bug.<br />Repeated checks of the same bug count once.</p></aside>
       </div>
       <section className={styles.terminalCard} aria-labelledby="live-log-title"><div className={styles.terminalHeading}><h2 id="live-log-title">Live quest log</h2><span>{busy ? 'Running' : repairs.some(report => report.status === 'escalated') ? 'Escalated to human' : completed ? 'Complete' : logs.length ? 'Stopped' : 'Ready'}</span></div><div ref={terminal} className={styles.terminal} role="log" aria-live="polite" aria-relevant="additions">{logs.length ? logs.map((line, index) => <div key={index}><span aria-hidden="true">› </span>{line}</div>) : <p>Your agent’s progress will stream here.</p>}</div></section>
       {error && <div className={styles.liveError} role="alert">{error}</div>}

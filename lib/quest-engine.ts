@@ -1,6 +1,6 @@
 import { silentBugKinds, type ExpandedObjective, type LiveEvent, type LiveResult, type FixReport } from './quest-contract';
 
-type Check = Pick<LiveResult, 'id' | 'title' | 'objective' | 'kind'>;
+type Check = Pick<LiveResult, 'id' | 'title' | 'objective' | 'kind' | 'expectsBug'>;
 export type QuestDependencies = {
   expand: (instruction: string, signal: AbortSignal) => Promise<ExpandedObjective[]>;
   run: (check: Check, signal: AbortSignal, log: (message: string) => void) => Promise<LiveResult>;
@@ -27,12 +27,14 @@ export async function executeQuest(
   const scores = () => {
     const bugsFound = silentBugKinds(results).size;
     const fixesVerified = [...repairs.values()].filter(report => report.status === 'fixed').length;
-    return { bugsFound, fixesVerified, points: bugsFound * 20 + fixesVerified * 15 };
+    const falseAlarms = new Set(results.filter(r => r.falseAlarm).map(r => r.kind)).size;
+    return { bugsFound, fixesVerified, falseAlarms, points: bugsFound * 20 + fixesVerified * 15 - falseAlarms * 5 };
   };
   for (const check of checks) {
     signal.throwIfAborted();
     log(check.kind === 'basic' ? 'running the original instruction as-is...' : `running check ${check.id} of ${objectives.length}...`);
-    const result = await dependencies.run(check, signal, log);
+    const raw = await dependencies.run(check, signal, log);
+    const result = { ...raw, falseAlarm: check.kind !== 'basic' && check.expectsBug === true && raw.status === 'passed' };
     results.push(result);
     emit({ type: 'result', result, ...scores() });
     log(`${check.title}: ${result.status.toUpperCase()}${result.resultCode === null ? '' : ` (code ${result.resultCode})`}.`);

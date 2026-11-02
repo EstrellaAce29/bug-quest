@@ -65,3 +65,5 @@
 .watchControl{margin-top:18px}.watchControl label{display:flex;margin:0}.watchControl small{display:block;margin-top:8px;color:#758670;font-size:11px;line-height:1.5}
 
 .pastRuns{margin-top:28px;border-top:1px solid #dce6d7;padding-top:20px}.pastRuns>summary{cursor:pointer;font-weight:600;color:#436440}.pastRuns>p{font-size:12px;color:#758670}
+
+@media(max-width:650px){.headerRight .liveTag{display:none}.headerRight{gap:8px}}

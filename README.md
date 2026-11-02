@@ -31,6 +31,17 @@ Real local captures; the game image shows two joined players before a round.
 
 ![Airflow tennis tournament pipeline and its six tasks](docs/images/airflow-dag.jpg)
 
+**Quest show screen:** open `/stage` in a second window from **Open stage** on `/quest`. Animals are assigned consistently from agent names. The shared session leaderboard accumulates confirmed catches (+20), verified fixes (+15), and explicit disproven bug claims (−5). Normal passes and infrastructure errors earn no penalty. Reset leaderboard clears the display; an active quest keeps running. The control screen holds the form, logs, and reports; it has no animal characters.
+
+Run the same quest from a terminal while the local server is running:
+
+```sh
+npm run quest -- --name Winter
+npm run quest -- --name Moss --instruction "Verify loaded rows equal extracted rows"
+```
+
+The CLI uses Real Airflow, matching the control screen default, streams logs and results, and registers the agent on `/stage`. Ctrl+C cancels the quest.
+
 ## Architecture
 
 ```mermaid
@@ -52,7 +63,7 @@ flowchart LR
 
 **2,986 extracted vs 1,493 loaded → fixed → 2,986 extracted = 2,986 loaded**, with all six Airflow tasks successful and Kane + SQL verification passing. Fresh clones intentionally retain the half-load bug for the next demo.
 
-- **58 tests pass**, plus TypeScript typecheck.
+- **71 tests pass**, plus TypeScript typecheck.
 - Two terminal players verified: **+20** per bug caught, **+15** per verified repair, **−5** per false claim; the round reset to 2,986 extracted / loaded / wins.
 - Evidence: [real auto-fix](real-pipeline/verification-2026-10-27.json) · [two-player game](real-pipeline/play-animal-verification-2026-11-01.json).
 

@@ -3,7 +3,7 @@ export function questInstruction(value?: string): string { return value?.trim() 
 
 export type QuestTarget = 'simulated' | 'airflow';
 export type ObjectiveKind = 'row_conservation' | 'task_status';
-export type ExpandedObjective = { title: string; objective: string; kind: ObjectiveKind };
+export type ExpandedObjective = { title: string; objective: string; kind: ObjectiveKind; expectsBug?: boolean };
 export type LiveResult = {
   id: number;
   title: string;
@@ -15,6 +15,8 @@ export type LiveResult = {
   testUrl: string | null;
   credits: number | null;
   confirmedBug: boolean;
+  expectsBug?: boolean;
+  falseAlarm?: boolean;
   sql?: { runId: string; extractedRows: number; matchesLoaded: number; totalWins: number };
   source?: 'kane' | 'sql' | 'kane+sql';
 };
@@ -35,9 +37,9 @@ export type FixReport = {
 export type LiveEvent =
   | { type: 'log'; message: string }
   | { type: 'plan'; objectives: ExpandedObjective[] }
-  | { type: 'result'; result: LiveResult; bugsFound: number; points: number; fixesVerified?: number }
-  | { type: 'fix'; report: FixReport; bugsFound: number; fixesVerified: number; points: number }
-  | { type: 'done'; bugsFound: number; points: number; fixesVerified?: number; escalated?: boolean }
+  | { type: 'result'; result: LiveResult; bugsFound: number; points: number; fixesVerified?: number; falseAlarms?: number }
+  | { type: 'fix'; report: FixReport; bugsFound: number; fixesVerified: number; points: number; falseAlarms?: number }
+  | { type: 'done'; bugsFound: number; points: number; fixesVerified?: number; escalated?: boolean; falseAlarms?: number }
   | { type: 'error'; message: string };
 
 export function validatePlan(value: unknown): ExpandedObjective[] {
@@ -48,7 +50,7 @@ export function validatePlan(value: unknown): ExpandedObjective[] {
   if (objectives.length < 2 || objectives.length > 3 || objectives.some(item =>
     !item || typeof item.title !== 'string' || !item.title.trim() || item.title.length > 120 ||
     typeof item.objective !== 'string' || !item.objective.trim() || item.objective.length > 3000 ||
-    !['row_conservation', 'task_status'].includes(item.kind))) {
+    !['row_conservation', 'task_status'].includes(item.kind) || (item.expectsBug !== undefined && typeof item.expectsBug !== 'boolean'))) {
     throw new Error('OpenAI must return two or three bounded pipeline checks.');
   }
   if (!objectives.some(item => item.kind === 'row_conservation') || !objectives.some(item => item.kind === 'task_status')) {

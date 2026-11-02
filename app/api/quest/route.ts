@@ -1,3 +1,6 @@
+import { randomUUID } from 'node:crypto';
+import { stageStore } from '@/lib/server/stage-store';
+import { beginStageRun, recordStageEvent, finishStageRun } from '@/lib/stage';
 import { createRealAirflow, airflowSettings } from '@/lib/server/real-airflow';
 import { expandQuest } from '@/lib/server/expand-quest';
 import { runKane } from '@/lib/server/run-kane';
@@ -39,6 +42,8 @@ export async function POST(request: Request) {
   if (state.bugQuestLiveBusy) return Response.json({ error: 'Another live quest is running. Wait for it to finish.' }, { status: 409 });
   state.bugQuestLiveBusy = true;
   const agent = redact(input.agent.trim(), secrets);
+  const stage = stageStore();
+  const stageRun = beginStageRun(stage, agent, randomUUID());
   const instruction = questInstruction(input.instruction as string | undefined);
   const watchKane = input.watchKane === true;
   const run: QuestDependencies['run'] = (check, signal, log) => runKane(check, signal, log, undefined, undefined, { watchKane });
@@ -52,6 +57,7 @@ export async function POST(request: Request) {
       let closed = false;
       const emit = (event: LiveEvent) => {
         if (closed || abort.signal.aborted) return;
+        recordStageEvent(stage, stageRun, event);
         try { controller.enqueue(encoder.encode(redact(JSON.stringify(event), secrets) + '\n')); }
         catch { closed = true; abort.abort(); }
       };
@@ -68,6 +74,7 @@ export async function POST(request: Request) {
       } catch (error) {
         if (!abort.signal.aborted) emit({ type: 'error', message: error instanceof Error ? redact(error.message, secrets) : 'Live quest failed. Try again.' });
       } finally {
+        finishStageRun(stage, stageRun);
         clearInterval(heartbeat);
         state.bugQuestLiveBusy = false;
         request.signal.removeEventListener('abort', disconnected);
