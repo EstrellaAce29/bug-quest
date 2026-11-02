@@ -1,0 +1,35 @@
+[
+  {
+    "file": "play.jpg",
+    "page": "/play",
+    "capturedAt": "2026-11-02T00:46:08.107Z",
+    "result": "passed",
+    "summary": "Opened the shared Bug Quest game.\nScrolled the lobby to show Juniper the rabbit, Pebble the fox, their public bio bubbles, and the leaderboard together.\nLeft the game in the lobby without starting a round.",
+    "testManagerUrl": "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M6CVEPGKTECFG8EGEX0M3DY0/dashboard/share/US_VARE2NK6LUGB0NJ63LP4GGMI75N9D06PJ9RPC1SQZUVPTC1X9XMFHIQWYD6OS0TQ?type=summary&agentView=true&fqdn=summary-page",
+    "durationSeconds": 34,
+    "credits": 17.0054275,
+    "completedSteps": 4
+  },
+  {
+    "file": "quest-results.jpg",
+    "page": "/quest",
+    "capturedAt": "2026-11-02T00:52:52.372Z",
+    "result": "passed",
+    "summary": "Opened Bug Quest in recorded replay mode with Live mode left off.\nRan the quest using the default name and instruction and waited for the recorded replay to finish.\nScrolled to the Recorded Kane runs section and left all four result rows visible.\nThe Basic instruction check passed, the Precise check failed with code 740, and the After fix check passed.",
+    "testManagerUrl": "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M6CVS34RMM6F2AVZQKTDH5TH/dashboard/share/US_0YCS8Q8YME5TSBLQJ1F1FKFHRAMKCGSZF8Q3VRJBW1SDQ50TRQYKQ04GG819P709?type=summary&agentView=true&fqdn=summary-page",
+    "durationSeconds": 106.7,
+    "credits": 27.056102500000005,
+    "completedSteps": 9
+  },
+  {
+    "file": "airflow-dag.jpg",
+    "page": "http://localhost:8081/dags/tennis_tournament_pipeline",
+    "capturedAt": "2026-11-02T00:56:14.967Z",
+    "result": "passed",
+    "summary": "Opened the Airflow DAG named tennis_tournament_pipeline.\nDisplayed the graph with all six requested tasks visible together: extract, validate, transform, load, standings, and report.\nNo login was required, and no new run was triggered.",
+    "testManagerUrl": "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M6CW0CBPZY8XQ8DW8TQW3JZ7/dashboard/share/US_PT58XFYCEH07ESDPS4VVN93N276L890CZRD3U4XQ0FM1GB052I0P5XF5RMOWBSSW?type=summary&agentView=true&fqdn=summary-page",
+    "durationSeconds": 69.2,
+    "credits": 30.6380325,
+    "completedSteps": 6
+  }
+]
