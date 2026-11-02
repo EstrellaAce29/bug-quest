@@ -1,0 +1,373 @@
+{
+  "verifiedAt": "2026-11-01",
+  "settings": {
+    "KANE_HEADLESS": true,
+    "watchKaneDefault": false
+  },
+  "checks": {
+    "testsPassed": 58,
+    "typecheck": "passed",
+    "idlePage": {
+      "status": "passed",
+      "result_code": 100,
+      "summary": "Opened Bug Quest and confirmed its initial form state.\nEntered “IdleProbe” as the agent name and cleared the optional instruction; the Run Quest button became available, but it was not selected.\nOpened Past runs, where the recorded hackathon results were visible and no replay was in progress.\nCompleted the requested setup without running a quest or starting any workflow.",
+      "duration": 90.8,
+      "credits_consumed": 32.1526475,
+      "test_url": "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M6CXRTE6J7JAM6KQYS1NKN8D/dashboard/share/US_6QOK8QWLLXZB5NZWADOEQ1GC0EXF69PXVND9MP2I8FVJILZ5XGFG0QUMC183S77P?type=summary&agentView=true&fqdn=summary-page"
+    },
+    "watchToggle": {
+      "status": "passed",
+      "result_code": 100,
+      "summary": "Opened Bug Quest and enabled Live mode.\nConfirmed that Watch Kane was off by default and that its description says it opens a visible browser for demos.\nTurned Watch Kane on, then turned it off again.\nDid not run the quest.",
+      "duration": 79,
+      "credits_consumed": 25.530115000000002,
+      "test_url": "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M6CX5RZ0SQH3WGHRA4D8AZSV/dashboard/share/US_QUJEP5XTU3L3B336E4IRRMJ9ULEEXMLMI78DKA5PT4DYOLGU376YO0V1ZKCPQPBJ?type=summary&agentView=true&fqdn=summary-page"
+    },
+    "idleNetwork": {
+      "capturedNetworkEntries": 25,
+      "questStartPosts": 0,
+      "passed": true
+    }
+  },
+  "processVerification": {
+    "observedRunsByPhase": {
+      "setup": 1,
+      "quest": 4,
+      "idle-page": 1,
+      "play": 1
+    },
+    "allObservedKaneRunsHaveHeadlessFlag": true,
+    "newHeadlessChromeProcesses": 6,
+    "existingVisibleChromeLeftUntouched": true
+  },
+  "quest": {
+    "results": [
+      {
+        "id": 0,
+        "title": "Basic instruction",
+        "objective": "Check the tennis_tournament_pipeline ran successfully",
+        "kind": "basic",
+        "status": "passed",
+        "resultCode": 100,
+        "summary": "Opened the specified Airflow run page for the tennis_tournament_pipeline.\nThe Airflow sign-in page did not appear, so no sign-in was needed.\nConfirmed that the manual run from 2026-11-02 00:38:53 UTC completed successfully. REST cross-check of pinned run: all six tasks success.",
+        "testUrl": "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M6CXACN6ETRREBH1GQV9RVPY/dashboard/share/US_M3IH266C29X147SVUOXHRFJOY301YOIMQUW854TTZGIVECJSL471QX4JDTHT6GPG?type=summary&agentView=true&fqdn=summary-page",
+        "credits": 24.250862499999997,
+        "confirmedBug": false,
+        "source": "kane"
+      },
+      {
+        "title": "Verify tournament pipeline run status",
+        "objective": "Open Airflow and verify that the exact run manual__2026-11-02T00:38:53.369264+00:00 is successful and that all six tasks—extract, validate, transform, load, standings, and report—succeeded.",
+        "kind": "task_status",
+        "id": 1,
+        "status": "passed",
+        "resultCode": 100,
+        "summary": "Opened the requested Airflow run for tennis_tournament_pipeline.\nThe Airflow sign-in page was not shown, so no sign-in was needed.\nConfirmed that the run manual__2026-11-02T00:38:53.369264+00:00 completed successfully.\nConfirmed that all six tasks—extract, validate, transform, load, standings, and report—completed successfully. REST cross-check of pinned run: all six tasks success.",
+        "testUrl": "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M6CXCN73RBYP4XREVNVP93QJ/dashboard/share/US_UG8GVG0NYXNHOYVRB91IQ3PQB8MG32W0FN15EKJ1FON2ZXGKQJMJ6R21K1LHBH4H?type=summary&agentView=true&fqdn=summary-page",
+        "credits": 33.636759,
+        "confirmedBug": false,
+        "source": "kane"
+      },
+      {
+        "title": "Verify tournament row conservation",
+        "objective": "For the exact run manual__2026-11-02T00:38:53.369264+00:00, verify that warehouse.run_metadata.extracted_rows is 2986, warehouse.matches contains exactly 2986 rows for that run, and the sum of warehouse.player_wins.wins equals the loaded rows.",
+        "kind": "row_conservation",
+        "id": 2,
+        "status": "failed",
+        "resultCode": null,
+        "summary": "SQL run manual__2026-11-02T00:38:53.369264+00:00: extracted 2986 (expected 2986); loaded 1493; total wins 1493; other-run rows 0.",
+        "sql": {
+          "runId": "manual__2026-11-02T00:38:53.369264+00:00",
+          "extractedRows": 2986,
+          "matchesLoaded": 1493,
+          "totalWins": 1493,
+          "otherRunRows": 0
+        },
+        "source": "sql",
+        "confirmedBug": true,
+        "testUrl": null,
+        "credits": 0
+      }
+    ],
+    "verifiedFix": {
+      "checkId": 2,
+      "status": "fixed",
+      "checkpoint": "6b20e30b074bae971ea8624fc6c5d2d5e3c170e9",
+      "commit": "500d8181b04826ee1b76e67357927107e43128dc",
+      "attempts": [
+        {
+          "number": 1,
+          "description": "Load the full matches batch instead of half.",
+          "precise": {
+            "id": 2,
+            "title": "Verify tournament row conservation (after fix 1)",
+            "objective": "For the exact run manual__2026-11-02T00:38:53.369264+00:00, verify that warehouse.run_metadata.extracted_rows is 2986, warehouse.matches contains exactly 2986 rows for that run, and the sum of warehouse.player_wins.wins equals the loaded rows.",
+            "kind": "row_conservation",
+            "status": "passed",
+            "resultCode": 100,
+            "summary": "Opened the requested Airflow run for tennis_tournament_pipeline (bugquest_6ce15d3b-ff8c-4b0e-9a4a-d4d77a4fc841).\nNo sign-in was needed because the Airflow login page was not shown.\nConfirmed that the run completed successfully and that extract, validate, transform, load, standings, and report all succeeded. REST cross-check of pinned run: all six tasks success. SQL run bugquest_6ce15d3b-ff8c-4b0e-9a4a-d4d77a4fc841: extracted 2986 (expected 2986); loaded 2986; total wins 2986; other-run rows 0.",
+            "testUrl": "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M6CXG31YGPMNV8RZABGCMK3Q/dashboard/share/US_L4K7QQOA4M41S0WB4ZDJ66MXH5IZRTBJYFR0OEGUFXD1G4XVTC6BPK0UROCV3OV8?type=summary&agentView=true&fqdn=summary-page",
+            "credits": 24.690154999999997,
+            "confirmedBug": false,
+            "source": "kane+sql",
+            "sql": {
+              "runId": "bugquest_6ce15d3b-ff8c-4b0e-9a4a-d4d77a4fc841",
+              "extractedRows": 2986,
+              "matchesLoaded": 2986,
+              "totalWins": 2986,
+              "otherRunRows": 0
+            }
+          },
+          "basic": {
+            "id": 0,
+            "title": "Basic instruction (after fix)",
+            "objective": "Check the tennis_tournament_pipeline ran successfully",
+            "kind": "basic",
+            "status": "passed",
+            "resultCode": 100,
+            "summary": "Opened the requested tennis_tournament_pipeline run page in Airflow.\nNo Airflow sign-in was needed because the login page was not shown.\nConfirmed that the tennis_tournament_pipeline run completed successfully. REST cross-check of pinned run: all six tasks success. SQL run bugquest_6ce15d3b-ff8c-4b0e-9a4a-d4d77a4fc841: extracted 2986 (expected 2986); loaded 2986; total wins 2986; other-run rows 0.",
+            "testUrl": "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M6CXJP4RYGG7C7JS9MVZS238/dashboard/share/US_5H6XRP5JQ6YGBE4KT98KVYTMEOAS2P23LWE2B7AMHN6IO0B4IRN85LJHE3R6HGPN?type=summary&agentView=true&fqdn=summary-page",
+            "credits": 29.390612499999996,
+            "confirmedBug": false,
+            "source": "kane+sql",
+            "sql": {
+              "runId": "bugquest_6ce15d3b-ff8c-4b0e-9a4a-d4d77a4fc841",
+              "extractedRows": 2986,
+              "matchesLoaded": 2986,
+              "totalWins": 2986,
+              "otherRunRows": 0
+            }
+          },
+          "error": null,
+          "diff": [
+            {
+              "kind": "context",
+              "text": "        matches = data[\"rows\"]"
+            },
+            {
+              "kind": "context",
+              "text": "        # PLANTED BUG: accidental page-size limit silently drops the second half."
+            },
+            {
+              "kind": "removed",
+              "text": "        matches_to_load = matches[:len(matches) // 2]"
+            },
+            {
+              "kind": "added",
+              "text": "        matches_to_load = matches"
+            },
+            {
+              "kind": "context",
+              "text": "        play = play_faults()"
+            },
+            {
+              "kind": "context",
+              "text": "        if play is not None:"
+            }
+          ]
+        }
+      ],
+      "diff": [
+        {
+          "kind": "context",
+          "text": "        matches = data[\"rows\"]"
+        },
+        {
+          "kind": "context",
+          "text": "        # PLANTED BUG: accidental page-size limit silently drops the second half."
+        },
+        {
+          "kind": "removed",
+          "text": "        matches_to_load = matches[:len(matches) // 2]"
+        },
+        {
+          "kind": "added",
+          "text": "        matches_to_load = matches"
+        },
+        {
+          "kind": "context",
+          "text": "        play = play_faults()"
+        },
+        {
+          "kind": "context",
+          "text": "        if play is not None:"
+        }
+      ],
+      "afterResult": {
+        "id": 2,
+        "title": "Verify tournament row conservation (after fix 1)",
+        "objective": "For the exact run manual__2026-11-02T00:38:53.369264+00:00, verify that warehouse.run_metadata.extracted_rows is 2986, warehouse.matches contains exactly 2986 rows for that run, and the sum of warehouse.player_wins.wins equals the loaded rows.",
+        "kind": "row_conservation",
+        "status": "passed",
+        "resultCode": 100,
+        "summary": "Opened the requested Airflow run for tennis_tournament_pipeline (bugquest_6ce15d3b-ff8c-4b0e-9a4a-d4d77a4fc841).\nNo sign-in was needed because the Airflow login page was not shown.\nConfirmed that the run completed successfully and that extract, validate, transform, load, standings, and report all succeeded. REST cross-check of pinned run: all six tasks success. SQL run bugquest_6ce15d3b-ff8c-4b0e-9a4a-d4d77a4fc841: extracted 2986 (expected 2986); loaded 2986; total wins 2986; other-run rows 0.",
+        "testUrl": "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M6CXG31YGPMNV8RZABGCMK3Q/dashboard/share/US_L4K7QQOA4M41S0WB4ZDJ66MXH5IZRTBJYFR0OEGUFXD1G4XVTC6BPK0UROCV3OV8?type=summary&agentView=true&fqdn=summary-page",
+        "credits": 24.690154999999997,
+        "confirmedBug": false,
+        "source": "kane+sql",
+        "sql": {
+          "runId": "bugquest_6ce15d3b-ff8c-4b0e-9a4a-d4d77a4fc841",
+          "extractedRows": 2986,
+          "matchesLoaded": 2986,
+          "totalWins": 2986,
+          "otherRunRows": 0
+        }
+      },
+      "basicResult": {
+        "id": 0,
+        "title": "Basic instruction (after fix)",
+        "objective": "Check the tennis_tournament_pipeline ran successfully",
+        "kind": "basic",
+        "status": "passed",
+        "resultCode": 100,
+        "summary": "Opened the requested tennis_tournament_pipeline run page in Airflow.\nNo Airflow sign-in was needed because the login page was not shown.\nConfirmed that the tennis_tournament_pipeline run completed successfully. REST cross-check of pinned run: all six tasks success. SQL run bugquest_6ce15d3b-ff8c-4b0e-9a4a-d4d77a4fc841: extracted 2986 (expected 2986); loaded 2986; total wins 2986; other-run rows 0.",
+        "testUrl": "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M6CXJP4RYGG7C7JS9MVZS238/dashboard/share/US_5H6XRP5JQ6YGBE4KT98KVYTMEOAS2P23LWE2B7AMHN6IO0B4IRN85LJHE3R6HGPN?type=summary&agentView=true&fqdn=summary-page",
+        "credits": 29.390612499999996,
+        "confirmedBug": false,
+        "source": "kane+sql",
+        "sql": {
+          "runId": "bugquest_6ce15d3b-ff8c-4b0e-9a4a-d4d77a4fc841",
+          "extractedRows": 2986,
+          "matchesLoaded": 2986,
+          "totalWins": 2986,
+          "otherRunRows": 0
+        }
+      },
+      "message": "Fixed and verified"
+    },
+    "done": {
+      "type": "done",
+      "bugsFound": 1,
+      "fixesVerified": 1,
+      "points": 35
+    },
+    "kaneProgressLogs": [
+      "NoWindow: Kane: checking Airflow run status (headless)…",
+      "NoWindow: Kane: navigate: Navigate to http://localhost:8081/dags/tennis_tournament_pipeline/runs/manual__2",
+      "NoWindow: Kane: analyze: the Airflow login page appears",
+      "NoWindow: Kane: wait: PRIMARY: continue without signing in is already satisfied; role=text | HINTS: Ai",
+      "NoWindow: Kane: analyze: the tennis_tournament_pipeline ran successfully",
+      "NoWindow: Kane: assert: the tennis_tournament_pipeline ran successfully",
+      "NoWindow: Kane: passed (code 100).",
+      "NoWindow: Kane: checking Airflow run status (headless)…",
+      "NoWindow: Kane: navigate: Navigate to http://localhost:8081/dags/tennis_tournament_pipeline/runs/manual__2",
+      "NoWindow: Kane: analyze: the Airflow login page appears",
+      "NoWindow: Kane: wait: Waiting Continue without signing in",
+      "NoWindow: Kane: wait: PRIMARY: Open Airflow",
+      "NoWindow: Kane: analyze: Task report is success.",
+      "NoWindow: Kane: assert: DAG tennis_tournament_pipeline run manual__2026-11-02T00:38:53.369264+00:00 is s",
+      "NoWindow: Kane: passed (code 100).",
+      "NoWindow: Kane: checking Airflow run status (headless)…",
+      "NoWindow: Kane: navigate: Navigate to http://localhost:8081/dags/tennis_tournament_pipeline/runs/bugquest_",
+      "NoWindow: Kane: analyze: the Airflow login page appears",
+      "NoWindow: Kane: wait: Waiting Continue without signing in",
+      "NoWindow: Kane: analyze: Task report is success.",
+      "NoWindow: Kane: assert: DAG tennis_tournament_pipeline run bugquest_6ce15d3b-ff8c-4b0e-9a4a-d4d77a4fc841",
+      "NoWindow: Kane: passed (code 100).",
+      "NoWindow: Kane: checking Airflow run status (headless)…",
+      "NoWindow: Kane: navigate: Navigate to http://localhost:8081/dags/tennis_tournament_pipeline/runs/bugquest_",
+      "NoWindow: Kane: wait: PRIMARY: Navigate to http://localhost:8081/dags/tennis_tournament_pipeline/runs/",
+      "NoWindow: Kane: analyze: the Airflow login page appears",
+      "NoWindow: Kane: wait: PRIMARY: continue after confirming the tennis_tournament_pipeline run page is lo",
+      "NoWindow: Kane: analyze: the tennis_tournament_pipeline ran successfully",
+      "NoWindow: Kane: assert: the tennis_tournament_pipeline ran successfully",
+      "NoWindow: Kane: passed (code 100)."
+    ]
+  },
+  "game": {
+    "players": [
+      {
+        "name": "Juniper",
+        "animal": "rabbit"
+      },
+      {
+        "name": "Pebble",
+        "animal": "fox"
+      }
+    ],
+    "round": {
+      "round": 1,
+      "planted": [
+        "standings_loss"
+      ],
+      "scores": [
+        {
+          "playerId": "player-1",
+          "caught": [
+            "standings_loss"
+          ],
+          "fixed": [
+            "standings_loss"
+          ],
+          "falseAlarms": 1,
+          "points": 30
+        },
+        {
+          "playerId": "player-2",
+          "caught": [],
+          "fixed": [],
+          "falseAlarms": 0,
+          "points": 0
+        }
+      ],
+      "resetRunId": "play_ba68b997-d2e7-46dd-ae6d-5a8a46fc668a"
+    },
+    "standings": [
+      {
+        "playerId": "player-1",
+        "name": "Juniper",
+        "points": 30,
+        "caught": 1,
+        "fixed": 1,
+        "falseAlarms": 1
+      },
+      {
+        "playerId": "player-2",
+        "name": "Pebble",
+        "points": 0,
+        "caught": 0,
+        "fixed": 0,
+        "falseAlarms": 0
+      }
+    ],
+    "kaneLogs": [
+      "Kane: checking Airflow run status (headless)…",
+      "Kane: navigate: Navigate to http://localhost:8081/dags/tennis_tournament_pipeline/runs/play_452e",
+      "Kane: analyze: the Airflow login page appears",
+      "Kane: analyze: the user is already signed in",
+      "Kane: wait: Waiting verification of tennis_tournament_pipeline run play_452ee9b1-e9c5-43c3-9166-d2f1e3aec5a3 success state and its six task instances",
+      "Kane: wait: Waiting after resolving the signed-in conditional checkpoint",
+      "Kane: wait: PRIMARY: Navigate to http://localhost:8081/dags/tennis_tournament_pipeline/runs/",
+      "Kane: wait: PRIMARY: Open Airflow",
+      "Kane: analyze: ANALYZE(visual, 'DAG tennis_tournament_pipeline run play_452ee9b1-e9c5-43c3-9166",
+      "Kane: assert: DAG tennis_tournament_pipeline run play_452ee9b1-e9c5-43c3-9166-d2f1e3aec5a3 is ",
+      "Kane: passed (code 100)."
+    ],
+    "findings": [
+      {
+        "invariant": "rows",
+        "reportedBug": true,
+        "summary": "PASS · SQL run play_e961ad84-ccbc-4503-a3a9-cba7de2f229f: extracted 2986; loaded 2986. Claimed defect was not present: false alarm."
+      },
+      {
+        "invariant": "wins",
+        "reportedBug": true,
+        "summary": "FAIL · SQL run play_e961ad84-ccbc-4503-a3a9-cba7de2f229f: loaded 2986; total wins 2684."
+      },
+      {
+        "invariant": "duplicates",
+        "reportedBug": false,
+        "summary": "PASS · SQL run play_65e49c2b-ff75-43d0-9fed-e5f6b355d431: duplicate full match payloads 0."
+      }
+    ]
+  },
+  "finalWarehouse": {
+    "runId": "play_ba68b997-d2e7-46dd-ae6d-5a8a46fc668a",
+    "extractedRows": 2986,
+    "matchesLoaded": 2986,
+    "totalWins": 2986,
+    "otherRunRows": 0
+  },
+  "originalPlantedDagRestored": true,
+  "dagSha256": "439344e9396a93869bc516c7443cfc3d742f081f8c03131f51cf9ee839f1d782"
+}

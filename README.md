@@ -52,7 +52,7 @@ flowchart LR
 
 **2,986 extracted vs 1,493 loaded → fixed → 2,986 extracted = 2,986 loaded**, with all six Airflow tasks successful and Kane + SQL verification passing. Fresh clones intentionally retain the half-load bug for the next demo.
 
-- **56 tests pass**, plus TypeScript typecheck.
+- **58 tests pass**, plus TypeScript typecheck.
 - Two terminal players verified: **+20** per bug caught, **+15** per verified repair, **−5** per false claim; the round reset to 2,986 extracted / loaded / wins.
 - Evidence: [real auto-fix](real-pipeline/verification-2026-10-27.json) · [two-player game](real-pipeline/play-animal-verification-2026-11-01.json).
 
@@ -75,6 +75,7 @@ Fill `.env.local` locally. Key names only:
 | OpenAI | `OPENAI_API_KEY`, optional `OPENAI_MODEL` |
 | Airflow | `AIRFLOW_URL`, `AIRFLOW_PORT`, `AIRFLOW_USERNAME`, `AIRFLOW_PASSWORD` |
 | PostgreSQL | `PGHOST`, `PGPORT`, `PGUSER`, `PGPASSWORD`, `PGDATABASE` |
+| Kane browser | `KANE_HEADLESS` |
 | Game model, optional | `PLAY_MODEL_PROVIDER`, `PLAY_MODEL` |
 | Ollama, when selected | `OLLAMA_BASE_URL`, `OLLAMA_MODEL` |
 
@@ -117,12 +118,14 @@ The warehouse checker intentionally fails while the half-load bug is active. See
 | Mode | Route | Use |
 |---|---|---|
 | Simulated monitor | `/pipelines` | JSON-backed enrollment pipeline with switchable faults. |
-| Real Airflow | `/quest` | Enable Live mode, select Real Airflow, and run the guarded DAG auto-fixer. Default mode replays recorded Kane results without credentials. |
+| Real Airflow | `/quest` | Enter an agent name, select Real Airflow, and click Run for the guarded DAG auto-fixer. Nothing starts on page load; recorded evidence is collapsed under Past runs. |
 | Game | `/play` | Shared animal stage, terminal controllers, live checks, scoring, reveals, and resets. |
 
 ## Tech stack
 
 Next.js · React · TypeScript · Node.js · OpenAI API / Ollama · Kane CLI · Apache Airflow · PostgreSQL · Docker
+
+Kane runs headlessly by default for quests, game rounds, terminal players, and repair verification. Progress streams into the live logs. An instruction is optional and defaults to “Check the pipeline ran.” Once you click Run, checks, repairs, reruns and verification proceed automatically. Enable **Watch Kane** on `/quest` only when you want a visible browser for a demo; it stays off by default. `KANE_HEADLESS` is read server-side from `.env.local`.
 
 ## Limitations
 

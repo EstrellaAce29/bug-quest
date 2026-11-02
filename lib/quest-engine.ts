@@ -50,6 +50,10 @@ export async function executeQuest(
   emit({ type: 'done', ...score });
 }
 
-export function kaneArguments(objective: string, url = 'http://localhost:3000/pipelines'): string[] {
-  return ['run', objective, '--url', url, '--agent', '--max-steps', '15'];
+export function kaneHeadless(watchKane = false, env: Record<string, string | undefined> = process.env): boolean {
+  return !watchKane && env.KANE_HEADLESS?.trim().toLowerCase() !== 'false';
+}
+
+export function kaneArguments(objective: string, url = 'http://localhost:3000/pipelines', options: { headless?: boolean } = {}): string[] {
+  return ['run', objective, '--url', url, '--agent', '--max-steps', '15', ...(options.headless !== false ? ['--headless'] : [])];
 }

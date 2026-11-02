@@ -43,7 +43,7 @@ test('SQL catches a silent half-load despite matching wins and refuses fabricate
 
 test('real Airflow Kane target does not alter the simulated default or execution limits', () => {
   assert.deepEqual(kaneArguments('Verify the DAG succeeded', 'http://localhost:8081'), [
-    'run', 'Verify the DAG succeeded', '--url', 'http://localhost:8081', '--agent', '--max-steps', '15',
+    'run', 'Verify the DAG succeeded', '--url', 'http://localhost:8081', '--agent', '--max-steps', '15', '--headless',
   ]);
   assert.equal(kaneArguments('Check the pipeline ran')[3], 'http://localhost:3000/pipelines');
 });

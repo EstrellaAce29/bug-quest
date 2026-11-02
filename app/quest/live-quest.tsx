@@ -2,14 +2,17 @@
 
 import { Fragment, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { DEFAULT_INSTRUCTION, questInstruction } from '@/lib/quest-contract';
+import RecordedQuest from './recorded-quest';
 import type { ExpandedObjective, LiveEvent, LiveResult, FixReport } from '@/lib/quest-contract';
 import styles from './quest.module.css';
 
-export default function LiveQuest({ onBusyChange }: { onBusyChange: (busy: boolean) => void }) {
-  const [target, setTarget] = useState<'simulated' | 'airflow'>('simulated');
-  const [agent, setAgent] = useState('Winter');
-  const [instruction, setInstruction] = useState('Check the pipeline ran');
-  const [activeAgent, setActiveAgent] = useState('Winter');
+export default function LiveQuest() {
+  const [watchKane, setWatchKane] = useState(false);
+  const [target, setTarget] = useState<'simulated' | 'airflow'>('airflow');
+  const [agent, setAgent] = useState('');
+  const [instruction, setInstruction] = useState(DEFAULT_INSTRUCTION);
+  const [activeAgent, setActiveAgent] = useState('');
   const [busy, setBusy] = useState(false);
   const [logs, setLogs] = useState<string[]>([]);
   const [plan, setPlan] = useState<ExpandedObjective[]>([]);
@@ -29,10 +32,10 @@ export default function LiveQuest({ onBusyChange }: { onBusyChange: (busy: boole
 
   async function start(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (abort.current || !agent.trim() || !instruction.trim()) return;
+    if (abort.current || !agent.trim()) return;
     const controller = new AbortController();
     abort.current = controller;
-    setBusy(true); onBusyChange(true); setActiveAgent(agent.trim());
+    setBusy(true); setActiveAgent(agent.trim());
     setLogs([]); setResults([]); setPlan([]); setError(null); setPoints(0); setBugsFound(0); setFixesVerified(0); setRepairs([]); setCompleted(false);
     let finished = false;
     function receive(event: LiveEvent) {
@@ -52,7 +55,7 @@ export default function LiveQuest({ onBusyChange }: { onBusyChange: (busy: boole
     try {
       const response = await fetch('/api/quest', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ agent, instruction, target }), signal: controller.signal,
+        body: JSON.stringify({ agent, instruction: questInstruction(instruction), target, watchKane }), signal: controller.signal,
       });
       if (!response.ok) {
         const body = await response.json();
@@ -79,26 +82,27 @@ export default function LiveQuest({ onBusyChange }: { onBusyChange: (busy: boole
         : cause instanceof Error ? cause.message : 'Could not run the live quest.';
       setError(message); setLogs(current => [...current, `${agent.trim()}: ${message}`]);
     } finally {
-      abort.current = null; setBusy(false); onBusyChange(false);
+      abort.current = null; setBusy(false);
     }
   }
 
   const checks = [
-    { id: 0, title: 'Basic instruction', objective: instruction },
+    { id: 0, title: 'Basic instruction', objective: questInstruction(instruction) },
     ...plan.map((item, index) => ({ id: index + 1, title: item.title, objective: item.objective })),
   ];
   return <div className={styles.shell}>
     <header className={styles.header}><Link href="/quest" className={styles.logo}><span>⌘</span>Bug Quest<i /></Link><div className={styles.headerRight}><span className={styles.liveTag}>Live mode</span><Link href="/pipelines">Pipeline Monitor ↗</Link></div></header>
     <main className={styles.main}>
-      <div className={styles.intro}><span className={styles.eyebrow}>REAL CHECKS. REAL EVIDENCE.</span><h1>Bug Quest<span>.</span></h1><p>Give your agent an instruction. OpenAI writes precise checks for the simulated monitor or real Airflow, with Kane and SQL evidence.</p></div>
+      <div className={styles.intro}><span className={styles.eyebrow}>REAL CHECKS. REAL EVIDENCE.</span><h1>Bug Quest<span>.</span></h1><p>Name your agent and click Run Quest. Checks, repairs, and verification run automatically after that; nothing runs on page load.</p></div>
       <div className={styles.layout}>
         <div className={styles.leftColumn}>
-          <section className={styles.formCard} aria-labelledby="live-launch-title"><div className={styles.cardHeading}><span className={styles.stepNumber}>01</span><div><h2 id="live-launch-title">Run a live quest</h2><p>Your original check, followed by two or three precise checks.</p></div></div>
+          <section className={styles.formCard} aria-labelledby="live-launch-title"><div className={styles.cardHeading}><span className={styles.stepNumber}>01</span><div><h2 id="live-launch-title">Run a live quest</h2><p>Instruction is optional; leave it blank to use “Check the pipeline ran”.</p></div></div>
             <form onSubmit={start}>
               <label htmlFor="live-target">Target</label><select id="live-target" value={target} onChange={event => setTarget(event.target.value as 'simulated' | 'airflow')} disabled={busy}><option value="simulated">Simulated monitor</option><option value="airflow">Real Airflow</option></select>
-              <label htmlFor="live-agent">Name your agent</label><input id="live-agent" value={agent} onChange={event => setAgent(event.target.value)} maxLength={80} required disabled={busy} placeholder="Winter" />
-              <label htmlFor="live-instruction">Your instruction</label><textarea id="live-instruction" value={instruction} onChange={event => setInstruction(event.target.value)} maxLength={1000} rows={3} required disabled={busy} placeholder="Check the pipeline ran" />
-              <button className={styles.runButton} type="submit" disabled={busy || !agent.trim() || !instruction.trim()}><span aria-hidden="true">{busy ? '◌' : '▷'}</span>{busy ? 'Quest in progress' : 'Run Quest'}<span aria-hidden="true">→</span></button>
+              <label htmlFor="live-agent">Agent name</label><input id="live-agent" value={agent} onChange={event => setAgent(event.target.value)} maxLength={80} required disabled={busy} placeholder="Winter" />
+              <label htmlFor="live-instruction">Instruction (optional)</label><textarea id="live-instruction" value={instruction} onChange={event => setInstruction(event.target.value)} maxLength={1000} rows={3} disabled={busy} placeholder="Check the pipeline ran" />
+              <div className={styles.watchControl}><label className={styles.modeToggle}><input type="checkbox" role="switch" checked={watchKane} onChange={event => setWatchKane(event.target.checked)} disabled={busy} /><span aria-hidden="true" />Watch Kane</label><small>Demo only: open a visible browser. Progress always streams below.</small></div>
+              <button className={styles.runButton} type="submit" disabled={busy || !agent.trim()}><span aria-hidden="true">{busy ? '◌' : '▷'}</span>{busy ? 'Quest in progress' : 'Run Quest'}<span aria-hidden="true">→</span></button>
               {busy && <button className={styles.cancelButton} type="button" onClick={() => abort.current?.abort()}>Stop quest</button>}
               <p className={styles.replayNote}>Uses OpenAI API usage and Kane credits. Auto-fix can edit and commit {target === 'airflow' ? 'only the tennis DAG after a new Airflow run passes Kane + SQL' : 'lib/pipeline.ts after Kane verifies it'}. Up to three attempts; config/bugs.json is never edited.</p>
             </form>
@@ -113,6 +117,7 @@ export default function LiveQuest({ onBusyChange }: { onBusyChange: (busy: boole
         const repair = repairs.find(report => report.checkId === check.id);
         return <Fragment key={check.id}><tr><td><span className={styles.rowNumber}>{String(check.id + 1).padStart(2, '0')}</span><div><strong>{check.title}</strong><small>{result?.objective ?? check.objective}</small>{result && <small>{result.summary}</small>}</div></td><td><span className={!result ? styles.pending : result.status === 'passed' ? styles.pass : styles.fail}>{!result ? busy ? 'Waiting' : 'Not run' : result.status === 'passed' ? 'PASS' : result.status === 'failed' ? 'FAIL' : 'ERROR'}</span></td><td className="mono">{result?.resultCode ?? '—'}{result?.source && <small>{result.source}</small>}</td><td>{result?.testUrl ? <a href={result.testUrl} target="_blank" rel="noopener noreferrer">Test Manager ↗</a> : '—'}</td></tr>{repair && <tr><td colSpan={4} className={styles.repairCell}><div className={styles.repairHeading}><strong>{repair.status === 'fixed' ? 'Fixed and verified' : repair.status === 'escalated' ? 'Escalated to human' : 'Auto-fix in progress'}</strong><span>{repair.attempts.length} / 3 attempts</span></div><p>{repair.message}</p>{repair.checkpoint && <p>Checkpoint <code>{repair.checkpoint.slice(0, 7)}</code>{repair.commit && <> · auto-fix commit <code>{repair.commit.slice(0, 7)}</code></>}</p>}{repair.diff.length > 0 && <div className={styles.fixDiff}><pre className={styles.repairDiff}><code>{repair.diff.map((line, index) => <span className={line.kind === 'removed' ? styles.removedLine : line.kind === 'added' ? styles.addedLine : styles.contextLine} key={index}>{line.kind === 'removed' ? '− ' : line.kind === 'added' ? '+ ' : '  '}{line.text}{'\n'}</span>)}</code></pre></div>}{repair.afterResult?.testUrl && <p><a href={repair.afterResult.testUrl} target="_blank" rel="noopener noreferrer">After-fix Test Manager report ({repair.afterResult.status.toUpperCase()}) ↗</a></p>}{repair.basicResult?.testUrl && <p><a href={repair.basicResult.testUrl} target="_blank" rel="noopener noreferrer">Basic recheck ({repair.basicResult.status.toUpperCase()}) ↗</a></p>}<details><summary>Attempt evidence</summary>{repair.attempts.map(attempt => <div key={attempt.number} className={styles.attemptEvidence}>Attempt {attempt.number}: {attempt.error || attempt.description || 'Working'}{attempt.precise?.testUrl && <> · <a href={attempt.precise.testUrl} target="_blank" rel="noopener noreferrer">precise {attempt.precise.status} ↗</a></>}{attempt.basic?.testUrl && <> · <a href={attempt.basic.testUrl} target="_blank" rel="noopener noreferrer">basic {attempt.basic.status} ↗</a></>}</div>)}</details></td></tr>}</Fragment>;
       })}</tbody></table></div></section>
+      <details className={styles.pastRuns}><summary>Past runs</summary><p>Recorded hackathon evidence. Opening this section runs nothing.</p><RecordedQuest /></details>
       <footer className={styles.footer}><span>Bug Quest <b>/</b> Live browser verification</span><Link href="/pipelines">Inspect the pipeline →</Link></footer>
     </main>
   </div>;

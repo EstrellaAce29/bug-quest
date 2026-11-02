@@ -2,7 +2,7 @@ import 'server-only';
 import { spawn } from 'node:child_process';
 import { createInterface } from 'node:readline';
 import { redact, testManagerUrl, type LiveResult } from '../quest-contract';
-import { kaneArguments } from '../quest-engine';
+import { kaneArguments, kaneHeadless } from '../quest-engine';
 
 export async function runKane(
   check: Pick<LiveResult, 'id' | 'title' | 'objective' | 'kind'>,
@@ -10,15 +10,19 @@ export async function runKane(
   log: (message: string) => void,
   url?: string,
   variablesFile?: string,
+  options: { watchKane?: boolean } = {},
 ): Promise<LiveResult> {
   signal.throwIfAborted();
+  const headless = kaneHeadless(options.watchKane);
+  log(`Kane: ${url?.includes('/dags/') ? 'checking Airflow run status' : 'running browser check'} (${headless ? 'headless' : 'visible browser'})…`);
   const env: NodeJS.ProcessEnv = { ...process.env, KANE_CLI_USER_AGENT: 'codex' };
   // Kane never needs the OpenAI key. Do not pass it to subprocesses or their logs.
   delete env.OPENAI_API_KEY;
   for (const name of Object.keys(env)) if (/^(AIRFLOW_|PG|WAREHOUSE_)/.test(name)) delete env[name];
   const secrets = Object.entries(process.env).filter(([name]) => /KEY|PASSWORD|SECRET|TOKEN/.test(name)).map(([, value]) => value || '');
   return new Promise((resolve, reject) => {
-    const child = spawn('kane-cli', [...kaneArguments(check.objective, url), ...(variablesFile ? ['--variables-file', variablesFile] : [])], {
+    const finish = (result: LiveResult) => { log(`Kane: ${result.status}${result.resultCode === null ? '' : ` (code ${result.resultCode})`}.`); resolve(result); };
+    const child = spawn('kane-cli', [...kaneArguments(check.objective, url, { headless }), ...(variablesFile ? ['--variables-file', variablesFile] : [])], {
       cwd: process.cwd(), env, shell: false, stdio: ['ignore', 'pipe', 'pipe'],
     });
     let terminal: Record<string, unknown> | null = null;
@@ -38,10 +42,10 @@ export async function runKane(
       try {
         const event = JSON.parse(line);
         if (event.type === 'run_end') terminal = event;
-        else if (event.step && typeof event.remark === 'string') {
-          log(redact(event.remark, secrets).slice(0, 700));
+        else if (event.step && event.status !== 'running' && typeof event.remark === 'string') {
+          log(`Kane: ${redact(event.remark, secrets).slice(0, 700)}`);
         } else if (event.type === 'ask_user') {
-          log('Kane requested interactive input; this live run cannot answer prompts.');
+          log('Kane: requested interactive input; this live run cannot answer prompts.');
           stop();
         }
       } catch { /* Non-JSON startup output is not a result. */ }
@@ -52,7 +56,7 @@ export async function runKane(
       signal.removeEventListener('abort', stop); lines.close();
     }
     child.once('error', () => {
-      cleanup(); reject(new Error('Could not start Kane CLI. Check that kane-cli is installed and available on the server PATH.'));
+      cleanup(); log('Kane: could not start.'); reject(new Error('Could not start Kane CLI. Check that kane-cli is installed and available on the server PATH.'));
     });
     child.once('close', code => {
       cleanup();
@@ -63,7 +67,7 @@ export async function runKane(
           : /Chrome|CDP/i.test(stderr) ? 'Kane could not start or connect to Chrome.'
           : /auth|login|credential/i.test(stderr) ? 'Kane authentication needs attention. Sign in with Kane CLI in your terminal.'
           : `Kane exited without a completed result (exit ${code ?? 'unknown'}).`;
-        resolve({ ...check, status: 'error', resultCode: null, summary, testUrl: null, credits: null, confirmedBug: false });
+        finish({ ...check, status: 'error', resultCode: null, summary, testUrl: null, credits: null, confirmedBug: false });
         return;
       }
       const result = terminal as Record<string, unknown>;
@@ -71,7 +75,7 @@ export async function runKane(
       const numericCode = Number(result.result_code);
       const verdict = result.verdict as {confirmed?: boolean; family?: string} | undefined;
       const confirmedBug = status === 'failed' && (numericCode === 740 || (verdict?.confirmed === true && verdict.family === 'application_issue'));
-      resolve({
+      finish({
         ...check, status,
         resultCode: result.result_code != null && Number.isFinite(numericCode) ? numericCode : null,
         summary: redact(typeof result.summary === 'string' ? result.summary : 'Kane returned no summary.', secrets).slice(0, 4000),

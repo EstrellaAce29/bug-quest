@@ -1,7 +1,8 @@
+import { questInstruction } from '../lib/quest-contract';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { redact, silentBugKinds, testManagerUrl, validatePlan, type LiveResult } from '../lib/quest-contract';
-import { executeQuest, kaneArguments } from '../lib/quest-engine';
+import { executeQuest, kaneArguments, kaneHeadless } from '../lib/quest-engine';
 import type { LiveEvent, ExpandedObjective } from '../lib/quest-contract';
 
 const basic: LiveResult = { id: 0, title: 'Basic', objective: 'Check the pipeline ran', kind: 'basic', status: 'passed', resultCode: 100, summary: 'Completed', testUrl: null, credits: 2, confirmedBug: false };
@@ -61,7 +62,7 @@ test('original instruction runs verbatim before expanded objectives, without ove
   assert.deepEqual(seen, [instruction, ...objectives.map(item => item.objective)]);
   assert.deepEqual(events.at(-1), { type: 'done', bugsFound: 1, fixesVerified: 0, points: 20 });
   assert.ok(events.some(event => event.type === 'log' && event.message === 'Winter: running check 2 of 2...'));
-  assert.deepEqual(kaneArguments(instruction), ['run', instruction, '--url', 'http://localhost:3000/pipelines', '--agent', '--max-steps', '15']);
+  assert.deepEqual(kaneArguments(instruction), ['run', instruction, '--url', 'http://localhost:3000/pipelines', '--agent', '--max-steps', '15', '--headless']);
 });
 
 test('infrastructure failures retain partial results and prevent later billable runs', async () => {
@@ -106,4 +107,22 @@ test('verified auto-fixes add 15 points and escalation stops subsequent objectiv
       assert.equal(launched, fixed ? 3 : 2);
     }
   }
+});
+
+
+test('Kane is headless by default; environment and explicit demo watch control visibility', () => {
+  for (const value of [undefined, 'true', 'TRUE', ' true ', '', 'unexpected']) {
+    assert.equal(kaneHeadless(false, { KANE_HEADLESS: value }), true);
+    assert.equal(kaneArguments('Check rows', undefined, { headless: kaneHeadless(false, { KANE_HEADLESS: value }) }).includes('--headless'), true);
+  }
+  assert.equal(kaneHeadless(false, { KANE_HEADLESS: ' false ' }), false);
+  assert.equal(kaneHeadless(true, { KANE_HEADLESS: 'true' }), false);
+  assert.equal(kaneArguments('Verify repair', 'http://localhost:8081', { headless: kaneHeadless(true, {}) }).includes('--headless'), false);
+  assert.equal(kaneArguments('Verify repair', 'http://localhost:8081').at(-1), '--headless');
+});
+
+
+test('optional quest instructions use the same default for omitted and blank input', () => {
+  for (const value of [undefined, '', '   ']) assert.equal(questInstruction(value), 'Check the pipeline ran');
+  assert.equal(questInstruction('  Verify loaded rows equal extracted rows  '), 'Verify loaded rows equal extracted rows');
 });

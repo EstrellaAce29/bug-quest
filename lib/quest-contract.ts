@@ -1,3 +1,6 @@
+export const DEFAULT_INSTRUCTION = 'Check the pipeline ran';
+export function questInstruction(value?: string): string { return value?.trim() || DEFAULT_INSTRUCTION; }
+
 export type QuestTarget = 'simulated' | 'airflow';
 export type ObjectiveKind = 'row_conservation' | 'task_status';
 export type ExpandedObjective = { title: string; objective: string; kind: ObjectiveKind };
