@@ -1,8 +1,8 @@
-import { questInstruction } from '../lib/quest-contract';
+import { validateQuestLaunch } from '../lib/quest-contract';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { redact, silentBugKinds, testManagerUrl, validatePlan, type LiveResult } from '../lib/quest-contract';
-import { executeQuest, kaneArguments, kaneHeadless } from '../lib/quest-engine';
+import { executeQuest, kaneArguments } from '../lib/quest-engine';
 import type { LiveEvent, ExpandedObjective } from '../lib/quest-contract';
 
 const basic: LiveResult = { id: 0, title: 'Basic', objective: 'Check the pipeline ran', kind: 'basic', status: 'passed', resultCode: 100, summary: 'Completed', testUrl: null, credits: 2, confirmedBug: false };
@@ -110,21 +110,25 @@ test('verified auto-fixes add 15 points and escalation stops subsequent objectiv
 });
 
 
-test('Kane is headless by default; environment and explicit demo watch control visibility', () => {
-  for (const value of [undefined, 'true', 'TRUE', ' true ', '', 'unexpected']) {
-    assert.equal(kaneHeadless(false, { KANE_HEADLESS: value }), true);
-    assert.equal(kaneArguments('Check rows', undefined, { headless: kaneHeadless(false, { KANE_HEADLESS: value }) }).includes('--headless'), true);
+test('Kane always gets --headless, even when the old environment setting requests a window', () => {
+  const original = process.env.KANE_HEADLESS;
+  try {
+    for (const value of ['false', 'true', '', 'unexpected']) {
+      process.env.KANE_HEADLESS = value;
+      assert.equal(kaneArguments('Verify repair', 'http://localhost:8081').at(-1), '--headless');
+    }
+  } finally {
+    if (original === undefined) delete process.env.KANE_HEADLESS;
+    else process.env.KANE_HEADLESS = original;
   }
-  assert.equal(kaneHeadless(false, { KANE_HEADLESS: ' false ' }), false);
-  assert.equal(kaneHeadless(true, { KANE_HEADLESS: 'true' }), false);
-  assert.equal(kaneArguments('Verify repair', 'http://localhost:8081', { headless: kaneHeadless(true, {}) }).includes('--headless'), false);
-  assert.equal(kaneArguments('Verify repair', 'http://localhost:8081').at(-1), '--headless');
 });
 
-
-test('optional quest instructions use the same default for omitted and blank input', () => {
-  for (const value of [undefined, '', '   ']) assert.equal(questInstruction(value), 'Check the pipeline ran');
-  assert.equal(questInstruction('  Verify loaded rows equal extracted rows  '), 'Verify loaded rows equal extracted rows');
+test('quest launch rejects missing inputs, implicit confirmation and visible-browser requests', () => {
+  const valid = { agent: ' Winter ', instruction: ' Verify all rows loaded ', confirmed: true, target: 'airflow' };
+  assert.deepEqual(validateQuestLaunch(valid), { agent: 'Winter', instruction: 'Verify all rows loaded', target: 'airflow' });
+  for (const input of [null, {}, { ...valid, agent: '' }, { ...valid, instruction: undefined }, { ...valid, instruction: ' ' }, { ...valid, instruction: 'x'.repeat(1001) }, { ...valid, confirmed: undefined }, { ...valid, confirmed: false }, { ...valid, watchKane: true }]) {
+    assert.throws(() => validateQuestLaunch(input));
+  }
 });
 
 

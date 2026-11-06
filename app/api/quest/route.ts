@@ -4,7 +4,7 @@ import { beginStageRun, recordStageEvent, finishStageRun } from '@/lib/stage';
 import { createRealAirflow, airflowSettings } from '@/lib/server/real-airflow';
 import { expandQuest } from '@/lib/server/expand-quest';
 import { runKane } from '@/lib/server/run-kane';
-import { redact, questInstruction, type LiveEvent } from '@/lib/quest-contract';
+import { redact, validateQuestLaunch, type LiveEvent } from '@/lib/quest-contract';
 import { executeQuest, type QuestDependencies } from '@/lib/quest-engine';
 import { attemptAutoFix } from '@/lib/auto-fix';
 import { createFixWorkspace } from '@/lib/server/fix-workspace';
@@ -25,14 +25,11 @@ export async function POST(request: Request) {
   if (!request.headers.get('content-type')?.includes('application/json')) return Response.json({ error: 'Send a JSON request.' }, { status: 415 });
   const text = await request.text();
   if (text.length > 8000) return Response.json({ error: 'Quest input is too long.' }, { status: 400 });
-  let input: { agent?: unknown; instruction?: unknown; target?: unknown; watchKane?: unknown };
-  try { input = JSON.parse(text); } catch { return Response.json({ error: 'Invalid JSON.' }, { status: 400 }); }
-  if (!input || typeof input.agent !== 'string' || !input.agent.trim() || input.agent.length > 80 ||
-      (input.instruction !== undefined && (typeof input.instruction !== 'string' || input.instruction.length > 1000))) {
-    return Response.json({ error: 'Provide an agent name (up to 80 characters) and an optional instruction (up to 1,000 characters).' }, { status: 400 });
-  }
-  if (input.watchKane !== undefined && typeof input.watchKane !== 'boolean') return Response.json({ error: 'Watch Kane must be on or off.' }, { status: 400 });
-  if (input.target !== undefined && !['simulated', 'airflow'].includes(String(input.target))) return Response.json({ error: 'Choose Simulated monitor or Real Airflow.' }, { status: 400 });
+  let body: unknown;
+  try { body = JSON.parse(text); } catch { return Response.json({ error: 'Invalid JSON.' }, { status: 400 }); }
+  let input: ReturnType<typeof validateQuestLaunch>;
+  try { input = validateQuestLaunch(body); }
+  catch (error) { return Response.json({ error: error instanceof Error ? error.message : 'Confirm your name and check first.' }, { status: 400 }); }
   if (input.target === 'airflow') {
     try { airflowSettings(); } catch (error) { return Response.json({ error: error instanceof Error ? error.message : 'Airflow settings missing.' }, { status: 503 }); }
   }
@@ -47,9 +44,8 @@ export async function POST(request: Request) {
   catch (error) { return Response.json({ error: error instanceof Error ? error.message : 'Could not join the stage.' }, { status: 409 }); }
   const assignedAgent = [...stage.agents.values()].find(entry => entry.id === stage.runs.get(stageRun.id)?.agentId)!;
   state.bugQuestLiveBusy = true;
-  const instruction = questInstruction(input.instruction as string | undefined);
-  const watchKane = input.watchKane === true;
-  const run: QuestDependencies['run'] = (check, signal, log) => runKane(check, signal, log, undefined, undefined, { watchKane });
+  const instruction = input.instruction;
+  const run: QuestDependencies['run'] = (check, signal, log) => runKane(check, signal, log);
   const abort = new AbortController();
   const disconnected = () => abort.abort();
   request.signal.addEventListener('abort', disconnected, { once: true });
@@ -67,7 +63,7 @@ export async function POST(request: Request) {
       const log = (message: string) => emit({ type: 'log', message: `${agent}: ${message}` });
       const heartbeat = setInterval(() => log('still working...'), 15000);
       try {
-        const dependencies: QuestDependencies = input.target === 'airflow' ? await createRealAirflow(abort.signal, log, undefined, { watchKane }) : {
+        const dependencies: QuestDependencies = input.target === 'airflow' ? await createRealAirflow(abort.signal, log) : {
           expand: expandQuest, run,
           repair: (failure, basic, signal, log, update) => attemptAutoFix(failure, basic, {
             ...createFixWorkspace(), propose: proposePipelineFix, run,

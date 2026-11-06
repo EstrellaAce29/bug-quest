@@ -53,7 +53,7 @@ export async function warehouseCounts(runId: string | undefined, signal: AbortSi
   return parseWarehouseCounts(JSON.parse(stdout.trim()), runId);
 }
 
-export async function createRealAirflow(signal: AbortSignal, log: (message: string) => void, selectedRunId?: string, options: { watchKane?: boolean } = {}) {
+export async function createRealAirflow(signal: AbortSignal, log: (message: string) => void, selectedRunId?: string) {
   const base = airflowSettings();
   let token = '';
   async function api(endpoint: string, method = 'GET', body?: unknown, requestSignal = signal) {
@@ -96,7 +96,7 @@ export async function createRealAirflow(signal: AbortSignal, log: (message: stri
       }), { mode: 0o600 });
       const runUrl = `${base}/dags/${DAG}/runs/${encodeURIComponent(runId)}`;
       const login = `If the Airflow login page appears, sign in using {{airflow_user}} and {{airflow_password}}. After sign-in, or if already signed in, navigate to ${runUrl} before doing the following instruction. `;
-      result = await runKane({ ...check, objective: login + objective }, checkSignal, checkLog, runUrl, variables, options);
+      result = await runKane({ ...check, objective: login + objective }, checkSignal, checkLog, runUrl, variables);
       result.objective = check.objective;
     } finally { await rm(directory, { recursive: true, force: true }); }
     if (result.status !== 'passed') return { ...result, source: 'kane' };

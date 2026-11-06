@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 import { pathToFileURL } from 'node:url';
+import { createInterface } from 'node:readline/promises';
 
-const usage = 'npm run quest -- --name <AgentName> [--instruction "..."]';
+const usage = 'npm run quest [-- --name <AgentName> --instruction "..."]';
 const clean = value => String(value).replace(/[\x00-\x08\x0b-\x1f\x7f]/g, '');
 
 export function questOptions(args) {
@@ -11,19 +12,44 @@ export function questOptions(args) {
     if (!['--name', '--instruction'].includes(args[i]) || args[i + 1] === undefined || args[i + 1].startsWith('--')) throw new Error(usage);
     options[args[i].slice(2)] = args[++i];
   }
-  if (!options.name?.trim() || options.name.length > 80) throw new Error('Provide --name with 1–80 characters.');
-  if ((options.instruction?.length ?? 0) > 1000) throw new Error('Instruction must be at most 1,000 characters.');
-  return { agent: options.name.trim(), instruction: options.instruction?.trim() || undefined, target: 'airflow' };
+  if (options.name !== undefined && (!options.name.trim() || options.name.length > 80)) throw new Error('Name your agent using 1–80 characters.');
+  if (options.instruction !== undefined && (!options.instruction.trim() || options.instruction.length > 1000)) throw new Error('Enter a nonblank check of up to 1,000 characters.');
+  return { agent: options.name?.trim(), instruction: options.instruction?.trim(), target: 'airflow' };
 }
 
-export async function runQuest(args = process.argv.slice(2), { fetcher = fetch, print = console.log, signal } = {}) {
+/**
+ * @param {string[]} [args]
+ * @param {{fetcher?: typeof fetch, print?: (text: string) => void, signal?: AbortSignal, ask?: (text: string) => Promise<string>}} [dependencies]
+ */
+export async function runQuest(args = process.argv.slice(2), { fetcher = fetch, print = console.log, signal, ask } = {}) {
   const options = questOptions(args);
   const write = text => print(clean(text));
-  if (options.help) { write(usage + '\nStart npm run dev first. Uses the same Real Airflow flow as /quest. Ctrl+C cancels.'); return; }
-  write(`Running ${options.agent}. Watch the stage: http://127.0.0.1:3000/stage`);
+  if (options.help) { write(usage + '\nPrompts for a name, a free-text check, then Enter to run. Flags only prefill answers. Requires an interactive terminal. Start npm run dev first. Ctrl+C cancels.'); return; }
+  if (!ask && (!process.stdin.isTTY || !process.stdout.isTTY)) throw new Error('Run npm run quest in an interactive terminal. No quest was started.');
+  const terminal = ask ? null : createInterface({ input: process.stdin, output: process.stdout });
+  const question = ask ?? (text => terminal.question(text, { signal }));
+  async function required(label, prefill, limit) {
+    while (true) {
+      signal?.throwIfAborted();
+      const answer = String(await question(`${label}${prefill ? ` [${clean(prefill)}]` : ''}: `)).trim() || prefill || '';
+      signal?.throwIfAborted();
+      if (answer && answer.length <= limit) return answer;
+      write(`Enter 1–${limit} characters. Nothing has started.`);
+    }
+  }
+  let agent, instruction;
+  try {
+    agent = await required('Name your agent', options.agent, 80);
+    instruction = await required('What should your agent check?', options.instruction, 1000);
+    const confirmation = await question('Press Enter to run the quest, or type cancel to exit: ');
+    signal?.throwIfAborted();
+    if (String(confirmation).trim() !== '') { write('Cancelled. No quest was started.'); return; }
+  } finally { terminal?.close(); }
+  const launch = { agent, instruction, target: options.target, confirmed: true };
+  write(`Running ${agent}. Stage: http://127.0.0.1:3000/stage (open it yourself). Browser checks stay headless.`);
   let response;
   try {
-    response = await fetcher('http://127.0.0.1:3000/api/quest', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(options), signal });
+    response = await fetcher('http://127.0.0.1:3000/api/quest', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(launch), signal });
   } catch (error) {
     if (signal?.aborted) throw error;
     throw new Error('Could not reach Bug Quest. Start npm run dev at http://127.0.0.1:3000.');

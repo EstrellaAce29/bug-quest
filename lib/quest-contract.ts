@@ -1,5 +1,14 @@
-export const DEFAULT_INSTRUCTION = 'Check the pipeline ran';
-export function questInstruction(value?: string): string { return value?.trim() || DEFAULT_INSTRUCTION; }
+// Validate intent before any model, browser, stage registration, or pipeline work.
+export function validateQuestLaunch(value: unknown) {
+  if (!value || typeof value !== 'object') throw new Error('Provide an agent name and a check.');
+  const input = value as Record<string, unknown>;
+  if (typeof input.agent !== 'string' || !input.agent.trim() || input.agent.length > 80) throw new Error('Name your agent (up to 80 characters).');
+  if (typeof input.instruction !== 'string' || !input.instruction.trim() || input.instruction.length > 1000) throw new Error('What should your agent check? Enter a check of up to 1,000 characters.');
+  if (input.confirmed !== true) throw new Error('Click Run or confirm with Enter in the CLI before starting a quest.');
+  if (input.watchKane !== undefined && input.watchKane !== false) throw new Error('Kane runs headlessly. Visible browser mode is unavailable.');
+  if (input.target !== undefined && input.target !== 'airflow' && input.target !== 'simulated') throw new Error('Choose Simulated monitor or Real Airflow.');
+  return { agent: input.agent.trim(), instruction: input.instruction.trim(), target: (input.target ?? 'simulated') as QuestTarget };
+}
 
 export type QuestTarget = 'simulated' | 'airflow';
 export type ObjectiveKind = 'row_conservation' | 'task_status';

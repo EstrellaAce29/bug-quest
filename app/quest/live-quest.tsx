@@ -2,7 +2,6 @@
 
 import { Fragment, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { DEFAULT_INSTRUCTION, questInstruction } from '@/lib/quest-contract';
 import RecordedQuest from './recorded-quest';
 import type { ExpandedObjective, LiveEvent, LiveResult, FixReport } from '@/lib/quest-contract';
 import styles from './quest.module.css';
@@ -11,10 +10,10 @@ import { animalForName, type StageAgent, type StageView } from '@/lib/stage';
 import { ANIMALS } from '@/lib/play-character.mjs';
 
 export default function LiveQuest() {
-  const [watchKane, setWatchKane] = useState(false);
+  const [step, setStep] = useState<'name' | 'instruction'>('name');
   const [target, setTarget] = useState<'simulated' | 'airflow'>('airflow');
   const [agent, setAgent] = useState('');
-  const [instruction, setInstruction] = useState(DEFAULT_INSTRUCTION);
+  const [instruction, setInstruction] = useState('');
   const [activeAgent, setActiveAgent] = useState('');
   const [busy, setBusy] = useState(false);
   const [logs, setLogs] = useState<string[]>([]);
@@ -55,9 +54,8 @@ export default function LiveQuest() {
     if (terminal.current) terminal.current.scrollTop = terminal.current.scrollHeight;
   }, [logs]);
 
-  async function start(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (abort.current || !agent.trim()) return;
+  async function start() {
+    if (abort.current || step !== 'instruction' || !agent.trim() || !instruction.trim()) return;
     const controller = new AbortController();
     abort.current = controller;
     setBusy(true); setActiveAgent(agent.trim());
@@ -80,7 +78,7 @@ export default function LiveQuest() {
     try {
       const response = await fetch('/api/quest', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ agent, instruction: questInstruction(instruction), target, watchKane }), signal: controller.signal,
+        body: JSON.stringify({ agent, instruction: instruction.trim(), target, confirmed: true }), signal: controller.signal,
       });
       if (!response.ok) {
         const body = await response.json();
@@ -117,22 +115,27 @@ export default function LiveQuest() {
   }
 
   const checks = [
-    { id: 0, title: 'Basic instruction', objective: questInstruction(instruction) },
+    { id: 0, title: 'Basic instruction', objective: instruction.trim() || 'Waiting for your check' },
     ...plan.map((item, index) => ({ id: index + 1, title: item.title, objective: item.objective })),
   ];
   return <div className={styles.shell}>
     <header className={styles.header}><Link href="/quest" className={styles.logo}><span>⌘</span>Bug Quest<i /></Link><div className={styles.headerRight}><span className={styles.liveTag}>Live mode</span><Link href="/stage" target="_blank" rel="noopener noreferrer">Open stage ↗</Link><Link href="/pipelines">Pipeline Monitor ↗</Link></div></header>
     <main className={styles.main}>
-      <div className={styles.intro}><span className={styles.eyebrow}>REAL CHECKS. REAL EVIDENCE.</span><h1>Bug Quest<span>.</span></h1><p>Name your agent and click Run Quest. Checks, repairs, and verification run automatically after that; nothing runs on page load.</p></div>
+      <div className={styles.intro}><span className={styles.eyebrow}>REAL CHECKS. REAL EVIDENCE.</span><h1>Bug Quest<span>.</span></h1><p>Name your agent, enter what to check, then click Run. No quest starts until you confirm both inputs.</p></div>
       <div className={styles.layout}>
         <div className={styles.leftColumn}>
-          <section className={styles.formCard} aria-labelledby="live-launch-title"><div className={styles.cardHeading}><span className={styles.stepNumber}>01</span><div><h2 id="live-launch-title">Run a live quest</h2><p>Instruction is optional; leave it blank to use “Check the pipeline ran”.</p></div></div>
-            <form onSubmit={start}>
-              <label htmlFor="live-target">Target</label><select id="live-target" value={target} onChange={event => setTarget(event.target.value as 'simulated' | 'airflow')} disabled={busy}><option value="simulated">Simulated monitor</option><option value="airflow">Real Airflow</option></select>
-              <label htmlFor="live-agent">Agent name</label><input id="live-agent" value={agent} onChange={event => setAgent(event.target.value)} maxLength={80} required disabled={busy} placeholder="Winter" />
-              <label htmlFor="live-instruction">Instruction (optional)</label><textarea id="live-instruction" value={instruction} onChange={event => setInstruction(event.target.value)} maxLength={1000} rows={3} disabled={busy} placeholder="Check the pipeline ran" />
-              <div className={styles.watchControl}><label className={styles.modeToggle}><input type="checkbox" role="switch" checked={watchKane} onChange={event => setWatchKane(event.target.checked)} disabled={busy} /><span aria-hidden="true" />Watch Kane</label><small>Demo only: open a visible browser. Progress always streams below.</small></div>
-              <button className={styles.runButton} type="submit" disabled={busy || !agent.trim()}><span aria-hidden="true">{busy ? '◌' : '▷'}</span>{busy ? 'Quest in progress' : 'Run Quest'}<span aria-hidden="true">→</span></button>
+          <section className={styles.formCard} aria-labelledby="live-launch-title"><div className={styles.cardHeading}><span className={styles.stepNumber}>{step === 'name' ? '01' : '02'}</span><div><h2 id="live-launch-title">{step === 'name' ? 'Name your agent' : 'What should your agent check?'}</h2><p>{step === 'name' ? 'Enter a name to continue. No quest will start.' : 'Describe your check in your own words, then click Run.'}</p></div></div>
+            <form onSubmit={event => { event.preventDefault(); if (step === 'name' && agent.trim()) setStep('instruction'); }}>
+              {step === 'name' ? <>
+                <label htmlFor="live-agent">Name your agent</label><input id="live-agent" value={agent} onChange={event => setAgent(event.target.value)} maxLength={80} required disabled={busy} placeholder="Your agent’s name" />
+                <button className={styles.runButton} type="submit" disabled={busy || !agent.trim()}>Continue →</button>
+              </> : <>
+                <p>Agent: <strong>{agent.trim()}</strong> <button className={styles.editName} type="button" disabled={busy} onClick={() => setStep('name')}>Edit name</button></p>
+                <label htmlFor="live-instruction">What should your agent check?</label><textarea id="live-instruction" value={instruction} onChange={event => setInstruction(event.target.value)} maxLength={1000} rows={4} required disabled={busy} placeholder="Describe the behavior or data your agent should verify" />
+                <label htmlFor="live-target">Target</label><select id="live-target" value={target} onChange={event => setTarget(event.target.value as 'simulated' | 'airflow')} disabled={busy}><option value="simulated">Simulated monitor</option><option value="airflow">Real Airflow</option></select>
+                <p className={styles.replayNote}>Browser checks stay headless. Progress appears in the log below.</p>
+                <button className={styles.runButton} type="button" onClick={() => void start()} disabled={busy || !agent.trim() || !instruction.trim()}><span aria-hidden="true">{busy ? '◌' : '▷'}</span>{busy ? 'Quest in progress' : 'Run'}<span aria-hidden="true">→</span></button>
+              </>}
               {busy && <button className={styles.cancelButton} type="button" onClick={() => abort.current?.abort()}>Stop quest</button>}
               <p className={styles.replayNote}>Uses OpenAI API usage and Kane credits. Auto-fix can edit and commit {target === 'airflow' ? 'only the tennis DAG after a new Airflow run passes Kane + SQL' : 'lib/pipeline.ts after Kane verifies it'}. Up to three attempts; config/bugs.json is never edited.</p>
             </form>

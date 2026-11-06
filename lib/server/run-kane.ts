@@ -2,7 +2,7 @@ import 'server-only';
 import { spawn } from 'node:child_process';
 import { createInterface } from 'node:readline';
 import { redact, testManagerUrl, type LiveResult } from '../quest-contract';
-import { kaneArguments, kaneHeadless } from '../quest-engine';
+import { kaneArguments } from '../quest-engine';
 
 export async function runKane(
   check: Pick<LiveResult, 'id' | 'title' | 'objective' | 'kind'>,
@@ -10,11 +10,9 @@ export async function runKane(
   log: (message: string) => void,
   url?: string,
   variablesFile?: string,
-  options: { watchKane?: boolean } = {},
 ): Promise<LiveResult> {
   signal.throwIfAborted();
-  const headless = kaneHeadless(options.watchKane);
-  log(`Kane: ${url?.includes('/dags/') ? 'checking Airflow run status' : 'running browser check'} (${headless ? 'headless' : 'visible browser'})…`);
+  log(`Kane: ${url?.includes('/dags/') ? 'checking Airflow run status' : 'running browser check'} (headless)…`);
   const env: NodeJS.ProcessEnv = { ...process.env, KANE_CLI_USER_AGENT: 'codex' };
   // Kane never needs the OpenAI key. Do not pass it to subprocesses or their logs.
   delete env.OPENAI_API_KEY;
@@ -22,7 +20,7 @@ export async function runKane(
   const secrets = Object.entries(process.env).filter(([name]) => /KEY|PASSWORD|SECRET|TOKEN/.test(name)).map(([, value]) => value || '');
   return new Promise((resolve, reject) => {
     const finish = (result: LiveResult) => { log(`Kane: ${result.status}${result.resultCode === null ? '' : ` (code ${result.resultCode})`}.`); resolve(result); };
-    const child = spawn('kane-cli', [...kaneArguments(check.objective, url, { headless }), ...(variablesFile ? ['--variables-file', variablesFile] : [])], {
+    const child = spawn('kane-cli', [...kaneArguments(check.objective, url), ...(variablesFile ? ['--variables-file', variablesFile] : [])], {
       cwd: process.cwd(), env, shell: false, stdio: ['ignore', 'pipe', 'pipe'],
     });
     let terminal: Record<string, unknown> | null = null;

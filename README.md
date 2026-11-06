@@ -36,11 +36,11 @@ Real local captures; the game image shows two joined players before a round. [La
 Run the same quest from a terminal while the local server is running:
 
 ```sh
-npm run quest -- --name Winter
+npm run quest
 npm run quest -- --name Moss --instruction "Verify loaded rows equal extracted rows"
 ```
 
-The CLI uses Real Airflow, matching the control screen default, streams logs and results, and registers the agent on `/stage`. Ctrl+C cancels the quest.
+The CLI asks **Name your agent**, then **What should your agent check?**, then waits for **Enter** to start (or `cancel` to exit). Both answers are required. Flags only prefill answers; they never skip the prompts or final confirmation. Non-interactive invocations are rejected. It uses Real Airflow, streams logs and results, and registers the agent on `/stage` only after confirmation. Ctrl+C cancels. It never opens a browser window.
 
 ## Architecture
 
@@ -63,7 +63,7 @@ flowchart LR
 
 **2,986 extracted vs 1,493 loaded → fixed → 2,986 extracted = 2,986 loaded**, with all six Airflow tasks successful and Kane + SQL verification passing. Winter’s real quest on 2026-11-06 caught the half-load bug and committed the verified repair (`e553308`). The standalone DAG now loads every row; `/play` still plants faults explicitly per round. See [the run evidence](docs/images/theme/validation-2026-11-06/winter.json).
 
-- **77 tests pass**, plus TypeScript typecheck.
+- **80 tests pass**, plus TypeScript typecheck.
 - Two terminal players verified: **+20** per bug caught, **+15** per verified repair, **−5** per false claim; the round reset to 2,986 extracted / loaded / wins.
 - Evidence: [real auto-fix](real-pipeline/verification-2026-10-27.json) · [two-player game](real-pipeline/play-animal-verification-2026-11-01.json).
 
@@ -86,7 +86,6 @@ Fill `.env.local` locally. Key names only:
 | OpenAI | `OPENAI_API_KEY`, optional `OPENAI_MODEL` |
 | Airflow | `AIRFLOW_URL`, `AIRFLOW_PORT`, `AIRFLOW_USERNAME`, `AIRFLOW_PASSWORD` |
 | PostgreSQL | `PGHOST`, `PGPORT`, `PGUSER`, `PGPASSWORD`, `PGDATABASE` |
-| Kane browser | `KANE_HEADLESS` |
 | Game model, optional | `PLAY_MODEL_PROVIDER`, `PLAY_MODEL` |
 | Ollama, when selected | `OLLAMA_BASE_URL`, `OLLAMA_MODEL` |
 
@@ -139,7 +138,7 @@ The warehouse checker intentionally fails while the half-load bug is active. See
 
 Next.js · React · TypeScript · Node.js · OpenAI API / Ollama · Kane CLI · Apache Airflow · PostgreSQL · Docker
 
-Kane runs headlessly by default for quests, game rounds, terminal players, and repair verification. Progress streams into the live logs. An instruction is optional and defaults to “Check the pipeline ran.” Once you click Run, checks, repairs, reruns and verification proceed automatically. Enable **Watch Kane** on `/quest` only when you want a visible browser for a demo; it stays off by default. `KANE_HEADLESS` is read server-side from `.env.local`.
+On `/quest`, enter **Name your agent** and click **Continue**. Then enter a required free-text answer to **What should your agent check?** and click **Run**. Pressing Enter in the name step only continues to the prompt; Enter in the prompt adds a newline. Nothing starts on page load, when `/stage` opens, or from `start.sh`. After explicit Run/CLI confirmation, the requested checks, repairs and verification proceed. Kane always runs headlessly, including repair verification and game rounds. The Watch Kane control is removed, and `KANE_HEADLESS=false` cannot enable windows.
 
 ## Limitations
 
