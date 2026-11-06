@@ -92,17 +92,20 @@ Fill `.env.local` locally. Key names only:
 
 Use the loopback addresses and ports in `.env.example`: Airflow UI **localhost:8081**, PostgreSQL **localhost:5433**. Credentials stay server-side; `.env.local`, raw CSVs, logs, and local character profiles are ignored.
 
-Place the attributed ATP CSV at `data/raw/atp_matches_2023.csv`; see the [exact source and checksum](real-pipeline/DATA_SOURCE.md). Then start Airflow:
+Place the attributed ATP CSV at `data/raw/atp_matches_2023.csv`; see the [exact source and checksum](real-pipeline/DATA_SOURCE.md). Build and initialize Airflow once:
 
 ```sh
 cd real-pipeline
 cp .env.example .env
 docker compose --env-file ../.env.local build
 docker compose --env-file ../.env.local up airflow-init
-docker compose --env-file ../.env.local up -d
 cd ..
-npm run dev
+./start.sh
 ```
+
+For subsequent runs, use `./start.sh` from the repository root. It checks Docker (and prompts you to open Docker Desktop if needed), runs `docker compose --env-file ../.env.local up -d` from `real-pipeline/`, waits up to five minutes for Airflow's database and scheduler health at localhost:8081, then runs `npm run dev` in the foreground. Requires `curl` in addition to Node.js and Docker.
+
+Run `./stop.sh` in another terminal to stop the dev server started by the script and stop the Airflow stack, preserving its database volume. Ctrl+C in the start terminal stops the dev server; run `./stop.sh` to also stop Airflow. Servers started separately with `npm run dev` must be stopped in their own terminal.
 
 Open [Airflow](http://localhost:8081), sign in with your local Airflow credentials, unpause `tennis_tournament_pipeline`, and trigger it once. Open [Bug Quest](http://127.0.0.1:3000/play), create a two-player lobby, and copy its join code.
 
