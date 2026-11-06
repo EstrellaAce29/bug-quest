@@ -1,0 +1,164 @@
+{
+  "date": "2026-11-06",
+  "method": "All 12 captured screenshots were visually inspected; dimensions were read directly from each PNG.",
+  "result": "passed",
+  "results": [
+    {
+      "page": "quest",
+      "width": 1440,
+      "screenshot": "quest-1440.png",
+      "imageSize": [
+        1440,
+        1630
+      ],
+      "visuallyReviewed": true,
+      "clippingOrOverlap": false,
+      "layout": "side-by-side panels",
+      "notes": "Winter has a bear avatar on /quest; /stage shows Winter with 35 points, 1 caught bug, and 1 verified fix."
+    },
+    {
+      "page": "stage",
+      "width": 1440,
+      "screenshot": "stage-1440.png",
+      "imageSize": [
+        1440,
+        1100
+      ],
+      "visuallyReviewed": true,
+      "clippingOrOverlap": false,
+      "layout": "side-by-side panels",
+      "notes": "Winter has a bear avatar on /quest; /stage shows Winter with 35 points, 1 caught bug, and 1 verified fix."
+    },
+    {
+      "page": "play",
+      "width": 1440,
+      "screenshot": "play-1440.png",
+      "imageSize": [
+        1440,
+        1187
+      ],
+      "visuallyReviewed": true,
+      "clippingOrOverlap": false,
+      "layout": "side-by-side panels",
+      "notes": "Straight green/red scoring legend."
+    },
+    {
+      "page": "pipelines",
+      "width": 1440,
+      "screenshot": "pipelines-1440.png",
+      "imageSize": [
+        1440,
+        1196
+      ],
+      "visuallyReviewed": true,
+      "clippingOrOverlap": false,
+      "layout": "sidebar and main",
+      "notes": "OBSERVABILITY, heading, DAG flow, and task table visible."
+    },
+    {
+      "page": "quest",
+      "width": 1280,
+      "screenshot": "quest-1280.png",
+      "imageSize": [
+        1280,
+        1630
+      ],
+      "visuallyReviewed": true,
+      "clippingOrOverlap": false,
+      "layout": "side-by-side panels",
+      "notes": "Winter has a bear avatar on /quest; /stage shows Winter with 35 points, 1 caught bug, and 1 verified fix."
+    },
+    {
+      "page": "stage",
+      "width": 1280,
+      "screenshot": "stage-1280.png",
+      "imageSize": [
+        1280,
+        1100
+      ],
+      "visuallyReviewed": true,
+      "clippingOrOverlap": false,
+      "layout": "side-by-side panels",
+      "notes": "Winter has a bear avatar on /quest; /stage shows Winter with 35 points, 1 caught bug, and 1 verified fix."
+    },
+    {
+      "page": "play",
+      "width": 1280,
+      "screenshot": "play-1280.png",
+      "imageSize": [
+        1280,
+        1187
+      ],
+      "visuallyReviewed": true,
+      "clippingOrOverlap": false,
+      "layout": "side-by-side panels",
+      "notes": "Straight green/red scoring legend."
+    },
+    {
+      "page": "pipelines",
+      "width": 1280,
+      "screenshot": "pipelines-1280.png",
+      "imageSize": [
+        1280,
+        1196
+      ],
+      "visuallyReviewed": true,
+      "clippingOrOverlap": false,
+      "layout": "sidebar and main",
+      "notes": "OBSERVABILITY, heading, DAG flow, and task table visible."
+    },
+    {
+      "page": "quest",
+      "width": 1024,
+      "screenshot": "quest-1024.png",
+      "imageSize": [
+        1024,
+        2161
+      ],
+      "visuallyReviewed": true,
+      "clippingOrOverlap": false,
+      "layout": "stacked side panel",
+      "notes": "Winter has a bear avatar on /quest; /stage shows Winter with 35 points, 1 caught bug, and 1 verified fix."
+    },
+    {
+      "page": "stage",
+      "width": 1024,
+      "screenshot": "stage-1024.png",
+      "imageSize": [
+        1024,
+        1280
+      ],
+      "visuallyReviewed": true,
+      "clippingOrOverlap": false,
+      "layout": "stacked side panel",
+      "notes": "Winter has a bear avatar on /quest; /stage shows Winter with 35 points, 1 caught bug, and 1 verified fix."
+    },
+    {
+      "page": "play",
+      "width": 1024,
+      "screenshot": "play-1024.png",
+      "imageSize": [
+        1024,
+        1600
+      ],
+      "visuallyReviewed": true,
+      "clippingOrOverlap": false,
+      "layout": "stacked side panel",
+      "notes": "Straight green/red scoring legend."
+    },
+    {
+      "page": "pipelines",
+      "width": 1024,
+      "screenshot": "pipelines-1024.png",
+      "imageSize": [
+        1024,
+        1192
+      ],
+      "visuallyReviewed": true,
+      "clippingOrOverlap": false,
+      "layout": "sidebar and main",
+      "notes": "OBSERVABILITY, heading, DAG flow, and task table visible."
+    }
+  ],
+  "note": "At 1024px the pipeline sidebar brand wraps onto two lines without clipping. Vertical page scrolling is expected."
+}

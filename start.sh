@@ -14,6 +14,12 @@ for command in node npm curl; do
   command -v "$command" >/dev/null || { echo "Missing required command: $command" >&2; exit 1; }
 done
 [[ -f .env.local ]] || { echo "Create and fill .env.local first (see README.md)." >&2; exit 1; }
+CURL_BIN=$(command -v curl)
+if ! "$CURL_BIN" --version >/dev/null 2>&1; then
+  # Some macOS PATHs put an incompatible Anaconda curl before the system binary.
+  [[ -x /usr/bin/curl ]] || { echo "curl cannot run. Install a compatible curl and retry." >&2; exit 1; }
+  CURL_BIN=/usr/bin/curl
+fi
 mkdir -p .next
 if ! mkdir "$STATE" 2>/dev/null; then
   echo "Startup is already active, or a previous run left $STATE. Run ./stop.sh first." >&2
@@ -37,7 +43,7 @@ trap 'exit 143' TERM
 echo "Waiting up to five minutes for Airflow at http://localhost:8081 ..."
 deadline=$((SECONDS + 300))
 while true; do
-  if curl --fail --silent --max-time 5 http://localhost:8081/api/v2/monitor/health |
+  if "$CURL_BIN" --fail --silent --max-time 5 http://localhost:8081/api/v2/monitor/health |
     node -e 'let s=""; process.stdin.on("data", d => s += d); process.stdin.on("end", () => { try { const h=JSON.parse(s); process.exit(h.metadatabase?.status === "healthy" && h.scheduler?.status === "healthy" ? 0 : 1); } catch { process.exit(1); } });'; then
     break
   fi

@@ -1,0 +1,103 @@
+{
+  "date": "2026-11-06",
+  "command": "npm run quest -- --name Winter",
+  "baseline": {
+    "runId": "ui_winter_baseline_1794004221882",
+    "extractedRows": 2986,
+    "matchesLoaded": 1493,
+    "totalWins": 1493
+  },
+  "verified": {
+    "runId": "bugquest_316c5ae3-2d9b-49f6-b8ed-d160f925948d",
+    "extractedRows": 2986,
+    "matchesLoaded": 2986,
+    "totalWins": 2986,
+    "otherRunRows": 0
+  },
+  "autoFixCommit": "e553308cbf74ce033bf321704293fd40a02e1fe5",
+  "attempts": 1,
+  "stage": {
+    "generation": 0,
+    "agents": [
+      {
+        "id": "agent-1",
+        "name": "Winter",
+        "animal": "bear",
+        "color": 0,
+        "points": 35,
+        "bugs": 1,
+        "fixes": 1,
+        "falseAlarms": 0,
+        "runs": 1,
+        "phase": "idle",
+        "speech": "The fix holds. Every row accounted for."
+      }
+    ],
+    "standings": [
+      {
+        "id": "agent-1",
+        "name": "Winter",
+        "animal": "bear",
+        "color": 0,
+        "points": 35,
+        "bugs": 1,
+        "fixes": 1,
+        "falseAlarms": 0,
+        "runs": 1,
+        "phase": "idle",
+        "speech": "The fix holds. Every row accounted for."
+      }
+    ],
+    "awards": [
+      {
+        "seq": 2,
+        "at": 1794004630527,
+        "agentId": "agent-1",
+        "amount": 20
+      },
+      {
+        "seq": 3,
+        "at": 1794004801102,
+        "agentId": "agent-1",
+        "amount": 15
+      }
+    ],
+    "cursor": 3
+  },
+  "evidenceLinks": [
+    "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M6SFYBCSZWBW8JDEKVCSW6FF/dashboard/share/US_JTY9JMGY02NAEPNZ3N2KAMFAACO9HT73KE5M0R37GK1YZ5CKVYP1RJA0WUGFHHQL?type=summary&agentView=true&fqdn=summary-page",
+    "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M6SG19G9BDB16QEDFN4V2KS6/dashboard/share/US_KJ8MJA1Q1APBDV62YDEOSKHA99JCGNNQYF7E3E76WLW1086ZOXCXLU62ZV4RYQSQ?type=summary&agentView=true&fqdn=summary-page"
+  ],
+  "kaneRuns": [
+    {
+      "status": "passed",
+      "duration": 46.2,
+      "credits_consumed": 17.14905,
+      "test_url": "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M6SG7QX58V07VV6RGFPJHZA7/dashboard/share/US_81TXQZDZS1VCSVUQJVNWD4BJUYXPWWV8EIU3JSOW1GL5KDKE4UM0G15KOVWQ9H2Y?type=summary&agentView=true&fqdn=summary-page",
+      "result_code": 100
+    },
+    {
+      "status": "passed",
+      "duration": 66.4,
+      "credits_consumed": 18.3401,
+      "test_url": "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M6SG52CNPY3BH578FG3HT3ZK/dashboard/share/US_0CMXML149OIGTY6GEKYNRJBORFBF8CQ625EY9E0XQD6LJBVMZIO9F9ORO43FDZ1U?type=summary&agentView=true&fqdn=summary-page",
+      "result_code": 100
+    },
+    {
+      "status": "passed",
+      "duration": 64.7,
+      "credits_consumed": 29.318822500000003,
+      "test_url": "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M6SG19G9BDB16QEDFN4V2KS6/dashboard/share/US_KJ8MJA1Q1APBDV62YDEOSKHA99JCGNNQYF7E3E76WLW1086ZOXCXLU62ZV4RYQSQ?type=summary&agentView=true&fqdn=summary-page",
+      "result_code": 100
+    },
+    {
+      "status": "passed",
+      "duration": 56.6,
+      "credits_consumed": 19.114979999999996,
+      "test_url": "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M6SFYBCSZWBW8JDEKVCSW6FF/dashboard/share/US_JTY9JMGY02NAEPNZ3N2KAMFAACO9HT73KE5M0R37GK1YZ5CKVYP1RJA0WUGFHHQL?type=summary&agentView=true&fqdn=summary-page",
+      "result_code": 100
+    }
+  ],
+  "kaneCreditsUsed": 83.923,
+  "kaneSteps": 19
+}

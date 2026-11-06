@@ -1,12 +1,18 @@
 #!/usr/bin/env node
 import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
+import { classifyWarehouseFailure, warehouseErrorMessage } from '../lib/warehouse-diagnostics.mjs';
+
+function fail(code) {
+  if (process.argv.includes('--json')) console.log(JSON.stringify({ error: code }));
+  console.error(warehouseErrorMessage(code));
+  process.exit(1);
+}
 
 if (existsSync('.env.local')) process.loadEnvFile('.env.local');
 const required = ['PGHOST', 'PGPORT', 'PGUSER', 'PGPASSWORD', 'PGDATABASE'];
 if (required.some(name => !process.env[name])) {
-  console.error('Configure PGHOST, PGPORT, PGUSER, PGPASSWORD and PGDATABASE in .env.local.');
-  process.exit(1);
+  fail('settings');
 }
 const runId = process.argv.find(arg => arg.startsWith('--run-id='))?.slice(9);
 if (runId && !/^[a-zA-Z0-9_.:+-]{1,250}$/.test(runId)) {
@@ -30,9 +36,9 @@ const response = spawnSync('psql', ['-X', '-A', '-t', '-v', 'ON_ERROR_STOP=1', '
   env: { ...env, PGCONNECT_TIMEOUT: '5' }, encoding: 'utf8', timeout: 15000,
 });
 if (response.error || response.status !== 0) {
-  console.error('Could not query the Airflow warehouse. Confirm database settings and complete a DAG run first.'); process.exit(1);
+  fail(classifyWarehouseFailure(response.error, response.stderr));
 }
-if (!response.stdout.trim()) { console.error('No completed warehouse run found.'); process.exit(1); }
+if (!response.stdout.trim()) fail('no_run');
 const result = JSON.parse(response.stdout.trim());
 const valid = ['extractedRows', 'matchesLoaded', 'totalWins', 'otherRunRows'].every(key => Number.isSafeInteger(result[key]) && result[key] >= 0);
 if (!valid || typeof result.runId !== 'string') { console.error('Invalid warehouse result.'); process.exit(1); }

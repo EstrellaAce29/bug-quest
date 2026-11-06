@@ -6,6 +6,9 @@ import { DEFAULT_INSTRUCTION, questInstruction } from '@/lib/quest-contract';
 import RecordedQuest from './recorded-quest';
 import type { ExpandedObjective, LiveEvent, LiveResult, FixReport } from '@/lib/quest-contract';
 import styles from './quest.module.css';
+import Animal from '../play/animal';
+import { animalForName, type StageAgent, type StageView } from '@/lib/stage';
+import { ANIMALS } from '@/lib/play-character.mjs';
 
 export default function LiveQuest() {
   const [watchKane, setWatchKane] = useState(false);
@@ -26,6 +29,27 @@ export default function LiveQuest() {
   const [error, setError] = useState<string | null>(null);
   const abort = useRef<AbortController | null>(null);
   const terminal = useRef<HTMLDivElement | null>(null);
+  const [stageAgent, setStageAgent] = useState<Pick<StageAgent, 'animal' | 'color'> | null>(null);
+  const displayedName = (logs.length || busy ? activeAgent : agent).trim();
+  useEffect(() => {
+    const controller = new AbortController();
+    const key = (name: string) => name.normalize('NFKC').trim().replace(/\s+/g, ' ').toLowerCase();
+    setStageAgent(null);
+    async function refresh() {
+      try {
+        const response = await fetch('/api/stage', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'state' }), signal: controller.signal,
+        });
+        if (!response.ok) return;
+        const view: StageView = await response.json();
+        if (!controller.signal.aborted) setStageAgent(view.agents.find(entry => key(entry.name) === key(displayedName)) ?? null);
+      } catch { /* The quest stream reports connection failures. */ }
+    }
+    void refresh();
+    return () => controller.abort();
+  }, [displayedName]);
+  const avatar = stageAgent ?? animalForName(displayedName);
   useEffect(() => () => abort.current?.abort(), []);
   useEffect(() => {
     if (terminal.current) terminal.current.scrollTop = terminal.current.scrollHeight;
@@ -63,6 +87,11 @@ export default function LiveQuest() {
         throw new Error(typeof body.error === 'string' ? body.error : `Quest request failed (HTTP ${response.status}).`);
       }
       if (!response.body) throw new Error('The server did not return a live stream.');
+      const animal = response.headers.get('X-Bug-Quest-Animal');
+      const color = Number(response.headers.get('X-Bug-Quest-Color'));
+      if (ANIMALS.includes(animal as StageAgent['animal']) && Number.isInteger(color) && color >= 0 && color < 4) {
+        setStageAgent({ animal: animal as StageAgent['animal'], color });
+      }
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let pending = '';
@@ -109,7 +138,7 @@ export default function LiveQuest() {
             </form>
           </section>
         </div>
-        <aside className={styles.scoreCard} aria-labelledby="live-score-title"><div className={styles.scoreTop}><span className={styles.eyebrow}>LIVE SCOREBOARD</span><span aria-hidden="true">⚑</span></div><div className={styles.agentAvatar}>{(logs.length ? activeAgent : agent).trim().slice(0, 2).toUpperCase() || 'BQ'}</div><h2 id="live-score-title">{logs.length ? activeAgent : agent.trim() || 'Your agent'}</h2><p className={styles.agentSubtitle}>Silent bug hunter</p><div className={styles.scoreTotal}>{points}<span>POINTS</span></div><div className={styles.scoreLine}><div><strong>Silent bugs caught</strong><small>+20 per distinct invariant</small></div><span className={bugsFound ? styles.earned : ''}>{bugsFound}</span></div><div className={styles.scoreLine}><div><strong>Fixes verified</strong><small>+15 after precise + basic pass</small></div><span className={fixesVerified ? styles.earned : ''}>{fixesVerified}</span></div><div className={styles.scoreLine}><div><strong>False alarms</strong><small>−5 per disproven bug claim</small></div><span>{falseAlarms}</span></div><p className={styles.scoreNote}>A silent bug counts when the basic check passes and a precise check confirms an application bug.<br />Repeated checks of the same bug count once.</p></aside>
+        <aside className={styles.scoreCard} aria-labelledby="live-score-title"><div className={styles.scoreTop}><span className={styles.eyebrow}>LIVE SCOREBOARD</span><span aria-hidden="true">⚑</span></div><div className={styles.agentAvatar} role="img" aria-label={`${displayedName || "Your agent"}: ${avatar.animal}`}><Animal animal={avatar.animal} index={avatar.color} name={displayedName} /></div><h2 id="live-score-title">{logs.length ? activeAgent : agent.trim() || 'Your agent'}</h2><p className={styles.agentSubtitle}>Silent bug hunter</p><div className={styles.scoreTotal} data-negative={points < 0}>{points}<span>POINTS</span></div><div className={styles.scoreLine}><div><strong>Silent bugs caught</strong><small>+20 per distinct invariant</small></div><span className={bugsFound ? styles.earned : ''}>{bugsFound}</span></div><div className={styles.scoreLine}><div><strong>Fixes verified</strong><small>+15 after precise + basic pass</small></div><span className={fixesVerified ? styles.earned : ''}>{fixesVerified}</span></div><div className={styles.scoreLine}><div><strong>False alarms</strong><small>−5 per disproven bug claim</small></div><span>{falseAlarms}</span></div><p className={styles.scoreNote}>A silent bug counts when the basic check passes and a precise check confirms an application bug.<br />Repeated checks of the same bug count once.</p></aside>
       </div>
       <section className={styles.terminalCard} aria-labelledby="live-log-title"><div className={styles.terminalHeading}><h2 id="live-log-title">Live quest log</h2><span>{busy ? 'Running' : repairs.some(report => report.status === 'escalated') ? 'Escalated to human' : completed ? 'Complete' : logs.length ? 'Stopped' : 'Ready'}</span></div><div ref={terminal} className={styles.terminal} role="log" aria-live="polite" aria-relevant="additions">{logs.length ? logs.map((line, index) => <div key={index}><span aria-hidden="true">› </span>{line}</div>) : <p>Your agent’s progress will stream here.</p>}</div></section>
       {error && <div className={styles.liveError} role="alert">{error}</div>}

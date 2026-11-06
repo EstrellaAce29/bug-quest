@@ -1,0 +1,86 @@
+{
+  "url": "http://127.0.0.1:3000/quest",
+  "method": "Native headless Chrome over local DevTools Protocol (Kane screenshot service timed out).",
+  "samples": [
+    {
+      "at": "2026-11-06T23:00:32.434Z",
+      "readyState": "interactive",
+      "timeOrigin": 1794006032385.2,
+      "main": true,
+      "title": "Bug Quest",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "text": "REAL CHECKS. REAL EVIDENCE.\nBug Quest.\n\nName your agent and click Run Quest. Checks, repairs, and verification run automatically after that; nothing runs on page load.\n\n01\nRun a li"
+    },
+    {
+      "at": "2026-11-06T23:00:35.440Z",
+      "readyState": "interactive",
+      "timeOrigin": 1794006035378.7,
+      "main": true,
+      "title": "Bug Quest",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "text": "REAL CHECKS. REAL EVIDENCE.\nBug Quest.\n\nName your agent and click Run Quest. Checks, repairs, and verification run automatically after that; nothing runs on page load.\n\n01\nRun a li"
+    },
+    {
+      "at": "2026-11-06T23:00:38.482Z",
+      "readyState": "loading",
+      "timeOrigin": 1794006038439.2,
+      "main": true,
+      "title": "Bug Quest",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "text": "REAL CHECKS. REAL EVIDENCE.\nBug Quest.\n\nName your agent and click Run Quest. Checks, repairs, and verification run automatically after that; nothing runs on page load.\n\n01\nRun a li"
+    },
+    {
+      "at": "2026-11-06T23:00:41.528Z",
+      "readyState": "loading",
+      "timeOrigin": 1794006041492.4,
+      "main": true,
+      "title": "Bug Quest",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "text": "REAL CHECKS. REAL EVIDENCE.\nBug Quest.\n\nName your agent and click Run Quest. Checks, repairs, and verification run automatically after that; nothing runs on page load.\n\n01\nRun a li"
+    },
+    {
+      "at": "2026-11-06T23:00:44.531Z",
+      "readyState": "interactive",
+      "timeOrigin": 1794006044480.9,
+      "main": true,
+      "title": "Bug Quest",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "text": "REAL CHECKS. REAL EVIDENCE.\nBug Quest.\n\nName your agent and click Run Quest. Checks, repairs, and verification run automatically after that; nothing runs on page load.\n\n01\nRun a li"
+    }
+  ],
+  "navigations": [
+    {
+      "at": "2026-11-06T23:00:29.443Z",
+      "url": "http://127.0.0.1:3000/quest"
+    },
+    {
+      "at": "2026-11-06T23:00:29.934Z",
+      "url": "http://127.0.0.1:3000/quest"
+    },
+    {
+      "at": "2026-11-06T23:00:30.064Z",
+      "url": "http://127.0.0.1:3000/quest"
+    },
+    {
+      "at": "2026-11-06T23:01:04.241Z",
+      "url": "http://127.0.0.1:3000/quest"
+    },
+    {
+      "at": "2026-11-06T23:01:04.356Z",
+      "url": "http://127.0.0.1:3000/quest"
+    },
+    {
+      "at": "2026-11-06T23:01:04.465Z",
+      "url": "http://127.0.0.1:3000/quest"
+    }
+  ],
+  "stableTimeOrigin": false,
+  "screenshotError": "Page.captureScreenshot timeout",
+  "navigationCount": 336,
+  "navigationLogNote": "First and last three events retained; navigationCount is the full observed total."
+}

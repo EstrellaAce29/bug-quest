@@ -13,6 +13,7 @@ import { proposePipelineFix } from './propose-fix';
 import { attemptAutoFix } from '../auto-fix';
 import { parseWarehouseCounts, warehousePasses, type WarehouseCounts } from '../warehouse-check';
 import { applyDagPatch } from '../dag-patch';
+import { warehouseErrorMessage } from '../warehouse-diagnostics.mjs';
 import type { LiveResult, FixReport } from '../quest-contract';
 
 const exec = promisify(execFile);
@@ -40,8 +41,13 @@ export async function warehouseCounts(runId: string | undefined, signal: AbortSi
   let stdout: string;
   try { ({ stdout } = await exec(process.execPath, args, { cwd: process.cwd(), signal, timeout: 20000, maxBuffer: 65536 })); }
   catch (error) {
+    signal.throwIfAborted();
     const failure = error as { code?: number; stdout?: string };
-    if (failure.code !== 2 || !failure.stdout) throw new Error('Warehouse query unavailable. Check .env.local and complete the tennis DAG first.');
+    if (failure.code !== 2 || !failure.stdout) {
+      let code = 'query';
+      try { code = JSON.parse(failure.stdout || '{}').error; } catch { /* Keep diagnostics bounded and credential-free. */ }
+      throw new Error(warehouseErrorMessage(code));
+    }
     stdout = failure.stdout;
   }
   return parseWarehouseCounts(JSON.parse(stdout.trim()), runId);

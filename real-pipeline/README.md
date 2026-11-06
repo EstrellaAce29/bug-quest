@@ -35,7 +35,7 @@ docker compose --env-file ../.env.local exec airflow-scheduler airflow dags trig
 
 Tasks: extract → validate → transform → load → standings → report. Extract records the full CSV count for each run in `warehouse.run_metadata`. Validation checks required columns and logs null counts. Transform cleans column names and parses tournament dates. Load replaces `warehouse.matches`, retaining original row fields in a JSONB payload. Standings builds `warehouse.player_wins`. Report logs all final counts. Run metadata retains history; matches and standings represent the latest load.
 
-The load task contains one `# PLANTED BUG`: it takes only the first half of the matches while every task succeeds. Fresh clones intentionally retain this faulty line so Live mode can demonstrate the repair. The successful fix commit `df8362979fd121e8b878797a172ae3b08be9b636` remains in history; later commits restore the defect for the next demo.
+The original load defect took only the first half of the matches while every task succeeded. Winter’s real quest on 2026-11-06 caught it, repaired it on the first attempt, and committed the verified fix as `e553308`. The standalone DAG now loads the full batch; game rounds still plant and clear faults through their explicit runtime flags. [Run counts, stage points, and evidence links](../docs/images/theme/validation-2026-11-06/winter.json) record the 2,986 → 1,493 baseline and 2,986 → 2,986 repaired run.
 
 ## Check
 

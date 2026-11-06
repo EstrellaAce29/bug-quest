@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { animalForName, createStage, beginStageRun, recordStageEvent, stageView, resetStage, finishStageRun } from '../lib/stage';
+import { animalForName, createStage, beginStageRun, recordStageEvent, stageView, resetStage, finishStageRun, stageErrorSpeech } from '../lib/stage';
 import { ANIMALS } from '../lib/play-character.mjs';
 import { executeQuest } from '../lib/quest-engine';
 import type { LiveResult, LiveEvent, FixReport } from '../lib/quest-contract';
@@ -104,4 +104,47 @@ test('only an explicit disproven bug claim earns -5; normal passes and errors do
     assert.equal(stageView(stage).agents[0].points, expected);
     assert.equal(stageView(stage).agents[0].falseAlarms, expected === -5 ? 1 : 0);
   }
+});
+
+test('name collisions walk to the next unused animal and returning agents keep their assignment', () => {
+  const state = createStage();
+  assert.equal(animalForName('winter').animal, animalForName('pc').animal);
+  beginStageRun(state, 'winter', 'first');
+  beginStageRun(state, 'pc', 'second');
+  const first = stageView(state).agents;
+  const start = ANIMALS.indexOf(animalForName('winter').animal);
+  assert.equal(first[0].animal, ANIMALS[start]);
+  assert.equal(first[1].animal, ANIMALS[(start + 1) % ANIMALS.length]);
+  beginStageRun(state, ' PC ', 'return');
+  assert.equal(stageView(state).agents[1].animal, first[1].animal);
+  assert.equal(stageView(state).agents.length, 2);
+});
+
+test('eight agents get eight animals; a ninth new agent fails without changing the roster', () => {
+  const state = createStage();
+  for (let i = 0; i < 8; i++) beginStageRun(state, `Agent ${i}`, `run-${i}`);
+  assert.equal(new Set(stageView(state).agents.map(a => a.animal)).size, 8);
+  const snapshot = stageView(state);
+  assert.throws(() => beginStageRun(state, 'Ninth', 'ninth'), /All eight stage animals are taken/);
+  assert.deepEqual(stageView(state), snapshot);
+  beginStageRun(state, 'Agent 0', 'return');
+  assert.equal(stageView(state).agents.length, 8);
+  resetStage(state);
+  beginStageRun(state, 'Ninth', 'fresh');
+  assert.equal(stageView(state).agents[0].animal, animalForName('Ninth').animal);
+});
+
+test('warehouse failures show an actionable safe stage message without leaking raw error details', () => {
+  const state = createStage(); const run = beginStageRun(state, 'Winter', 'run');
+  recordStageEvent(state, run, { type: 'error', message: 'Airflow warehouse is unreachable. Start Docker and the local Airflow stack, then retry the quest.' });
+  assert.equal(stageView(state).agents[0].speech, 'Airflow warehouse is unreachable. Start Docker and the local Airflow stack, then retry the quest.');
+  assert.equal(stageView(state).agents[0].points, 0);
+});
+
+
+test('stage speech distinguishes known warehouse and Airflow failures', () => {
+  assert.match(stageErrorSpeech('Airflow warehouse authentication failed. Check the PostgreSQL credentials in .env.local.'), /authentication failed/);
+  assert.match(stageErrorSpeech('Airflow request failed (HTTP 503).'), /HTTP 503/);
+  assert.match(stageErrorSpeech('No completed warehouse run found. Complete the tennis DAG before starting a quest.'), /No completed warehouse run/);
+  assert.equal(stageErrorSpeech('secret=private'), 'Quest failed. Open controls for the error details.');
 });

@@ -1,4 +1,8 @@
 import 'server-only';
-import { createStage, type StageState } from '../stage';
+import { createStage, reconcileStageAnimals, type StageState } from '../stage';
 const state = globalThis as typeof globalThis & { bugQuestStage?: StageState };
-export function stageStore() { return state.bugQuestStage ??= createStage(); }
+export function stageStore() {
+  const stage = state.bugQuestStage ??= createStage();
+  reconcileStageAnimals(stage);
+  return stage;
+}

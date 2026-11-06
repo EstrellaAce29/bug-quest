@@ -1,0 +1,38 @@
+{
+  "attempts": [
+    {
+      "attempt": "visible-quest-launch",
+      "status": "failed",
+      "reasonCode": "infra_error.screenshot_failed",
+      "durationSeconds": 84.3,
+      "credits": 7.54127,
+      "testUrl": "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M6SFSK1R80TD9BMG57KJNT79/dashboard/share/US_BM77J4R0341J6BQSVI4T05Q6DZ6HOQT2HEFZX5DRAMLYPDV2DMCXPAGCAXWVIX0Q?type=summary&agentView=true&fqdn=summary-page",
+      "limitation": "Screenshot failed before the quest started. Winter was subsequently run once successfully through npm run quest."
+    },
+    {
+      "attempt": "all-pages1440-headless",
+      "status": "failed",
+      "reasonCode": "infra_error.screenshot_failed",
+      "durationSeconds": 84.7,
+      "credits": 2.33681,
+      "testUrl": "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M6SG077YXWC886MVNQ5P3Z5E/dashboard/share/US_OUGVU9M4HZH713HDN6WPZH58YCARXLTBJFEO6CE83H30CNC4PZHTSUJA0QMMR38R?type=summary&agentView=true&fqdn=summary-page",
+      "limitation": "Kane screenshot capture timed out after 60 seconds; this is not a complete layout verification."
+    },
+    {
+      "attempt": "pipelines1440-headless",
+      "status": "failed",
+      "reasonCode": "infra_error.screenshot_failed",
+      "durationSeconds": 105.5,
+      "credits": 12.183709999999998,
+      "testUrl": "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M6SGAHXM5WM8F4W4DZSPPWB8/dashboard/share/US_ORX4VVK8UXNJAB81UCB88JG2FX8R4F6V8FQBY6ECG1B112KHIV0VIM4T3N2BR03O?type=summary&agentView=true&fqdn=summary-page",
+      "limitation": "Kane screenshot capture timed out after 60 seconds; this is not a complete layout verification."
+    }
+  ],
+  "fallback": "Native headless Chrome with local DevTools Protocol; Browser plugin reported no available browser.",
+  "productionPreview": {
+    "url": "http://127.0.0.1:3001",
+    "app": "Isolated copy of current app, production webpack build on port3002.",
+    "stage": "/api/stage forwards to actual live dev server3000, with Host and Origin normalized; no mock stage data."
+  },
+  "nativeStage1440": "stage-1440.png"
+}

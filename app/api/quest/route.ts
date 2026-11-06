@@ -40,10 +40,13 @@ export async function POST(request: Request) {
   const apiKey = process.env.OPENAI_API_KEY?.trim();
   if (!apiKey) return Response.json({ error: 'Set OPENAI_API_KEY in .env.local before starting a live quest.' }, { status: 503 });
   if (state.bugQuestLiveBusy) return Response.json({ error: 'Another live quest is running. Wait for it to finish.' }, { status: 409 });
-  state.bugQuestLiveBusy = true;
   const agent = redact(input.agent.trim(), secrets);
   const stage = stageStore();
-  const stageRun = beginStageRun(stage, agent, randomUUID());
+  let stageRun;
+  try { stageRun = beginStageRun(stage, agent, randomUUID()); }
+  catch (error) { return Response.json({ error: error instanceof Error ? error.message : 'Could not join the stage.' }, { status: 409 }); }
+  const assignedAgent = [...stage.agents.values()].find(entry => entry.id === stage.runs.get(stageRun.id)?.agentId)!;
+  state.bugQuestLiveBusy = true;
   const instruction = questInstruction(input.instruction as string | undefined);
   const watchKane = input.watchKane === true;
   const run: QuestDependencies['run'] = (check, signal, log) => runKane(check, signal, log, undefined, undefined, { watchKane });
@@ -83,5 +86,5 @@ export async function POST(request: Request) {
     },
     cancel() { abort.abort(); },
   });
-  return new Response(stream, { headers: { 'Content-Type': 'application/x-ndjson; charset=utf-8', 'Cache-Control': 'no-store, no-transform', 'X-Accel-Buffering': 'no' } });
+  return new Response(stream, { headers: { 'Content-Type': 'application/x-ndjson; charset=utf-8', 'Cache-Control': 'no-store, no-transform', 'X-Accel-Buffering': 'no', 'X-Bug-Quest-Animal': assignedAgent.animal, 'X-Bug-Quest-Color': String(assignedAgent.color) } });
 }

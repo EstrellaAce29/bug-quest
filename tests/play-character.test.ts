@@ -71,7 +71,7 @@ test('wizard asks five steps, echoes only traits, saves private profiles securel
 test('room snapshots publish the bio and join announcement, never traits, private descriptions or credentials', () => {
   const room = createRoom('ABCD23', 'host-secret', 2, 1000);
   const winter = joinRoom(room, 'Winter', 'winter-token', 1000, character);
-  const blaze = joinRoom(room, 'Blaze', 'blaze-token', 1000, { ...character, publicBio: 'I watch the totals.' });
+  const blaze = joinRoom(room, 'Blaze', 'blaze-token', 1000, { ...character, animal: 'wolf', publicBio: 'I watch the totals.' });
   recordRoomEvent(room, { type: 'joined', playerId: blaze.id, name: blaze.name, publicBio: blaze.character!.publicBio }, 1100);
   for (const view of [roomView(room, 0, undefined, 1200), roomView(room, 0, winter.token, 1200)]) {
     const text = JSON.stringify(view);

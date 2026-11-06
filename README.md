@@ -17,7 +17,7 @@ A DAG can report success while half its rows disappear. A basic Kane instruction
 
 ## Screenshots
 
-Real local captures; the game image shows two joined players before a round.
+Real local captures; the game image shows two joined players before a round. [Latest theme, laptop layout, and Winter quest evidence](docs/images/theme/README.md).
 
 **Shared game: animals and leaderboard**
 
@@ -31,7 +31,7 @@ Real local captures; the game image shows two joined players before a round.
 
 ![Airflow tennis tournament pipeline and its six tasks](docs/images/airflow-dag.jpg)
 
-**Quest show screen:** open `/stage` in a second window from **Open stage** on `/quest`. Animals are assigned consistently from agent names. The shared session leaderboard accumulates confirmed catches (+20), verified fixes (+15), and explicit disproven bug claims (−5). Normal passes and infrastructure errors earn no penalty. Reset leaderboard clears the display; an active quest keeps running. The control screen holds the form, logs, and reports; it has no animal characters.
+**Quest show screen:** open `/stage` in a second window from **Open stage** on `/quest`. Each agent gets a unique animal for the session, and returning agents keep their assignment. The quest scoreboard shows the same animal. Up to eight agents can join before a leaderboard reset. The shared session leaderboard accumulates confirmed catches (+20), verified fixes (+15), and explicit disproven bug claims (−5). Normal passes and infrastructure errors earn no penalty. Reset leaderboard clears the display; an active quest keeps running. The control screen holds the form, logs, reports, and the agent’s animal avatar.
 
 Run the same quest from a terminal while the local server is running:
 
@@ -61,9 +61,9 @@ flowchart LR
 
 ## Verified results
 
-**2,986 extracted vs 1,493 loaded → fixed → 2,986 extracted = 2,986 loaded**, with all six Airflow tasks successful and Kane + SQL verification passing. Fresh clones intentionally retain the half-load bug for the next demo.
+**2,986 extracted vs 1,493 loaded → fixed → 2,986 extracted = 2,986 loaded**, with all six Airflow tasks successful and Kane + SQL verification passing. Winter’s real quest on 2026-11-06 caught the half-load bug and committed the verified repair (`e553308`). The standalone DAG now loads every row; `/play` still plants faults explicitly per round. See [the run evidence](docs/images/theme/validation-2026-11-06/winter.json).
 
-- **71 tests pass**, plus TypeScript typecheck.
+- **77 tests pass**, plus TypeScript typecheck.
 - Two terminal players verified: **+20** per bug caught, **+15** per verified repair, **−5** per false claim; the round reset to 2,986 extracted / loaded / wins.
 - Evidence: [real auto-fix](real-pipeline/verification-2026-10-27.json) · [two-player game](real-pipeline/play-animal-verification-2026-11-01.json).
 
@@ -103,7 +103,7 @@ cd ..
 ./start.sh
 ```
 
-For subsequent runs, use `./start.sh` from the repository root. It checks Docker (and prompts you to open Docker Desktop if needed), runs `docker compose --env-file ../.env.local up -d` from `real-pipeline/`, waits up to five minutes for Airflow's database and scheduler health at localhost:8081, then runs `npm run dev` in the foreground. Requires `curl` in addition to Node.js and Docker.
+For subsequent runs, use `./start.sh` from the repository root. `npm run dev` uses Next’s Webpack mode to avoid the repeated page reloads observed with this installed Turbopack version. It checks Docker (and prompts you to open Docker Desktop if needed), runs `docker compose --env-file ../.env.local up -d` from `real-pipeline/`, waits up to five minutes for Airflow's database and scheduler health at localhost:8081, then runs `npm run dev` in the foreground. Requires `curl` in addition to Node.js and Docker.
 
 Run `./stop.sh` in another terminal to stop the dev server started by the script and stop the Airflow stack, preserving its database volume. Ctrl+C in the start terminal stops the dev server; run `./stop.sh` to also stop Airflow. Servers started separately with `npm run dev` must be stopped in their own terminal.
 

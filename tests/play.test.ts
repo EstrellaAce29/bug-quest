@@ -85,12 +85,25 @@ test('a failed reset prevents summary/completion and cannot award unverified rep
   assert.equal(summary.scores[0].points, 20);
 });
 
-test('the Python fault parser preserves ordinary demo behavior and validates Bug Quest opt-in', () => {
+test('the Python fault parser requires game opt-in and preserves the verified standalone repair', () => {
   const source = readFileSync('real-pipeline/dags/tennis_tournament_pipeline.py', 'utf8');
   const script = `import ast,json,sys\nsource=ast.parse(sys.stdin.read())\nf=next(n for n in source.body if isinstance(n,ast.FunctionDef) and n.name=='play_faults')\nns={}\nexec(compile(ast.Module(body=[f],type_ignores=[]),'faults','exec'),ns)\nclass Run: pass\nr=Run()\nns['get_current_context']=lambda:{'dag_run':r}\nr.conf={}\nassert ns['play_faults']() is None\nr.conf={'bug_quest_play':{'half_load':False,'standings_loss':False}}\nassert ns['play_faults']()=={'half_load':False,'standings_loss':False}\nfor bad in [{'half_load':True},{'half_load':'false','standings_loss':False},[]]:\n r.conf={'bug_quest_play':bad}\n try: ns['play_faults'](); raise AssertionError('accepted bad config')\n except ValueError: pass\n`;
   const result = spawnSync('python3', ['-c', script], { input: source, encoding: 'utf8', timeout: 10000 });
   assert.equal(result.status, 0, result.stderr);
-  assert.ok(source.includes('        matches_to_load = matches[:len(matches) // 2]\n'));
+  const selection = `import ast,sys
+source=ast.parse(sys.stdin.read())
+load=next(n for n in ast.walk(source) if isinstance(n,ast.FunctionDef) and n.name=='load')
+assignment=next(n for n in load.body if isinstance(n,ast.Assign) and isinstance(n.targets[0],ast.Name) and n.targets[0].id=='matches_to_load')
+branch=next(n for n in load.body if isinstance(n,ast.If) and ast.unparse(n.test)=='play is not None')
+opt_in=next(n for n in branch.body if isinstance(n,ast.Assign))
+matches=list(range(6))
+assert eval(compile(ast.Expression(assignment.value),'standalone','eval'),{'matches':matches})==matches
+for half in [False,True]:
+ actual=eval(compile(ast.Expression(opt_in.value),'game','eval'),{'matches':matches,'play':{'half_load':half,'standings_loss':False}})
+ assert actual==(matches[:3] if half else matches)
+`;
+  const selected = spawnSync('python3', ['-c', selection], { input: source, encoding: 'utf8', timeout: 10000 });
+  assert.equal(selected.status, 0, selected.stderr);
 });
 
 test('three successive rounds retain the same roster, accept edited coaching, and reset every round', async () => {

@@ -105,3 +105,15 @@ test('Bug Quest publishes the chosen animal and bio without publishing private c
   assert.equal(view.players[0].publicBio, 'I check the small details.');
   assert.ok(!JSON.stringify(view).includes('private goal'));
 });
+
+
+test('session animals are unique for defaults and explicitly chosen characters', () => {
+  const room = createRoom('UNIQUE', 'host', 4, 1000);
+  const profile = { animal: 'fox', traits: ['curious'], privateCharacter: 'A private aim.', publicBio: 'I follow rows.' };
+  const first = joinRoom(room, 'Winter', 'one', 1000, profile);
+  assert.throws(() => joinRoom(room, 'Moss', 'two', 1000, profile), /already taken/);
+  assert.equal(room.players.length, 1);
+  const second = joinRoom(room, 'Moss', 'two', 1000);
+  assert.notEqual(first.animal, second.animal);
+  assert.equal(new Set(roomView(room, 0, undefined, 1000).players.map(p => p.animal)).size, 2);
+});

@@ -1,0 +1,79 @@
+{
+  "url": "http://127.0.0.1:3000/quest",
+  "method": "Native headless Chrome over local DevTools Protocol (Kane screenshot service timed out).",
+  "samples": [
+    {
+      "at": "2026-11-06T23:04:31.093Z",
+      "readyState": "complete",
+      "timeOrigin": 1794006266126.7,
+      "main": true,
+      "title": "Bug Quest",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "text": "REAL CHECKS. REAL EVIDENCE.\nBug Quest.\n\nName your agent and click Run Quest. Checks, repairs, and verification run automatically after that; nothing runs on page load.\n\n01\nRun a li"
+    },
+    {
+      "at": "2026-11-06T23:04:34.099Z",
+      "readyState": "complete",
+      "timeOrigin": 1794006266126.7,
+      "main": true,
+      "title": "Bug Quest",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "text": "REAL CHECKS. REAL EVIDENCE.\nBug Quest.\n\nName your agent and click Run Quest. Checks, repairs, and verification run automatically after that; nothing runs on page load.\n\n01\nRun a li"
+    },
+    {
+      "at": "2026-11-06T23:04:37.103Z",
+      "readyState": "complete",
+      "timeOrigin": 1794006266126.7,
+      "main": true,
+      "title": "Bug Quest",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "text": "REAL CHECKS. REAL EVIDENCE.\nBug Quest.\n\nName your agent and click Run Quest. Checks, repairs, and verification run automatically after that; nothing runs on page load.\n\n01\nRun a li"
+    },
+    {
+      "at": "2026-11-06T23:04:40.106Z",
+      "readyState": "complete",
+      "timeOrigin": 1794006266126.7,
+      "main": true,
+      "title": "Bug Quest",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "text": "REAL CHECKS. REAL EVIDENCE.\nBug Quest.\n\nName your agent and click Run Quest. Checks, repairs, and verification run automatically after that; nothing runs on page load.\n\n01\nRun a li"
+    },
+    {
+      "at": "2026-11-06T23:04:43.110Z",
+      "readyState": "complete",
+      "timeOrigin": 1794006266126.7,
+      "main": true,
+      "title": "Bug Quest",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "text": "REAL CHECKS. REAL EVIDENCE.\nBug Quest.\n\nName your agent and click Run Quest. Checks, repairs, and verification run automatically after that; nothing runs on page load.\n\n01\nRun a li"
+    }
+  ],
+  "navigations": [
+    {
+      "at": "2026-11-06T23:04:28.113Z",
+      "url": "http://127.0.0.1:3000/quest"
+    },
+    {
+      "at": "2026-11-06T23:04:43.731Z",
+      "url": "http://127.0.0.1:3000/stage"
+    }
+  ],
+  "stableTimeOrigin": true,
+  "screenshot": "quest-dev-webpack-1440.png",
+  "stage": {
+    "readyState": "complete",
+    "text": "THE SHOW SCREEN\n\nSmall paws. Big proof.\n\nStart a quest on the control screen. Your agent joins the stage live.\n\n+20\nBUG CAUGHT\n+15\nFIX VERIFIED\n−5\nFALSE ALARM\nTHE EVIDENCE TRAIL\n1 agent\nThe fix holds. Every row accounted for.\nWinter\n\nbear · quest complete\n\nOriginal animals. Real checks. Every point needs evidence.\n\nTHE SESSION LEADERBOARD\n\nProof earns points.\n\nEvery agent stays until you reset or restart the server.\n\n1\nWinter\n1 caught · 1 fixed · 0 alarms\n35\nPTS\nReset leaderboard\n\nClears the stage and scores. Running quests continue on their control screen.",
+    "viewport": 1440,
+    "documentWidth": 1440
+  },
+  "stageScreenshot": "stage-dev-webpack-1440.png",
+  "questNavigationCount": 1,
+  "passed": true,
+  "questAvatar": "Winter: bear",
+  "questAvatarMatchesStage": true
+}

@@ -1,0 +1,725 @@
+{
+  "date": "2026-11-06",
+  "method": "Native Chrome CDP after Kane screenshot infrastructure failures",
+  "environment": "Isolated production webpack build on 3002; preview 3001 proxies /api/stage to live real-quest server on 3000. No mocked stage state.",
+  "results": [
+    {
+      "page": "quest",
+      "width": 1440,
+      "status": "passed",
+      "screenshot": "quest-1440.png",
+      "metrics": {
+        "viewport": 1440,
+        "documentWidth": 1440,
+        "main": {
+          "x": 125,
+          "y": 80,
+          "width": 1190,
+          "height": 1549.828125,
+          "right": 1315,
+          "bottom": 1629.828125
+        },
+        "panels": [
+          {
+            "x": 157,
+            "y": 299.890625,
+            "width": 804,
+            "height": 541.6875,
+            "right": 961,
+            "bottom": 841.578125
+          },
+          {
+            "x": 983,
+            "y": 299.890625,
+            "width": 300,
+            "height": 640.046875,
+            "right": 1283,
+            "bottom": 939.9375
+          }
+        ],
+        "fonts": [
+          "Arial, Helvetica, sans-serif"
+        ],
+        "body": {
+          "background": "rgb(10, 15, 31)",
+          "color": "rgb(255, 255, 255)",
+          "fontFamily": "Arial, Helvetica, sans-serif",
+          "transform": "none"
+        },
+        "heading": {
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(255, 255, 255)",
+          "fontFamily": "Arial, Helvetica, sans-serif",
+          "transform": "none"
+        },
+        "panel": {
+          "background": "rgb(17, 26, 46)",
+          "color": "rgb(255, 255, 255)",
+          "fontFamily": "Arial, Helvetica, sans-serif",
+          "transform": "none"
+        },
+        "legend": null,
+        "codeFonts": [
+          "ui-monospace, SFMono-Regular, Consolas, monospace"
+        ],
+        "winterBear": true,
+        "stageText": null
+      }
+    },
+    {
+      "page": "stage",
+      "width": 1440,
+      "status": "passed",
+      "screenshot": "stage-1440.png",
+      "metrics": {
+        "viewport": 1440,
+        "documentWidth": 1440,
+        "main": {
+          "x": 0,
+          "y": 63,
+          "width": 1440,
+          "height": 819.1875,
+          "right": 1440,
+          "bottom": 882.1875
+        },
+        "panels": [
+          {
+            "x": 43.1875,
+            "y": 273.1875,
+            "width": 981.625,
+            "height": 573,
+            "right": 1024.8125,
+            "bottom": 846.1875
+          },
+          {
+            "x": 1046.8125,
+            "y": 273.1875,
+            "width": 350,
+            "height": 573,
+            "right": 1396.8125,
+            "bottom": 846.1875
+          }
+        ],
+        "fonts": [
+          "Arial, Helvetica, sans-serif"
+        ],
+        "body": {
+          "background": "rgb(10, 15, 31)",
+          "color": "rgb(255, 255, 255)",
+          "fontFamily": "Arial, Helvetica, sans-serif",
+          "transform": "none"
+        },
+        "heading": {
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(255, 255, 255)",
+          "fontFamily": "Arial, Helvetica, sans-serif",
+          "transform": "none"
+        },
+        "panel": {
+          "background": "rgb(17, 26, 46)",
+          "color": "rgb(255, 255, 255)",
+          "fontFamily": "Arial, Helvetica, sans-serif",
+          "transform": "none"
+        },
+        "legend": {
+          "background": "rgb(17, 26, 46)",
+          "color": "rgb(201, 210, 227)",
+          "fontFamily": "Arial, Helvetica, sans-serif",
+          "transform": "none"
+        },
+        "codeFonts": [],
+        "winterBear": false,
+        "stageText": "THE SHOW SCREEN\n\nSmall paws. Big proof.\n\nStart a quest on the control screen. Your agent joins the stage live.\n\n+20\nBUG CAUGHT\n+15\nFIX VERIFIED\n\u22125\nFALSE ALARM\nTHE EVIDENCE TRAIL\n1 agent\nThe fix holds. Every row accounted for.\nWinter\n\nbear \u00b7 quest complete\n\nOriginal animals. Real checks. Every point needs evidence.\n\nTHE SESSION LEADERBOARD\n\nProof earns points.\n\nEvery agent stays until you reset or restart the server.\n\n1\nWinter\n1 caught \u00b7 1 fixed \u00b7 0 alarms\n35\nPTS\nReset leaderboard\n\nClears the stage and scores. Running quests continue on their control screen."
+      }
+    },
+    {
+      "page": "play",
+      "width": 1440,
+      "status": "passed",
+      "screenshot": "play-1440.png",
+      "metrics": {
+        "viewport": 1440,
+        "documentWidth": 1440,
+        "main": {
+          "x": 45,
+          "y": 78,
+          "width": 1350,
+          "height": 1108.953125,
+          "right": 1395,
+          "bottom": 1186.953125
+        },
+        "panels": [
+          {
+            "x": 77,
+            "y": 480.453125,
+            "width": 966,
+            "height": 615.5,
+            "right": 1043,
+            "bottom": 1095.953125
+          },
+          {
+            "x": 1063,
+            "y": 480.453125,
+            "width": 300,
+            "height": 417,
+            "right": 1363,
+            "bottom": 897.453125
+          }
+        ],
+        "fonts": [
+          "Arial, Helvetica, sans-serif"
+        ],
+        "body": {
+          "background": "rgb(10, 15, 31)",
+          "color": "rgb(255, 255, 255)",
+          "fontFamily": "Arial, Helvetica, sans-serif",
+          "transform": "none"
+        },
+        "heading": {
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(255, 255, 255)",
+          "fontFamily": "Arial, Helvetica, sans-serif",
+          "transform": "none"
+        },
+        "panel": {
+          "background": "rgb(17, 26, 46)",
+          "color": "rgb(255, 255, 255)",
+          "fontFamily": "Arial, Helvetica, sans-serif",
+          "transform": "none"
+        },
+        "legend": {
+          "background": "rgb(17, 26, 46)",
+          "color": "rgb(255, 255, 255)",
+          "fontFamily": "Arial, Helvetica, sans-serif",
+          "transform": "none"
+        },
+        "codeFonts": [],
+        "winterBear": false,
+        "stageText": null
+      }
+    },
+    {
+      "page": "pipelines",
+      "width": 1440,
+      "status": "passed",
+      "screenshot": "pipelines-1440.png",
+      "metrics": {
+        "viewport": 1440,
+        "documentWidth": 1440,
+        "main": {
+          "x": 230,
+          "y": 70,
+          "width": 1210,
+          "height": 1125.796875,
+          "right": 1440,
+          "bottom": 1195.796875
+        },
+        "panels": [],
+        "fonts": [
+          "Arial, Helvetica, sans-serif"
+        ],
+        "body": {
+          "background": "rgb(10, 15, 31)",
+          "color": "rgb(255, 255, 255)",
+          "fontFamily": "Arial, Helvetica, sans-serif",
+          "transform": "none"
+        },
+        "heading": {
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(255, 255, 255)",
+          "fontFamily": "Arial, Helvetica, sans-serif",
+          "transform": "none"
+        },
+        "panel": {
+          "background": "rgb(17, 26, 46)",
+          "color": "rgb(255, 255, 255)",
+          "fontFamily": "Arial, Helvetica, sans-serif",
+          "transform": "none"
+        },
+        "legend": null,
+        "codeFonts": [],
+        "winterBear": false,
+        "stageText": null
+      }
+    },
+    {
+      "page": "quest",
+      "width": 1280,
+      "status": "passed",
+      "screenshot": "quest-1280.png",
+      "metrics": {
+        "viewport": 1280,
+        "documentWidth": 1280,
+        "main": {
+          "x": 45,
+          "y": 80,
+          "width": 1190,
+          "height": 1549.828125,
+          "right": 1235,
+          "bottom": 1629.828125
+        },
+        "panels": [
+          {
+            "x": 77,
+            "y": 299.890625,
+            "width": 804,
+            "height": 541.6875,
+            "right": 881,
+            "bottom": 841.578125
+          },
+          {
+            "x": 903,
+            "y": 299.890625,
+            "width": 300,
+            "height": 640.046875,
+            "right": 1203,
+            "bottom": 939.9375
+          }
+        ],
+        "fonts": [
+          "Arial, Helvetica, sans-serif"
+        ],
+        "body": {
+          "background": "rgb(10, 15, 31)",
+          "color": "rgb(255, 255, 255)",
+          "fontFamily": "Arial, Helvetica, sans-serif",
+          "transform": "none"
+        },
+        "heading": {
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(255, 255, 255)",
+          "fontFamily": "Arial, Helvetica, sans-serif",
+          "transform": "none"
+        },
+        "panel": {
+          "background": "rgb(17, 26, 46)",
+          "color": "rgb(255, 255, 255)",
+          "fontFamily": "Arial, Helvetica, sans-serif",
+          "transform": "none"
+        },
+        "legend": null,
+        "codeFonts": [
+          "ui-monospace, SFMono-Regular, Consolas, monospace"
+        ],
+        "winterBear": true,
+        "stageText": null
+      }
+    },
+    {
+      "page": "stage",
+      "width": 1280,
+      "status": "passed",
+      "screenshot": "stage-1280.png",
+      "metrics": {
+        "viewport": 1280,
+        "documentWidth": 1280,
+        "main": {
+          "x": 0,
+          "y": 63,
+          "width": 1280,
+          "height": 815.828125,
+          "right": 1280,
+          "bottom": 878.828125
+        },
+        "panels": [
+          {
+            "x": 38.390625,
+            "y": 269.828125,
+            "width": 831.21875,
+            "height": 573,
+            "right": 869.609375,
+            "bottom": 842.828125
+          },
+          {
+            "x": 891.609375,
+            "y": 269.828125,
+            "width": 350,
+            "height": 573,
+            "right": 1241.609375,
+            "bottom": 842.828125
+          }
+        ],
+        "fonts": [
+          "Arial, Helvetica, sans-serif"
+        ],
+        "body": {
+          "background": "rgb(10, 15, 31)",
+          "color": "rgb(255, 255, 255)",
+          "fontFamily": "Arial, Helvetica, sans-serif",
+          "transform": "none"
+        },
+        "heading": {
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(255, 255, 255)",
+          "fontFamily": "Arial, Helvetica, sans-serif",
+          "transform": "none"
+        },
+        "panel": {
+          "background": "rgb(17, 26, 46)",
+          "color": "rgb(255, 255, 255)",
+          "fontFamily": "Arial, Helvetica, sans-serif",
+          "transform": "none"
+        },
+        "legend": {
+          "background": "rgb(17, 26, 46)",
+          "color": "rgb(201, 210, 227)",
+          "fontFamily": "Arial, Helvetica, sans-serif",
+          "transform": "none"
+        },
+        "codeFonts": [],
+        "winterBear": false,
+        "stageText": "THE SHOW SCREEN\n\nSmall paws. Big proof.\n\nStart a quest on the control screen. Your agent joins the stage live.\n\n+20\nBUG CAUGHT\n+15\nFIX VERIFIED\n\u22125\nFALSE ALARM\nTHE EVIDENCE TRAIL\n1 agent\nThe fix holds. Every row accounted for.\nWinter\n\nbear \u00b7 quest complete\n\nOriginal animals. Real checks. Every point needs evidence.\n\nTHE SESSION LEADERBOARD\n\nProof earns points.\n\nEvery agent stays until you reset or restart the server.\n\n1\nWinter\n1 caught \u00b7 1 fixed \u00b7 0 alarms\n35\nPTS\nReset leaderboard\n\nClears the stage and scores. Running quests continue on their control screen."
+      }
+    },
+    {
+      "page": "play",
+      "width": 1280,
+      "status": "passed",
+      "screenshot": "play-1280.png",
+      "metrics": {
+        "viewport": 1280,
+        "documentWidth": 1280,
+        "main": {
+          "x": 0,
+          "y": 78,
+          "width": 1280,
+          "height": 1108.953125,
+          "right": 1280,
+          "bottom": 1186.953125
+        },
+        "panels": [
+          {
+            "x": 32,
+            "y": 480.453125,
+            "width": 896,
+            "height": 615.5,
+            "right": 928,
+            "bottom": 1095.953125
+          },
+          {
+            "x": 948,
+            "y": 480.453125,
+            "width": 300,
+            "height": 417,
+            "right": 1248,
+            "bottom": 897.453125
+          }
+        ],
+        "fonts": [
+          "Arial, Helvetica, sans-serif"
+        ],
+        "body": {
+          "background": "rgb(10, 15, 31)",
+          "color": "rgb(255, 255, 255)",
+          "fontFamily": "Arial, Helvetica, sans-serif",
+          "transform": "none"
+        },
+        "heading": {
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(255, 255, 255)",
+          "fontFamily": "Arial, Helvetica, sans-serif",
+          "transform": "none"
+        },
+        "panel": {
+          "background": "rgb(17, 26, 46)",
+          "color": "rgb(255, 255, 255)",
+          "fontFamily": "Arial, Helvetica, sans-serif",
+          "transform": "none"
+        },
+        "legend": {
+          "background": "rgb(17, 26, 46)",
+          "color": "rgb(255, 255, 255)",
+          "fontFamily": "Arial, Helvetica, sans-serif",
+          "transform": "none"
+        },
+        "codeFonts": [],
+        "winterBear": false,
+        "stageText": null
+      }
+    },
+    {
+      "page": "pipelines",
+      "width": 1280,
+      "status": "passed",
+      "screenshot": "pipelines-1280.png",
+      "metrics": {
+        "viewport": 1280,
+        "documentWidth": 1280,
+        "main": {
+          "x": 230,
+          "y": 70,
+          "width": 1050,
+          "height": 1125.796875,
+          "right": 1280,
+          "bottom": 1195.796875
+        },
+        "panels": [],
+        "fonts": [
+          "Arial, Helvetica, sans-serif"
+        ],
+        "body": {
+          "background": "rgb(10, 15, 31)",
+          "color": "rgb(255, 255, 255)",
+          "fontFamily": "Arial, Helvetica, sans-serif",
+          "transform": "none"
+        },
+        "heading": {
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(255, 255, 255)",
+          "fontFamily": "Arial, Helvetica, sans-serif",
+          "transform": "none"
+        },
+        "panel": {
+          "background": "rgb(17, 26, 46)",
+          "color": "rgb(255, 255, 255)",
+          "fontFamily": "Arial, Helvetica, sans-serif",
+          "transform": "none"
+        },
+        "legend": null,
+        "codeFonts": [],
+        "winterBear": false,
+        "stageText": null
+      }
+    },
+    {
+      "page": "quest",
+      "width": 1024,
+      "status": "passed",
+      "screenshot": "quest-1024.png",
+      "metrics": {
+        "viewport": 1024,
+        "documentWidth": 1024,
+        "main": {
+          "x": 0,
+          "y": 80,
+          "width": 1024,
+          "height": 2081.328125,
+          "right": 1024,
+          "bottom": 2161.328125
+        },
+        "panels": [
+          {
+            "x": 32,
+            "y": 299.890625,
+            "width": 960,
+            "height": 525.6875,
+            "right": 992,
+            "bottom": 825.578125
+          },
+          {
+            "x": 32,
+            "y": 847.578125,
+            "width": 960,
+            "height": 623.859375,
+            "right": 992,
+            "bottom": 1471.4375
+          }
+        ],
+        "fonts": [
+          "Arial, Helvetica, sans-serif"
+        ],
+        "body": {
+          "background": "rgb(10, 15, 31)",
+          "color": "rgb(255, 255, 255)",
+          "fontFamily": "Arial, Helvetica, sans-serif",
+          "transform": "none"
+        },
+        "heading": {
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(255, 255, 255)",
+          "fontFamily": "Arial, Helvetica, sans-serif",
+          "transform": "none"
+        },
+        "panel": {
+          "background": "rgb(17, 26, 46)",
+          "color": "rgb(255, 255, 255)",
+          "fontFamily": "Arial, Helvetica, sans-serif",
+          "transform": "none"
+        },
+        "legend": null,
+        "codeFonts": [
+          "ui-monospace, SFMono-Regular, Consolas, monospace"
+        ],
+        "winterBear": true,
+        "stageText": null
+      }
+    },
+    {
+      "page": "stage",
+      "width": 1024,
+      "status": "passed",
+      "screenshot": "stage-1024.png",
+      "metrics": {
+        "viewport": 1024,
+        "documentWidth": 1024,
+        "main": {
+          "x": 0,
+          "y": 63,
+          "width": 1024,
+          "height": 1216.53125,
+          "right": 1024,
+          "bottom": 1279.53125
+        },
+        "panels": [
+          {
+            "x": 30.71875,
+            "y": 257.53125,
+            "width": 962.5625,
+            "height": 573,
+            "right": 993.28125,
+            "bottom": 830.53125
+          },
+          {
+            "x": 30.71875,
+            "y": 852.53125,
+            "width": 962.5625,
+            "height": 391,
+            "right": 993.28125,
+            "bottom": 1243.53125
+          }
+        ],
+        "fonts": [
+          "Arial, Helvetica, sans-serif"
+        ],
+        "body": {
+          "background": "rgb(10, 15, 31)",
+          "color": "rgb(255, 255, 255)",
+          "fontFamily": "Arial, Helvetica, sans-serif",
+          "transform": "none"
+        },
+        "heading": {
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(255, 255, 255)",
+          "fontFamily": "Arial, Helvetica, sans-serif",
+          "transform": "none"
+        },
+        "panel": {
+          "background": "rgb(17, 26, 46)",
+          "color": "rgb(255, 255, 255)",
+          "fontFamily": "Arial, Helvetica, sans-serif",
+          "transform": "none"
+        },
+        "legend": {
+          "background": "rgb(17, 26, 46)",
+          "color": "rgb(201, 210, 227)",
+          "fontFamily": "Arial, Helvetica, sans-serif",
+          "transform": "none"
+        },
+        "codeFonts": [],
+        "winterBear": false,
+        "stageText": "THE SHOW SCREEN\n\nSmall paws. Big proof.\n\nStart a quest on the control screen. Your agent joins the stage live.\n\n+20\nBUG CAUGHT\n+15\nFIX VERIFIED\n\u22125\nFALSE ALARM\nTHE EVIDENCE TRAIL\n1 agent\nThe fix holds. Every row accounted for.\nWinter\n\nbear \u00b7 quest complete\n\nOriginal animals. Real checks. Every point needs evidence.\n\nTHE SESSION LEADERBOARD\n\nProof earns points.\n\nEvery agent stays until you reset or restart the server.\n\n1\nWinter\n1 caught \u00b7 1 fixed \u00b7 0 alarms\n35\nPTS\nReset leaderboard\n\nClears the stage and scores. Running quests continue on their control screen."
+      }
+    },
+    {
+      "page": "play",
+      "width": 1024,
+      "status": "passed",
+      "screenshot": "play-1024.png",
+      "metrics": {
+        "viewport": 1024,
+        "documentWidth": 1024,
+        "main": {
+          "x": 0,
+          "y": 78,
+          "width": 1024,
+          "height": 1522.4375,
+          "right": 1024,
+          "bottom": 1600.4375
+        },
+        "panels": [
+          {
+            "x": 32,
+            "y": 474.9375,
+            "width": 960,
+            "height": 615.5,
+            "right": 992,
+            "bottom": 1090.4375
+          },
+          {
+            "x": 32,
+            "y": 1110.4375,
+            "width": 960,
+            "height": 399,
+            "right": 992,
+            "bottom": 1509.4375
+          }
+        ],
+        "fonts": [
+          "Arial, Helvetica, sans-serif"
+        ],
+        "body": {
+          "background": "rgb(10, 15, 31)",
+          "color": "rgb(255, 255, 255)",
+          "fontFamily": "Arial, Helvetica, sans-serif",
+          "transform": "none"
+        },
+        "heading": {
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(255, 255, 255)",
+          "fontFamily": "Arial, Helvetica, sans-serif",
+          "transform": "none"
+        },
+        "panel": {
+          "background": "rgb(17, 26, 46)",
+          "color": "rgb(255, 255, 255)",
+          "fontFamily": "Arial, Helvetica, sans-serif",
+          "transform": "none"
+        },
+        "legend": {
+          "background": "rgb(17, 26, 46)",
+          "color": "rgb(255, 255, 255)",
+          "fontFamily": "Arial, Helvetica, sans-serif",
+          "transform": "none"
+        },
+        "codeFonts": [],
+        "winterBear": false,
+        "stageText": null
+      }
+    },
+    {
+      "page": "pipelines",
+      "width": 1024,
+      "status": "passed",
+      "screenshot": "pipelines-1024.png",
+      "metrics": {
+        "viewport": 1024,
+        "documentWidth": 1024,
+        "main": {
+          "x": 190,
+          "y": 70,
+          "width": 834,
+          "height": 1121.796875,
+          "right": 1024,
+          "bottom": 1191.796875
+        },
+        "panels": [],
+        "fonts": [
+          "Arial, Helvetica, sans-serif"
+        ],
+        "body": {
+          "background": "rgb(10, 15, 31)",
+          "color": "rgb(255, 255, 255)",
+          "fontFamily": "Arial, Helvetica, sans-serif",
+          "transform": "none"
+        },
+        "heading": {
+          "background": "rgba(0, 0, 0, 0)",
+          "color": "rgb(255, 255, 255)",
+          "fontFamily": "Arial, Helvetica, sans-serif",
+          "transform": "none"
+        },
+        "panel": {
+          "background": "rgb(17, 26, 46)",
+          "color": "rgb(255, 255, 255)",
+          "fontFamily": "Arial, Helvetica, sans-serif",
+          "transform": "none"
+        },
+        "legend": null,
+        "codeFonts": [],
+        "winterBear": false,
+        "stageText": null
+      }
+    }
+  ],
+  "balancedMainMarginsVerified": true
+}

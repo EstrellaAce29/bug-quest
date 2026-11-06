@@ -1,5 +1,6 @@
 import { ANIMALS } from './play-character.mjs';
 import type { LiveEvent } from './quest-contract';
+import { warehouseErrorMessage } from './warehouse-diagnostics.mjs';
 
 export type StageAgent = {
   id: string; name: string; animal: typeof ANIMALS[number]; color: number;
@@ -19,12 +20,42 @@ export function animalForName(name: string) {
   return { animal: ANIMALS[hash % ANIMALS.length], color: hash % 4 };
 }
 export function createStage(): StageState { return { generation: 0, agents: new Map(), runs: new Map(), awards: [], nextSeq: 1 }; }
+export function stageErrorSpeech(message: string) {
+  const warehouseMessages = ['settings', 'client_missing', 'unavailable', 'authentication', 'timeout', 'no_run', 'query'].map(warehouseErrorMessage);
+  if (warehouseMessages.includes(message)) return message;
+  if (/^Airflow (authentication|request) failed \(HTTP \d{3}\)\.$/.test(message)) return `${message} Check Airflow and your local credentials.`;
+  if (message === 'Complete the tennis DAG successfully before starting this quest.') return message;
+  if (/^Kane (stopped before returning a result|could not start or connect to Chrome|authentication needs attention|exited without a completed result)/.test(message)) {
+    return message.startsWith('Kane authentication') ? 'Kane authentication needs attention. Run kane-cli login --oauth.'
+      : message.startsWith('Kane could not') ? 'Kane could not connect to Chrome. Check that Chrome is installed.'
+      : 'Kane did not finish its browser check. Check the control screen and retry.';
+  }
+  return 'Quest failed. Open controls for the error details.';
+}
+export function reconcileStageAnimals(state: StageState) {
+  const taken = new Set<StageAgent['animal']>();
+  for (const agent of state.agents.values()) {
+    if (taken.has(agent.animal)) {
+      const start = ANIMALS.indexOf(agent.animal);
+      const available = ANIMALS.map((_, offset) => ANIMALS[(start + offset) % ANIMALS.length]).find(animal => !taken.has(animal));
+      if (available) agent.animal = available;
+    }
+    taken.add(agent.animal);
+    if (agent.speech === 'A snag in the trail. Check the control screen.') agent.speech = 'Quest needs attention. Open controls for details.';
+  }
+}
 export function beginStageRun(state: StageState, name: string, runId: string): StageRun {
   if (state.runs.has(runId)) throw new Error('Stage run already exists.');
   const key = nameKey(name);
   let agent = state.agents.get(key);
   if (!agent) {
-    agent = { id: `agent-${state.nextSeq++}`, name, ...animalForName(name), points: 0, bugs: 0, fixes: 0, falseAlarms: 0, runs: 0, phase: 'idle', speech: '' };
+    const character = animalForName(name);
+    const taken = new Set([...state.agents.values()].map(agent => agent.animal));
+    const start = ANIMALS.indexOf(character.animal);
+    // Preserve the name's default unless it conflicts with this session's roster.
+    const animal = ANIMALS.map((_, offset) => ANIMALS[(start + offset) % ANIMALS.length]).find(animal => !taken.has(animal));
+    if (!animal) throw new Error('All eight stage animals are taken. Reset the leaderboard before adding a new agent.');
+    agent = { id: `agent-${state.nextSeq++}`, name, ...character, animal, points: 0, bugs: 0, fixes: 0, falseAlarms: 0, runs: 0, phase: 'idle', speech: '' };
     state.agents.set(key, agent);
   }
   agent.runs++; agent.phase = 'thinking'; agent.speech = 'Following the evidence, one check at a time.';
@@ -52,7 +83,11 @@ export function recordStageEvent(state: StageState, handle: StageRun, event: Liv
   }
   if (event.type === 'result') agent.phase = 'thinking';
   if (event.type === 'fix') agent.phase = event.report.status === 'fixing' ? 'fixing' : 'thinking';
-  if (event.type === 'error') { agent.phase = 'stopped'; agent.speech = 'A snag in the trail. Check the control screen.'; run.active = false; }
+  if (event.type === 'error') {
+    agent.phase = 'stopped';
+    agent.speech = stageErrorSpeech(event.message);
+    run.active = false;
+  }
   if (event.type === 'done') {
     agent.phase = event.escalated ? 'stopped' : 'idle'; run.active = false;
     if (!run.bugs && !run.falseAlarms) agent.speech = event.escalated ? 'This one needs a human eye.' : 'Checks complete. No silent bug confirmed.';

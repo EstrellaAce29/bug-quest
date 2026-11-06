@@ -1,8 +1,8 @@
-import { validateCharacter } from './play-character.mjs';
+import { ANIMALS, validateCharacter } from './play-character.mjs';
 import type { PlayEvent, PlayPlayer, RoundSummary } from './play';
 
 export type RoomPhase = 'lobby' | 'coaching' | 'running' | 'resetting' | 'finished' | 'recovery';
-export type RoomPlayer = PlayPlayer & { token: string; strategyRound: number; lastSeen: number };
+export type RoomPlayer = PlayPlayer & { token: string; strategyRound: number; lastSeen: number; animal: string };
 export type RoomEvent = { seq: number; at: number; round: number; event: PlayEvent };
 export type Standing = { playerId: string; name: string; points: number; caught: number; fixed: number; falseAlarms: number };
 export type PlayRoom = {
@@ -26,7 +26,11 @@ export function joinRoom(room: PlayRoom, name: unknown, token: string, now = Dat
   if (room.players.length >= room.capacity) throw new Error('This lobby is full.');
   if (typeof name !== 'string' || !name.trim() || name.trim().length > 60 || /[\x00-\x1f\x7f]/.test(name)) throw new Error('Use an agent name of 1–60 printable characters.');
   if (room.players.some(p => p.name.toLowerCase() === name.trim().toLowerCase())) throw new Error('That agent name is already taken.');
-  const player = { id: `player-${room.players.length + 1}`, name: name.trim(), strategy: '', token, strategyRound: 0, lastSeen: now, ...(character === undefined ? {} : { character: validateCharacter(character) }) };
+  const profile = character === undefined ? undefined : validateCharacter(character);
+  const taken = new Set(room.players.map(player => player.animal));
+  if (profile && taken.has(profile.animal)) throw new Error(`The ${profile.animal} is already taken in this session. Choose a different animal.`);
+  const animal = profile?.animal ?? ANIMALS.find(animal => !taken.has(animal))!;
+  const player = { id: `player-${room.players.length + 1}`, name: name.trim(), animal, strategy: '', token, strategyRound: 0, lastSeen: now, ...(profile ? { character: profile } : {}) };
   room.players.push(player);
   return player;
 }
@@ -93,7 +97,7 @@ export function roomView(room: PlayRoom, after = 0, playerToken?: string, now = 
   const events = room.events.filter(e => e.seq > after && (!self || e.event.type === 'joined' || !('playerId' in e.event) || e.event.playerId === null || e.event.playerId === self.id));
   return {
     code: room.code, capacity: room.capacity, phase: room.phase, round: Math.min(room.rounds.length + 1, 3), canStart: canStartRoom(room, now),
-    players: room.players.map(p => ({ id: p.id, name: p.name, animal: p.character?.animal ?? 'rabbit', publicBio: p.character?.publicBio ?? '', ready: p.strategyRound === room.rounds.length + 1, connected: now - p.lastSeen < 15000 })),
+    players: room.players.map(p => ({ id: p.id, name: p.name, animal: p.animal, publicBio: p.character?.publicBio ?? '', ready: p.strategyRound === room.rounds.length + 1, connected: now - p.lastSeen < 15000 })),
     standings, rounds: room.rounds, events, cursor: room.nextSeq - 1, error: room.error,
     ...(self ? { self: { id: self.id, name: self.name, ready: self.strategyRound === room.rounds.length + 1 } } : {}),
   };
