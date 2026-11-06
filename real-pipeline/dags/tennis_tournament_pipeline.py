@@ -146,7 +146,7 @@ def tennis_tournament_pipeline():
         data = read_stage(transformed_path)
         matches = data["rows"]
         # PLANTED BUG: accidental page-size limit silently drops the second half.
-        matches_to_load = matches[:len(matches) // 2]
+        matches_to_load = matches
         play = play_faults()
         if play is not None:
             matches_to_load = matches if not play["half_load"] else matches[:len(matches) // 2]
