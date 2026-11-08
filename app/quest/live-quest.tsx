@@ -8,6 +8,8 @@ import styles from './quest.module.css';
 import Animal from '../play/animal';
 import { animalForName, type StageAgent, type StageView } from '@/lib/stage';
 import { ANIMALS } from '@/lib/play-character.mjs';
+import { QUEST_TIMEOUTS, withQuestTimeout } from '@/lib/quest-timeout';
+import { consumeQuestStream } from '@/lib/quest-stream';
 
 export default function LiveQuest() {
   const [step, setStep] = useState<'name' | 'instruction'>('name');
@@ -59,7 +61,7 @@ export default function LiveQuest() {
     const controller = new AbortController();
     abort.current = controller;
     setBusy(true); setActiveAgent(agent.trim());
-    setLogs([]); setResults([]); setPlan([]); setError(null); setPoints(0); setFalseAlarms(0); setBugsFound(0); setFixesVerified(0); setRepairs([]); setCompleted(false);
+    setLogs([`${agent.trim()}: Starting quest…`, 'Connecting to the quest server (15-second limit)…']); setResults([]); setPlan([]); setError(null); setPoints(0); setFalseAlarms(0); setBugsFound(0); setFixesVerified(0); setRepairs([]); setCompleted(false);
     let finished = false;
     function receive(event: LiveEvent) {
       switch (event.type) {
@@ -76,12 +78,12 @@ export default function LiveQuest() {
       }
     }
     try {
-      const response = await fetch('/api/quest', {
+      const response = await withQuestTimeout('Connection to the quest server', QUEST_TIMEOUTS.connect, controller.signal, () => fetch('/api/quest', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ agent, instruction: instruction.trim(), target, confirmed: true }), signal: controller.signal,
-      });
+      }));
       if (!response.ok) {
-        const body = await response.json();
+        const body = await withQuestTimeout('Quest server error response', QUEST_TIMEOUTS.connect, controller.signal, () => response.json());
         throw new Error(typeof body.error === 'string' ? body.error : `Quest request failed (HTTP ${response.status}).`);
       }
       if (!response.body) throw new Error('The server did not return a live stream.');
@@ -90,24 +92,12 @@ export default function LiveQuest() {
       if (ANIMALS.includes(animal as StageAgent['animal']) && Number.isInteger(color) && color >= 0 && color < 4) {
         setStageAgent({ animal: animal as StageAgent['animal'], color });
       }
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let pending = '';
-      while (true) {
-        const { value, done } = await reader.read();
-        pending += decoder.decode(value, { stream: !done });
-        let boundary: number;
-        while ((boundary = pending.indexOf('\n')) >= 0) {
-          const line = pending.slice(0, boundary); pending = pending.slice(boundary + 1);
-          if (line.trim()) receive(JSON.parse(line) as LiveEvent);
-        }
-        if (done) break;
-      }
-      if (pending.trim()) receive(JSON.parse(pending) as LiveEvent);
+      await consumeQuestStream(response.body, controller.signal, receive);
       if (!finished) throw new Error('The connection ended before the quest completed. Partial results are shown below.');
     } catch (cause) {
       const message = controller.signal.aborted ? 'Quest cancelled. Partial results are preserved.'
         : cause instanceof Error ? cause.message : 'Could not run the live quest.';
+      controller.abort();
       setError(message); setLogs(current => [...current, `${agent.trim()}: ${message}`]);
     } finally {
       abort.current = null; setBusy(false);
@@ -136,14 +126,15 @@ export default function LiveQuest() {
                 <p className={styles.replayNote}>Browser checks stay headless. Progress appears in the log below.</p>
                 <button className={styles.runButton} type="button" onClick={() => void start()} disabled={busy || !agent.trim() || !instruction.trim()}><span aria-hidden="true">{busy ? '◌' : '▷'}</span>{busy ? 'Quest in progress' : 'Run'}<span aria-hidden="true">→</span></button>
               </>}
-              {busy && <button className={styles.cancelButton} type="button" onClick={() => abort.current?.abort()}>Stop quest</button>}
+              {busy && <p className={styles.runStatus} role="status">{logs.at(-1)}</p>}
+              {busy && <button className={styles.cancelButton} type="button" onClick={() => abort.current?.abort()}>Cancel</button>}
               <p className={styles.replayNote}>Uses OpenAI API usage and Kane credits. Auto-fix can edit and commit {target === 'airflow' ? 'only the tennis DAG after a new Airflow run passes Kane + SQL' : 'lib/pipeline.ts after Kane verifies it'}. Up to three attempts; config/bugs.json is never edited.</p>
             </form>
           </section>
         </div>
         <aside className={styles.scoreCard} aria-labelledby="live-score-title"><div className={styles.scoreTop}><span className={styles.eyebrow}>LIVE SCOREBOARD</span><span aria-hidden="true">⚑</span></div><div className={styles.agentAvatar} role="img" aria-label={`${displayedName || "Your agent"}: ${avatar.animal}`}><Animal animal={avatar.animal} index={avatar.color} name={displayedName} /></div><h2 id="live-score-title">{logs.length ? activeAgent : agent.trim() || 'Your agent'}</h2><p className={styles.agentSubtitle}>Silent bug hunter</p><div className={styles.scoreTotal} data-negative={points < 0}>{points}<span>POINTS</span></div><div className={styles.scoreLine}><div><strong>Silent bugs caught</strong><small>+20 per distinct invariant</small></div><span className={bugsFound ? styles.earned : ''}>{bugsFound}</span></div><div className={styles.scoreLine}><div><strong>Fixes verified</strong><small>+15 after precise + basic pass</small></div><span className={fixesVerified ? styles.earned : ''}>{fixesVerified}</span></div><div className={styles.scoreLine}><div><strong>False alarms</strong><small>−5 per disproven bug claim</small></div><span>{falseAlarms}</span></div><p className={styles.scoreNote}>A silent bug counts when the basic check passes and a precise check confirms an application bug.<br />Repeated checks of the same bug count once.</p></aside>
       </div>
-      <section className={styles.terminalCard} aria-labelledby="live-log-title"><div className={styles.terminalHeading}><h2 id="live-log-title">Live quest log</h2><span>{busy ? 'Running' : repairs.some(report => report.status === 'escalated') ? 'Escalated to human' : completed ? 'Complete' : logs.length ? 'Stopped' : 'Ready'}</span></div><div ref={terminal} className={styles.terminal} role="log" aria-live="polite" aria-relevant="additions">{logs.length ? logs.map((line, index) => <div key={index}><span aria-hidden="true">› </span>{line}</div>) : <p>Your agent’s progress will stream here.</p>}</div></section>
+      <section className={styles.terminalCard} aria-labelledby="live-log-title"><div className={styles.terminalHeading}><h2 id="live-log-title">Live quest log</h2><span>{busy ? <button type="button" className={styles.cancelButton} onClick={() => abort.current?.abort()}>Cancel</button> : repairs.some(report => report.status === 'escalated') ? 'Escalated to human' : completed ? 'Complete' : logs.length ? 'Stopped' : 'Ready'}</span></div><div ref={terminal} className={styles.terminal} role="log" aria-live="polite" aria-relevant="additions">{logs.length ? logs.map((line, index) => <div key={index}><span aria-hidden="true">› </span>{line}</div>) : <p>Your agent’s progress will stream here.</p>}</div></section>
       {error && <div className={styles.liveError} role="alert">{error}</div>}
       <section className={styles.resultsCard} aria-labelledby="live-results-title"><div className={styles.resultsHeading}><div><span className={styles.eyebrow}>THIS QUEST</span><h2 id="live-results-title">Live results</h2><p>Results come from Kane browser runs and, for Real Airflow, SQL warehouse checks.</p></div><span className={styles.runCount}>{results.length} completed</span></div><div className={styles.tableWrap}><table><thead><tr><th scope="col">CHECK / OBJECTIVE</th><th scope="col">RESULT</th><th scope="col">RESULT CODE / SOURCE</th><th scope="col">TEST MANAGER</th></tr></thead><tbody>{checks.map(check => {
         const result = results.find(item => item.id === check.id);

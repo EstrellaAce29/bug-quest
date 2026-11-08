@@ -52,35 +52,43 @@ export async function POST(request: Request) {
   if (request.signal.aborted) abort.abort();
   const encoder = new TextEncoder();
   const stream = new ReadableStream<Uint8Array>({
-    async start(controller) {
-      let closed = false;
-      const emit = (event: LiveEvent) => {
-        if (closed || abort.signal.aborted) return;
-        recordStageEvent(stage, stageRun, event);
-        try { controller.enqueue(encoder.encode(redact(JSON.stringify(event), secrets) + '\n')); }
-        catch { closed = true; abort.abort(); }
-      };
-      const log = (message: string) => emit({ type: 'log', message: `${agent}: ${message}` });
-      const heartbeat = setInterval(() => log('still working...'), 15000);
-      try {
-        const dependencies: QuestDependencies = input.target === 'airflow' ? await createRealAirflow(abort.signal, log) : {
-          expand: expandQuest, run,
-          repair: (failure, basic, signal, log, update) => attemptAutoFix(failure, basic, {
-            ...createFixWorkspace(), propose: proposePipelineFix, run,
-          }, signal, log, update),
+    start(controller) {
+      void (async () => {
+        let closed = false;
+        const startedAt = Date.now();
+        let phase = 'Starting quest';
+        const emit = (event: LiveEvent, progress = true) => {
+          if (closed || abort.signal.aborted) return;
+          if (progress && event.type === 'log') phase = event.message;
+          if (progress && (event.type === 'log' || event.type === 'error')) console.info(`[quest ${stageRun.id}] ${redact(event.message, secrets)}`);
+          recordStageEvent(stage, stageRun, event);
+          try { controller.enqueue(encoder.encode(redact(JSON.stringify(event), secrets) + '\n')); }
+          catch { closed = true; abort.abort(); }
         };
-        await executeQuest({ agent, instruction }, dependencies, abort.signal, emit);
-      } catch (error) {
-        if (!abort.signal.aborted) emit({ type: 'error', message: error instanceof Error ? redact(error.message, secrets) : 'Live quest failed. Try again.' });
-      } finally {
-        finishStageRun(stage, stageRun);
-        clearInterval(heartbeat);
-        state.bugQuestLiveBusy = false;
-        request.signal.removeEventListener('abort', disconnected);
-        if (!closed) { closed = true; try { controller.close(); } catch { /* Client disconnected. */ } }
-      }
+        const log = (message: string) => emit({ type: 'log', message: `${agent}: ${message}` });
+        log('Request accepted. Preparing your check…');
+        const heartbeat = setInterval(() => emit({ type: 'log', message: `Still working (${Math.floor((Date.now() - startedAt) / 1000)}s): ${phase}` }, false), 5000);
+        try {
+          const dependencies: QuestDependencies = input.target === 'airflow' ? await createRealAirflow(abort.signal, log) : {
+            expand: expandQuest, run,
+            repair: (failure, basic, signal, log, update) => attemptAutoFix(failure, basic, {
+              ...createFixWorkspace(), propose: proposePipelineFix, run,
+            }, signal, log, update),
+          };
+          await executeQuest({ agent, instruction }, dependencies, abort.signal, emit);
+        } catch (error) {
+          if (!abort.signal.aborted) emit({ type: 'error', message: error instanceof Error ? redact(error.message, secrets) : 'Live quest failed. Try again.' });
+        } finally {
+          console.info(`[quest ${stageRun.id}] ${abort.signal.aborted ? 'Cancelled' : 'Finished'} after ${Date.now() - startedAt}ms`);
+          finishStageRun(stage, stageRun);
+          clearInterval(heartbeat);
+          state.bugQuestLiveBusy = false;
+          request.signal.removeEventListener('abort', disconnected);
+          if (!closed) { closed = true; try { controller.close(); } catch { /* Client disconnected. */ } }
+        }
+      })();
     },
     cancel() { abort.abort(); },
   });
-  return new Response(stream, { headers: { 'Content-Type': 'application/x-ndjson; charset=utf-8', 'Cache-Control': 'no-store, no-transform', 'X-Accel-Buffering': 'no', 'X-Bug-Quest-Animal': assignedAgent.animal, 'X-Bug-Quest-Color': String(assignedAgent.color) } });
+  return new Response(stream, { headers: { 'Content-Type': 'application/x-ndjson; charset=utf-8', 'Cache-Control': 'no-cache, no-transform', 'Content-Encoding': 'identity', 'X-Accel-Buffering': 'no', 'X-Bug-Quest-Animal': assignedAgent.animal, 'X-Bug-Quest-Color': String(assignedAgent.color) } });
 }

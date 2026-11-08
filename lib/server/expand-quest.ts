@@ -8,7 +8,7 @@ export async function expandQuest(instruction: string, signal: AbortSignal, real
   const seed = await readSeed();
   const response = await fetch('https://api.openai.com/v1/responses', {
     method: 'POST',
-    signal: AbortSignal.any([signal, AbortSignal.timeout(60000)]),
+    signal,
     headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
       model: process.env.OPENAI_MODEL || 'gpt-6-luna',

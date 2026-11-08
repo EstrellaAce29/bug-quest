@@ -13,6 +13,7 @@ import { proposePipelineFix } from './propose-fix';
 import { attemptAutoFix } from '../auto-fix';
 import { parseWarehouseCounts, warehousePasses, type WarehouseCounts } from '../warehouse-check';
 import { applyDagPatch } from '../dag-patch';
+import { QUEST_TIMEOUTS, withQuestTimeout } from '../quest-timeout';
 import { warehouseErrorMessage } from '../warehouse-diagnostics.mjs';
 import type { LiveResult, FixReport } from '../quest-contract';
 
@@ -37,20 +38,22 @@ export function airflowSettings() {
 }
 
 export async function warehouseCounts(runId: string | undefined, signal: AbortSignal): Promise<Counts> {
-  const args = ['scripts/check_real_pipeline.mjs', '--json', ...(runId ? [`--run-id=${runId}`] : [])];
-  let stdout: string;
-  try { ({ stdout } = await exec(process.execPath, args, { cwd: process.cwd(), signal, timeout: 20000, maxBuffer: 65536 })); }
-  catch (error) {
-    signal.throwIfAborted();
-    const failure = error as { code?: number; stdout?: string };
-    if (failure.code !== 2 || !failure.stdout) {
-      let code = 'query';
-      try { code = JSON.parse(failure.stdout || '{}').error; } catch { /* Keep diagnostics bounded and credential-free. */ }
-      throw new Error(warehouseErrorMessage(code));
+  return withQuestTimeout('Airflow warehouse query', QUEST_TIMEOUTS.warehouse, signal, async signal => {
+    const args = ['scripts/check_real_pipeline.mjs', '--json', ...(runId ? [`--run-id=${runId}`] : [])];
+    let stdout: string;
+    try { ({ stdout } = await exec(process.execPath, args, { cwd: process.cwd(), signal, timeout: 20000, maxBuffer: 65536 })); }
+    catch (error) {
+      signal.throwIfAborted();
+      const failure = error as { code?: number; stdout?: string };
+      if (failure.code !== 2 || !failure.stdout) {
+        let code = 'query';
+        try { code = JSON.parse(failure.stdout || '{}').error; } catch { /* Keep diagnostics bounded and credential-free. */ }
+        throw new Error(warehouseErrorMessage(code));
+      }
+      stdout = failure.stdout;
     }
-    stdout = failure.stdout;
-  }
-  return parseWarehouseCounts(JSON.parse(stdout.trim()), runId);
+    return parseWarehouseCounts(JSON.parse(stdout.trim()), runId);
+  });
 }
 
 export async function createRealAirflow(signal: AbortSignal, log: (message: string) => void, selectedRunId?: string) {
@@ -58,21 +61,28 @@ export async function createRealAirflow(signal: AbortSignal, log: (message: stri
   let token = '';
   async function api(endpoint: string, method = 'GET', body?: unknown, requestSignal = signal) {
     if (!token) {
-      const auth = await fetch(`${base}/auth/token`, { method: 'POST', signal: AbortSignal.any([requestSignal, AbortSignal.timeout(15000)]), headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: setting('AIRFLOW_USERNAME'), password: setting('AIRFLOW_PASSWORD') }) });
-      if (!auth.ok) throw new Error(`Airflow authentication failed (HTTP ${auth.status}).`);
-      token = (await auth.json()).access_token;
-      if (!token) throw new Error('Airflow returned no access token.');
+      token = await withQuestTimeout('Airflow authentication', QUEST_TIMEOUTS.airflowRequest, requestSignal, async stepSignal => {
+        const auth = await fetch(`${base}/auth/token`, { method: 'POST', signal: stepSignal, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: setting('AIRFLOW_USERNAME'), password: setting('AIRFLOW_PASSWORD') }) });
+        if (!auth.ok) throw new Error(`Airflow authentication failed (HTTP ${auth.status}).`);
+        const value = (await auth.json()).access_token;
+        if (!value) throw new Error('Airflow returned no access token.');
+        return value as string;
+      });
     }
-    const response = await fetch(`${base}/api/v2${endpoint}`, { method, signal: AbortSignal.any([requestSignal, AbortSignal.timeout(15000)]), headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Accept: 'application/json' }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
-    if (!response.ok) throw new Error(`Airflow request failed (HTTP ${response.status}).`);
-    return response.json();
+    return withQuestTimeout('Airflow API request', QUEST_TIMEOUTS.airflowRequest, requestSignal, async stepSignal => {
+      const response = await fetch(`${base}/api/v2${endpoint}`, { method, signal: stepSignal, headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Accept: 'application/json' }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
+      if (!response.ok) throw new Error(`Airflow request failed (HTTP ${response.status}).`);
+      return response.json();
+    });
   }
+  log('Checking the Airflow warehouse (20-second limit)…');
   // Bind this quest to one completed run; do not compare data from an unrelated DAG run.
   const initial = await warehouseCounts(selectedRunId, signal);
   const expectedRows = initial.extractedRows;
   if (expectedRows < 1) throw new Error('The extracted source must contain at least one match.');
   let runId = initial.runId;
   const runPath = () => `/dags/${DAG}/dagRuns/${encodeURIComponent(runId)}`;
+  log('Checking the completed Airflow run and authentication…');
   const existing = await api(runPath());
   if (existing.state !== 'success') throw new Error('Complete the tennis DAG successfully before starting this quest.');
   log(`bound to Airflow run ${runId}; expected ${expectedRows} extracted matches.`);
@@ -84,7 +94,7 @@ export async function createRealAirflow(signal: AbortSignal, log: (message: stri
   }
   async function run(check: Check, checkSignal: AbortSignal, checkLog: (message: string) => void): Promise<LiveResult> {
     if (check.kind === 'row_conservation') return sqlResult(check, checkSignal);
-    // Keep credentials out of objectives, subprocess env and the browser response. Login in Kane's visible browser once.
+    // Keep credentials out of objectives, subprocess env and responses; login stays headless.
     const objective = check.kind === 'basic' ? check.objective : `Open Airflow. Verify DAG ${DAG} run ${runId} is success and all six tasks extract, validate, transform, load, standings, report are success.`;
     const directory = await mkdtemp(path.join(tmpdir(), 'bugquest-airflow-'));
     let result: LiveResult;
@@ -110,32 +120,37 @@ export async function createRealAirflow(signal: AbortSignal, log: (message: stri
   async function triggerAndWait(checkSignal: AbortSignal) {
     // Serialization timestamps are read from the API; never trigger against the old DAG code.
     const candidate = await readFile(path.join(process.cwd(), REAL_DAG_FILE), 'utf8');
-    const deadline = Date.now() + 360000;
-    let parsed = false;
-    while (Date.now() < deadline) {
-      checkSignal.throwIfAborted();
-      await delay(3000, undefined, { signal: checkSignal });
-      const details = await api(`/dags/${DAG}/details`);
-      if (!details.has_import_errors && Date.parse(details.last_parsed_time) > appliedAt) {
-        const source = await api(`/dagSources/${DAG}`);
-        if (source.content === candidate) { parsed = true; break; }
+    log('Waiting for Airflow to parse the repaired DAG (120-second limit)…');
+    await withQuestTimeout('Airflow DAG parsing', QUEST_TIMEOUTS.dagParse, checkSignal, async pollSignal => {
+      while (true) {
+        pollSignal.throwIfAborted();
+        await delay(3000, undefined, { signal: pollSignal });
+        const details = await api(`/dags/${DAG}/details`, 'GET', undefined, pollSignal);
+        if (!details.has_import_errors && Date.parse(details.last_parsed_time) > appliedAt) {
+          const source = await api(`/dagSources/${DAG}`, 'GET', undefined, pollSignal);
+          if (source.content === candidate) return;
+        }
       }
-    }
-    if (!parsed) throw new Error('Airflow has not re-parsed the changed DAG.');
-    await api(`/dags/${DAG}`, 'PATCH', { is_paused: false });
+    });
+    await api(`/dags/${DAG}`, 'PATCH', { is_paused: false }, checkSignal);
+    checkSignal.throwIfAborted();
     runId = `bugquest_${randomUUID()}`;
-    await api(`/dags/${DAG}/dagRuns`, 'POST', { dag_run_id: runId, logical_date: new Date().toISOString(), conf: {} });
-    log(`triggered Airflow run ${runId}; waiting for all tasks...`);
-    const finishBy = Date.now() + 600000;
-    while (Date.now() < finishBy) {
-      checkSignal.throwIfAborted();
-      const state = await api(runPath());
-      if (state.state === 'success') return;
-      if (state.state === 'failed') throw new Error('Candidate Airflow DAG run failed.');
-      await delay(3000, undefined, { signal: checkSignal });
-    }
-    throw new Error('Timed out waiting for Airflow run; human review required.');
+    log(`Triggering Airflow run ${runId}…`);
+    await api(`/dags/${DAG}/dagRuns`, 'POST', { dag_run_id: runId, logical_date: new Date().toISOString(), conf: {} }, checkSignal);
+    log(`Triggered Airflow run ${runId}; waiting for all tasks (300-second limit)…`);
+    await withQuestTimeout('Airflow DAG completion', QUEST_TIMEOUTS.dagRun, checkSignal, async pollSignal => {
+      let lastState = '';
+      while (true) {
+        pollSignal.throwIfAborted();
+        const state = await api(runPath(), 'GET', undefined, pollSignal);
+        if (state.state !== lastState) { log(`Airflow run state: ${state.state}.`); lastState = state.state; }
+        if (state.state === 'success') return;
+        if (state.state === 'failed') throw new Error('Candidate Airflow DAG run failed.');
+        await delay(3000, undefined, { signal: pollSignal });
+      }
+    });
   }
+
   return {
     expand: (instruction: string, checkSignal: AbortSignal) => expandQuest(instruction, checkSignal, { runId, extractedRows: expectedRows }),
     run,

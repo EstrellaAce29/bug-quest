@@ -105,3 +105,5 @@
 @media(max-width:1099px){.layout{grid-template-columns:minmax(0,1fr)}.scoreCard{width:100%;position:static}}
 
 .editName{font:inherit;font-size:11px;color:var(--blue);border:1px solid var(--control-line);border-radius:5px;background:var(--bg);padding:5px 9px;margin-left:10px}
+
+.runStatus{color:var(--ink);background:var(--surface-raised);border-left:3px solid var(--blue);padding:12px 14px;line-height:1.6;overflow-wrap:anywhere}

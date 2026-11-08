@@ -1,4 +1,5 @@
 import { silentBugKinds, type ExpandedObjective, type LiveEvent, type LiveResult, type FixReport } from './quest-contract';
+import { QUEST_TIMEOUTS, withQuestTimeout } from './quest-timeout';
 
 type Check = Pick<LiveResult, 'id' | 'title' | 'objective' | 'kind' | 'expectsBug'>;
 export type QuestDependencies = {
@@ -12,10 +13,11 @@ export async function executeQuest(
   dependencies: QuestDependencies,
   signal: AbortSignal,
   emit: (event: LiveEvent) => void,
+  timeouts = QUEST_TIMEOUTS,
 ) {
   const log = (message: string) => emit({ type: 'log', message: `${input.agent}: ${message}` });
   log('expanding your instruction with OpenAI...');
-  const objectives = await dependencies.expand(input.instruction, signal);
+  const objectives = await withQuestTimeout('OpenAI objective expansion', timeouts.openAI, signal, stepSignal => dependencies.expand(input.instruction, stepSignal));
   emit({ type: 'plan', objectives });
   log(`generated ${objectives.length} precise checks.`);
   const checks: Check[] = [
@@ -33,7 +35,8 @@ export async function executeQuest(
   for (const check of checks) {
     signal.throwIfAborted();
     log(check.kind === 'basic' ? 'running the original instruction as-is...' : `running check ${check.id} of ${objectives.length}...`);
-    const raw = await dependencies.run(check, signal, log);
+    // Simulated row checks also use Kane; real SQL applies its own shorter limit.
+    const raw = await withQuestTimeout('Kane headless check', timeouts.kane, signal, stepSignal => dependencies.run(check, stepSignal, log));
     const result = { ...raw, falseAlarm: check.kind !== 'basic' && check.expectsBug === true && raw.status === 'passed' };
     results.push(result);
     emit({ type: 'result', result, ...scores() });

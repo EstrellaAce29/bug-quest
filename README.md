@@ -63,7 +63,7 @@ flowchart LR
 
 **2,986 extracted vs 1,493 loaded → fixed → 2,986 extracted = 2,986 loaded**, with all six Airflow tasks successful and Kane + SQL verification passing. Winter’s real quest on 2026-11-06 caught the half-load bug and committed the verified repair (`e553308`). The standalone DAG now loads every row; `/play` still plants faults explicitly per round. See [the run evidence](docs/images/theme/validation-2026-11-06/winter.json).
 
-- **80 tests pass**, plus TypeScript typecheck.
+- **90 tests pass**, plus TypeScript typecheck.
 - Two terminal players verified: **+20** per bug caught, **+15** per verified repair, **−5** per false claim; the round reset to 2,986 extracted / loaded / wins.
 - Evidence: [real auto-fix](real-pipeline/verification-2026-10-27.json) · [two-player game](real-pipeline/play-animal-verification-2026-11-01.json).
 
@@ -139,6 +139,9 @@ The warehouse checker intentionally fails while the half-load bug is active. See
 Next.js · React · TypeScript · Node.js · OpenAI API / Ollama · Kane CLI · Apache Airflow · PostgreSQL · Docker
 
 On `/quest`, enter **Name your agent** and click **Continue**. Then enter a required free-text answer to **What should your agent check?** and click **Run**. Pressing Enter in the name step only continues to the prompt; Enter in the prompt adds a newline. Nothing starts on page load, when `/stage` opens, or from `start.sh`. After explicit Run/CLI confirmation, the requested checks, repairs and verification proceed. Kane always runs headlessly, including repair verification and game rounds. The Watch Kane control is removed, and `KANE_HEADLESS=false` cannot enable windows.
+
+Run immediately writes progress to the live log and shows the current phase beside the Run button. **Cancel** is available beside the form and in the live-log header. Limits: OpenAI planning 60s, fix proposal 90s, each Kane run (including evidence upload) 180s, Airflow parsing 120s, DAG completion 300s. A silent connection fails after 15s; a silent progress stream fails after 30s. Timeout errors name the failed step; timed-out repairs restore the checkpoint before reporting the error. [Spinner diagnosis and verification](docs/quest-spinner-2026-11-08/README.md).
+
 
 ## Limitations
 

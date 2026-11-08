@@ -1,0 +1,53 @@
+{
+  "date": "2026-11-08",
+  "method": "Headless native Chrome CDP, real UI; fetch fault injection for /api/quest only. No billable services or pipeline mutations.",
+  "viewport": {
+    "width": 1280,
+    "height": 900
+  },
+  "results": [
+    {
+      "scenario": "cancel",
+      "status": "passed",
+      "elapsedMs": 110,
+      "progress": {
+        "text": "Connecting to the quest server (15-second limit)…",
+        "top": 704.078125,
+        "bottom": 750.46875,
+        "visible": true,
+        "log": "› Run diagnostics: Starting quest…\n› Connecting to the quest server (15-second limit)…"
+      }
+    },
+    {
+      "scenario": "connection-timeout",
+      "status": "passed",
+      "elapsedMs": 15163,
+      "progress": {
+        "text": "Connecting to the quest server (15-second limit)…",
+        "top": 704.078125,
+        "bottom": 750.46875,
+        "visible": true,
+        "log": "› Run diagnostics: Starting quest…\n› Connecting to the quest server (15-second limit)…",
+        "error": "Connection to the quest server timed out after 15 seconds. Check the service and retry."
+      }
+    },
+    {
+      "scenario": "stream-timeout",
+      "status": "passed",
+      "elapsedMs": 30087,
+      "progress": {
+        "text": "Server accepted; test source now deliberately stalls",
+        "top": 704.078125,
+        "bottom": 750.46875,
+        "visible": true,
+        "log": "› Run diagnostics: Starting quest…\n› Connecting to the quest server (15-second limit)…\n› Server accepted; test source now deliberately stalls",
+        "error": "Quest progress stream (no updates received) timed out after 30 seconds. Check the service and retry."
+      }
+    },
+    {
+      "scenario": "done-without-close",
+      "status": "passed",
+      "elapsedMs": 14
+    }
+  ]
+}

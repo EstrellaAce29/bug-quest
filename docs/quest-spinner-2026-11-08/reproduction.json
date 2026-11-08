@@ -1,0 +1,19 @@
+{
+  "status": "passed",
+  "durationSeconds": 106.7,
+  "credits": 32.382792499999994,
+  "testUrl": "https://test-manager.lambdatest.com/projects/01M5P9FBYPFDD0T9S75WWNBR8V/test-cases/01M6SSDAAHCMSAFNHAQ21ABH9F/dashboard/share/US_J8GRE5XXSJJ48HWMM2JJUL8SEB6H8JELVB5KDIAJJH5MARBWM0ZCNFDEM7WL3PVQ?type=summary&agentView=true&fqdn=summary-page",
+  "progressObservation": "Live log text arrived and was partially below the fold: expanding the instruction, generated 2 precise checks, running the original instruction, running browser check, and still working.",
+  "actualAgentName": "Run diagnostics as agent name",
+  "runClickedAt": "2026-11-07T01:20:14.060Z",
+  "stopClickedAt": "2026-11-07T01:20:50.775Z",
+  "apiStatus": 200,
+  "streamFormat": "application/x-ndjson",
+  "logCardY": 824,
+  "firstLogTextY": 892,
+  "viewport": {
+    "width": 1280,
+    "height": 900
+  },
+  "notes": "No unlimited hang reproduced in37seconds. OpenAI produced2checks andKane beganheadless browsercheck; logcontentsarrivedbutmostlybelowfold. Stopworked; no repair launched."
+}

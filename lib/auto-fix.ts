@@ -1,4 +1,5 @@
 import type { CodeDiffLine, FixProposal, FixReport, LiveResult } from './quest-contract';
+import { QuestTimeoutError } from './quest-timeout';
 
 export type FixCheckpoint = { commit: string; source: string };
 export type RepairDependencies = {
@@ -71,10 +72,11 @@ export async function attemptAutoFix(
         update(structuredClone(report)); log(report.message); return report;
       }
       if (signal.aborted) { log('cancelled; restored the pipeline file from the checkpoint.'); signal.throwIfAborted(); }
+      if (error instanceof QuestTimeoutError) { log(error.message); throw error; }
       feedback = error instanceof Error ? error.message.slice(0, 2000) : 'Candidate could not be verified.';
       attempt.error = feedback;
       report.message = `Attempt ${number} failed; original code restored.`;
-      update(structuredClone(report)); log(report.message);
+      update(structuredClone(report)); log(`${report.message} ${feedback}`);
     }
   }
   report.status = 'escalated';
